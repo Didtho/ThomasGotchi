@@ -17,4 +17,10 @@ contextBridge.exposeInMainWorld('desk', {
   poopRestore: (spots, style) => ipcRenderer.invoke('poop-restore', spots, style),
   poopClearAll: () => ipcRenderer.send('poop-clear-all'),
   onPoopCleaned: (cb) => ipcRenderer.on('poop-cleaned', (_e, id) => cb(id)),
+  petCount: () => ipcRenderer.invoke('pet-count'),
+  adopt: () => ipcRenderer.send('adopt'),
+  release: () => ipcRenderer.send('release'),
+  onCursor: (cb) => ipcRenderer.on('cursor', (_e, pos) => cb(pos)),
+  onShaken: (cb) => ipcRenderer.on('shaken', () => cb()),
+  onMeet: (cb) => ipcRenderer.on('meet', (_e, info) => cb(info)),
 });

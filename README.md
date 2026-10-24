@@ -11,12 +11,19 @@ Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper p
 - 🥤 boire · 🌙 dormir / réveiller · 🎾 jouer · 🛁 laver · 💊 soigner · ⚙️ réglages
 - **Clic** : un câlin. **Glisser** : le déplacer. **Clic droit** : réglages.
 - **Crottes** 💩 : il fait ses besoins sur le bureau. Cliquer sur une crotte la nettoie (ou le bain pour tout nettoyer).
-- L'icône près de l'horloge (barre des menus sur Mac) permet de le cacher, de le ramener ou de quitter.
+- 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets.
+- 📖 **Carnet** (dans les réglages) : âge, plat préféré, câlins, souvenirs des anciens compagnons.
+- 🎁 **Accessoires** à gagner : nœud papillon, lunettes, fleur, couronne, chapeau de sorcière, bonnet de Noël.
+- **Plusieurs animaux** (jusqu'à 5) : « Adopter un autre animal » dans le menu de l'icône. Ils se font un câlin quand ils se croisent.
+- L'icône près de l'horloge (barre des menus sur Mac) permet de le cacher, de le ramener, d'en adopter un autre ou de quitter.
 
 Ses besoins se lisent sur son visage : langue pendante quand il a soif, bave quand il a faim, thermomètre quand il
 est malade, taches et odeurs quand il est sale.
 
 Sans soins, il tient environ 2 à 3 jours. Le temps continue de passer quand l'application est fermée.
+Il se promène (et passe d'un écran à l'autre), court, saute, fait des roulades, suit la souris des yeux,
+s'endort le soir avec son bonnet de nuit et se réveille le matin. Si on le secoue, la tête lui tourne !
+
 Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien soigné, l'adulte gagne une barrette étoile.
 
 ## Personnalisation
@@ -24,6 +31,12 @@ Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien 
 - Animal : chat, lapin ou ourson
 - Style : mignon ou pixel rétro
 - Pelage : rose, menthe, ciel, citron, lavande, noir, noir et blanc, roux tigré, gris tacheté
+
+## Télécharger
+
+Dernière version : https://github.com/Didtho/ThomasGotchi/releases/latest
+(Windows : le fichier `.exe`, Mac : le fichier `.dmg`).
+Sur Windows, l'application se met ensuite à jour toute seule. Sur Mac, le menu de l'icône signale les nouvelles versions.
 
 ## Développement
 
@@ -34,9 +47,8 @@ npm run dist       # installateur Windows -> dist/
 npm run dist:mac   # installateur Mac -> dist/ (à lancer sur un Mac)
 ```
 
-Le `.dmg` ne peut être fabriqué que sur un Mac. Sans Mac, le workflow `.github/workflows/build.yml` fabrique
-les deux versions sur GitHub : onglet **Actions** → **Construire ThomasGotchi** → **Run workflow**, puis
-télécharger les fichiers en bas de la page du résultat.
+Publier une nouvelle version : changer "version" dans `package.json`, puis créer et pousser le tag correspondant
+(`git tag v1.2.0 && git push origin v1.2.0`). GitHub fabrique alors les deux installateurs et les publie.
 
 L'application n'est pas signée : au premier lancement sur Mac, faire **clic droit → Ouvrir**. Si macOS dit qu'elle est
 « endommagée », taper dans le Terminal : `xattr -cr /Applications/ThomasGotchi.app`.

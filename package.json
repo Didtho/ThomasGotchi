@@ -1,6 +1,6 @@
 {
   "name": "thomasgotchi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Un petit être virtuel façon Tamagotchi qui vit sur le bureau (Windows et Mac)",
   "main": "main.js",
   "author": "ThomasGotchi",
@@ -44,10 +44,21 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "ThomasGotchi"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Didtho",
+        "repo": "ThomasGotchi",
+        "releaseType": "release"
+      }
+    ]
   },
   "devDependencies": {
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }

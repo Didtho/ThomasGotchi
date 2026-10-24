@@ -43,30 +43,30 @@ const RATES = {
 // Valeur nutritive selon le type de fichier. Les fichiers ne sont jamais modifiés ni supprimés :
 // seuls leur nom et leur taille sont utilisés.
 const FOODS = [
-  { exts: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico', 'heic', 'tif', 'tiff'],
+  { cat: 'images', exts: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico', 'heic', 'tif', 'tiff'],
     hunger: 12, fun: 8, msgs: ['Croustillant !', 'Ça a le goût de pixels !', 'Miam, une jolie image !'] },
-  { exts: ['txt', 'md', 'rtf', 'log', 'csv', 'ini'],
+  { cat: 'textes', exts: ['txt', 'md', 'rtf', 'log', 'csv', 'ini'],
     hunger: 14, msgs: ['Léger comme une salade.', 'Des petits mots, miam !'] },
-  { exts: ['doc', 'docx', 'odt', 'pages'],
+  { cat: 'documents', exts: ['doc', 'docx', 'odt', 'pages'],
     hunger: 28, msgs: ['Un bon repas de mots !', 'Très nourrissant, ce document.'] },
-  { exts: ['pdf'],
+  { cat: 'PDF', exts: ['pdf'],
     hunger: 35, msgs: ['Un PDF bien consistant !', 'Ça cale bien, merci !'] },
-  { exts: ['xls', 'xlsx', 'ods', 'numbers'],
+  { cat: 'tableurs', exts: ['xls', 'xlsx', 'ods', 'numbers'],
     hunger: 24, thirst: -5, fun: -2, msgs: ['Des chiffres… c\'est un peu sec.', 'Ça gratte la gorge, tous ces tableaux.'] },
-  { exts: ['ppt', 'pptx', 'odp', 'key'],
+  { cat: 'présentations', exts: ['ppt', 'pptx', 'odp', 'key'],
     hunger: 30, fun: 6, msgs: ['Des diapos colorées, miam !', 'Slide après slide… délicieux !'] },
-  { exts: ['js', 'ts', 'py', 'html', 'css', 'json', 'java', 'c', 'cpp', 'cs', 'php', 'rb', 'go', 'rs', 'sh', 'xml'],
+  { cat: 'code', exts: ['js', 'ts', 'py', 'html', 'css', 'json', 'java', 'c', 'cpp', 'cs', 'php', 'rb', 'go', 'rs', 'sh', 'xml'],
     hunger: 18, fun: 10, msgs: ['Épicé, ce code !', 'Ça pique un peu… j\'adore !'] },
-  { exts: ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'],
+  { cat: 'musiques', exts: ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'],
     hunger: 10, fun: 20, msgs: ['Ça chatouille le ventre !', 'Une musique en dessert !'] },
-  { exts: ['mp4', 'avi', 'mkv', 'mov', 'webm', 'wmv'],
+  { cat: 'vidéos', exts: ['mp4', 'avi', 'mkv', 'mov', 'webm', 'wmv'],
     hunger: 40, fun: 15, msgs: ['Un vrai festin !', 'Tout un film… je suis repu !'] },
-  { exts: ['zip', 'rar', '7z', 'tar', 'gz'],
+  { cat: 'archives', exts: ['zip', 'rar', '7z', 'tar', 'gz'],
     hunger: 45, fun: -5, msgs: ['Très compact… un peu lourd.', 'Ouf, c\'était bien tassé !'] },
-  { exts: ['exe', 'msi', 'bat', 'cmd', 'dll', 'app', 'dmg', 'pkg'],
+  { cat: 'programmes', exts: ['exe', 'msi', 'bat', 'cmd', 'dll', 'app', 'dmg', 'pkg'],
     hunger: 5, fun: -10, health: -15, msgs: ['Beurk ! Ça pique !', 'Bwaaah… j\'ai mal au ventre !'] },
 ];
-const DEFAULT_FOOD = { hunger: 10, msgs: ['Bizarre… mais mangeable.', 'Hmm, goût inconnu.'] };
+const DEFAULT_FOOD = { cat: 'fichiers bizarres', hunger: 10, msgs: ['Bizarre… mais mangeable.', 'Hmm, goût inconnu.'] };
 
 const clamp = (v) => Math.max(0, Math.min(100, v));
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
@@ -75,7 +75,8 @@ const Pet = {
   COLORS,
   COATS,
 
-  create(name, style, color, species, now = Date.now()) {
+  // memorials : souvenirs des compagnons précédents, transmis d'un œuf à l'autre
+  create(name, style, color, species, memorials = [], now = Date.now()) {
     return {
       version: 1,
       name: name || 'Didou',
@@ -94,6 +95,10 @@ const Pet = {
       poopAt: null,
       meals: 0,
       lastTick: now,
+      stats: { hugs: 0, poopsCleaned: 0, gamesWon: 0, foods: {} },
+      unlocked: [],
+      accessory: null,
+      memorials,
     };
   },
 
@@ -120,6 +125,14 @@ const Pet = {
   },
 
   // Fait avancer le temps. Renvoie la liste des événements survenus ('wake', 'collapse', 'poop', 'dead').
+  // Complète les sauvegardes faites avant l'ajout du carnet et des accessoires
+  upgrade(s) {
+    s.stats = s.stats || { hugs: 0, poopsCleaned: 0, gamesWon: 0, foods: {} };
+    s.unlocked = s.unlocked || [];
+    s.memorials = s.memorials || [];
+    if (s.accessory === undefined) s.accessory = null;
+  },
+
   tick(s, now = Date.now()) {
     const events = [];
     if (s.dead) { s.lastTick = now; return events; }
@@ -144,7 +157,8 @@ const Pet = {
     if (!s.sleeping) s.fun = clamp(s.fun - RATES.fun * dtH);
     s.clean = clamp(s.clean - (RATES.clean + RATES.cleanPerPoop * s.poops) * dtH);
 
-    if (s.sleeping && s.energy >= 100) { s.sleeping = false; events.push('wake'); }
+    // La nuit, il dort jusqu'au matin même une fois reposé (voir app.js)
+    if (s.sleeping && s.energy >= 100 && !s.nightSleep) { s.sleeping = false; events.push('wake'); }
     if (!s.sleeping && s.energy <= 0) { s.sleeping = true; events.push('collapse'); }
 
     if (s.poopAt && now >= s.poopAt) {
@@ -215,6 +229,7 @@ const Pet = {
     s.fun = clamp(s.fun + (food.fun || 0) + 2);
     s.health = clamp(s.health + (food.health || 0));
     s.meals++;
+    s.stats.foods[food.cat] = (s.stats.foods[food.cat] || 0) + 1;
     if (!s.poopAt && s.poops < MAX_POOPS && Math.random() < 0.4) {
       s.poopAt = Date.now() + (10 + Math.random() * 40) * 60000;
     }
@@ -234,6 +249,7 @@ const Pet = {
     if (s.dead || Pet.isEgg(s)) return { ok: false };
     if (s.sleeping) {
       s.sleeping = false;
+      s.nightSleep = false;
       return { ok: true, msg: s.energy < 60 ? 'Hmm… déjà ? *bâille*' : 'Bonjour ! ☀️' };
     }
     if (s.energy > 90) return { ok: false, msg: 'Je ne suis pas fatigué !' };
@@ -256,6 +272,7 @@ const Pet = {
     if (s.dead || Pet.isEgg(s)) return { ok: false };
     if (s.sleeping) return { ok: false, msg: 'Zzz…' };
     const hadPoop = s.poops > 0;
+    s.stats.poopsCleaned += s.poops;
     s.poops = 0;
     s.clean = 100;
     return { ok: true, msg: hadPoop ? 'Tout propre, et le sol aussi ! ✨' : 'Plouf ! Tout propre ✨', anim: 'wash' };
@@ -271,6 +288,7 @@ const Pet = {
 
   // Une crotte ramassée à la main sur l'écran
   cleanPoop(s) {
+    s.stats.poopsCleaned++;
     s.poops = Math.max(0, s.poops - 1);
     s.clean = clamp(s.clean + 8);
   },
@@ -278,6 +296,43 @@ const Pet = {
   pet(s) {
     if (s.dead || s.sleeping || Pet.isEgg(s)) return { ok: false };
     s.fun = clamp(s.fun + 3);
+    s.stats.hugs++;
     return { ok: true, anim: 'love' };
   },
+
+  // ---- Carnet de vie et accessoires ----
+
+  favoriteFood(s) {
+    const entries = Object.entries(s.stats.foods);
+    if (!entries.length) return null;
+    return entries.sort((a, b) => b[1] - a[1])[0][0];
+  },
+
+  // Souvenir laissé par ce compagnon quand on fait éclore un nouvel œuf
+  memorial(s) {
+    if (s.hatchAt > Date.now()) return null;
+    return { name: s.name, species: s.species, color: s.color, age: Pet.ageText(s), dead: s.dead,
+      hours: ((s.dead ? s.diedAt : Date.now()) - s.hatchAt) / HOUR };
+  },
+
+  // Débloque les accessoires mérités ; renvoie ceux qui viennent d'être gagnés
+  checkUnlocks(s, now = new Date()) {
+    if (s.dead || Pet.isEgg(s)) return [];
+    const fresh = ACCESSORIES.filter((a) => !s.unlocked.includes(a.id) && a.earned(s, now));
+    for (const a of fresh) s.unlocked.push(a.id);
+    return fresh;
+  },
 };
+
+const ACCESSORIES = [
+  { id: 'noeud', name: 'Nœud papillon', icon: '🎀', hint: 'vivre une journée entière',
+    earned: (s) => Date.now() - s.hatchAt >= 24 * HOUR },
+  { id: 'lunettes', name: 'Lunettes', icon: '👓', hint: 'manger 15 fichiers', earned: (s) => s.meals >= 15 },
+  { id: 'fleur', name: 'Fleur', icon: '🌸', hint: 'gagner 5 mini-jeux', earned: (s) => s.stats.gamesWon >= 5 },
+  { id: 'couronne', name: 'Couronne', icon: '👑', hint: 'devenir un adulte très bien soigné',
+    earned: (s) => Pet.stage(s) === 'adult' && s.care >= 70 },
+  { id: 'sorciere', name: 'Chapeau de sorcière', icon: '🎃', hint: 'être là pour Halloween',
+    earned: (s, d) => (d.getMonth() === 9 && d.getDate() >= 15) || (d.getMonth() === 10 && d.getDate() <= 2) },
+  { id: 'noel', name: 'Bonnet de Noël', icon: '🎅', hint: 'être là en décembre', earned: (s, d) => d.getMonth() === 11 },
+];
+Pet.ACCESSORIES = ACCESSORIES;

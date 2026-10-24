@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d');
 const bubble = $('bubble');
 const panel = $('panel');
 const modal = $('modal');
-const stage = $('stage');
+const stageEl = $('stage');
 
 let state = null;
 let draft = { style: 'cute', color: 'rose', species: 'chat' }; // choix en cours dans la fenêtre « nouvel œuf »
@@ -29,6 +29,10 @@ let hideTimer = null;
 let press = null;
 let dragging = false;
 let hungryLook = false;
+let snoreTick = 0;
+let unlockTick = 0;
+let pendingMemorials = []; // souvenirs à transmettre au prochain œuf
+let cursor = null; // position de la souris par rapport à la fenêtre (envoyée par main.js)
 
 // ---------- Utilitaires ----------
 
@@ -44,6 +48,7 @@ function say(text, ms = 3800) {
 }
 
 function play(name, duration) {
+  if (state) Sound.play(name, state.species);
   anim = name;
   animStart = performance.now();
   animDur = duration;
@@ -72,7 +77,8 @@ function buildView(now) {
   let eyes = 'open';
   if (mood === 'dead') eyes = 'dead';
   else if (mood === 'sleep') eyes = 'closed';
-  else if (anim === 'play' || anim === 'love' || anim === 'hatch') eyes = 'joy';
+  else if (anim === 'dizzy') eyes = 'dizzy';
+  else if (anim === 'play' || anim === 'love' || anim === 'hatch' || anim === 'jump' || anim === 'roll') eyes = 'joy';
   else if (blinking) eyes = 'closed';
   else if (mood === 'sick' || state.energy < 25) eyes = 'tired';
   else if (mood === 'sad') eyes = 'sad';
@@ -97,6 +103,24 @@ function buildView(now) {
 
   const coat = Pet.COATS[state.color] || {};
 
+  // Les yeux suivent la souris quand elle n'est pas trop loin
+  let lookX = null;
+  let lookY = 0;
+  if (cursor && !walking && mood !== 'sleep' && mood !== 'dead') {
+    const headY = stageEl.offsetTop + Draw.restTop(stage, state.species) + 45;
+    const dx = cursor.x - 120;
+    const dy = cursor.y - headY;
+    if (Math.hypot(dx, dy) < 900) {
+      lookX = Math.max(-1, Math.min(1, dx / 160));
+      lookY = Math.max(-1, Math.min(1, dy / 160));
+    }
+  }
+  if (anim === 'look') {
+    // Il regarde à gauche, puis à droite
+    lookX = Math.sin(animT * 3);
+    lookY = -0.3;
+  }
+
   return {
     stage,
     species: state.species || 'chat',
@@ -114,7 +138,12 @@ function buildView(now) {
     anim,
     animT,
     facing,
+    lookX,
+    lookY,
     walking: !!walking,
+    running: !!walking && walking.speed > 3,
+    nightcap: state.sleeping && isNight(),
+    accessory: state.accessory,
     eggProgress: Math.min(1, Math.max(0, 1 - (state.hatchAt - Date.now()) / HATCH_DELAY)),
   };
 }
@@ -154,14 +183,27 @@ function frame(now) {
 
 // ---------- Promenade sur le bureau ----------
 
-function canWander() {
-  return state && !state.dead && !state.sleeping && !Pet.isEgg(state) && !anim &&
+function canWander(allowedAnim) {
+  return state && !state.dead && !state.sleeping && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
     !dragging && panel.classList.contains('hidden') && !modalIsOpen();
+}
+
+// Petits numéros quand il ne marche pas : saut, roulade, étirement, regard autour de lui
+const TRICKS = [
+  { anim: 'jump', dur: 800, say: ['Hop !', 'Youpi !'] },
+  { anim: 'roll', dur: 900, say: ['Roulade !', 'Wiii !'], move: 5 },
+  { anim: 'stretch', dur: 1500, say: ['Étiiiirement…'] },
+  { anim: 'look', dur: 2400, say: ['Hmm ?', 'Qu\'est-ce que c\'est ?'] },
+];
+
+function startWalk(dir, steps, speed = 2) {
+  walking = { dir, steps, speed };
+  facing = dir;
 }
 
 function wander(now) {
   if (walking) {
-    if (!canWander() || walking.steps <= 0) {
+    if (!canWander(walking.anim) || walking.steps <= 0) {
       walking = null;
       facing = 0;
       return;
@@ -169,7 +211,7 @@ function wander(now) {
     if (walkBusy) return;
     walkBusy = true;
     walking.steps--;
-    desk.moveBy(walking.dir * 2, 0).then((r) => {
+    desk.moveBy(walking.dir * walking.speed, 0).then((r) => {
       walkBusy = false;
       if (!r || !walking) return;
       if ((r.blockedLeft && walking.dir < 0) || (r.blockedRight && walking.dir > 0)) {
@@ -179,13 +221,63 @@ function wander(now) {
     });
     return;
   }
-  if (now > nextWalkAt) {
-    nextWalkAt = now + 3000 + Math.random() * 7000;
-    if (canWander() && Math.random() < 0.85) {
-      const dir = Math.random() < 0.5 ? -1 : 1;
-      walking = { dir, steps: 40 + Math.floor(Math.random() * 120) };
-      facing = dir;
+  if (now < nextWalkAt) return;
+  nextWalkAt = now + 3000 + Math.random() * 7000;
+  if (!canWander() || Math.random() > 0.85) return;
+
+  // Curieux : la souris bouge près du sol à côté de lui, il va voir
+  const cursorNear = cursor && Math.abs(cursor.x - 120) < 450 && Math.abs(cursor.y - (stageEl.offsetTop + 270)) < 250;
+  const roll = Math.random();
+  if (cursorNear && roll < 0.35) {
+    const dx = cursor.x - 120;
+    startWalk(dx > 0 ? 1 : -1, Math.min(150, Math.abs(dx) / 2), 2);
+  } else if (roll < 0.6) {
+    startWalk(Math.random() < 0.5 ? -1 : 1, 40 + Math.floor(Math.random() * 120));
+  } else if (roll < 0.72) {
+    // Petite course
+    startWalk(Math.random() < 0.5 ? -1 : 1, 30 + Math.floor(Math.random() * 40), 5);
+  } else {
+    const trick = TRICKS[Math.floor(Math.random() * TRICKS.length)];
+    if (trick.move) {
+      startWalk(Math.random() < 0.5 ? -1 : 1, Math.round(trick.dur / 33), trick.move);
+      walking.anim = trick.anim;
     }
+    play(trick.anim, trick.dur);
+    if (Math.random() < 0.4) say(trick.say[Math.floor(Math.random() * trick.say.length)], 1800);
+  }
+}
+
+// ---------- Rythme du jour ----------
+
+function isNight() {
+  const h = new Date().getHours();
+  return h >= 22 || h < 7;
+}
+
+// Identifiant de la nuit en cours (la date du soir), pour ne le coucher qu'une fois par nuit
+function nightKey() {
+  const d = new Date();
+  if (d.getHours() < 7) d.setDate(d.getDate() - 1);
+  return d.toDateString();
+}
+
+function dayRhythm() {
+  if (state.dead || Pet.isEgg(state)) return;
+  if (isNight()) {
+    if (!state.sleeping && !anim && !modalIsOpen() && !dragging && state.bedNight !== nightKey()) {
+      state.bedNight = nightKey();
+      state.sleeping = true;
+      state.nightSleep = true;
+      walking = null;
+      say('Il est tard… bonne nuit 🌙', 4000);
+      save();
+    }
+  } else if (state.sleeping && state.nightSleep) {
+    state.sleeping = false;
+    state.nightSleep = false;
+    play('stretch', 1500);
+    say('Bonjour ! ☀️ Bien dormi !', 4000);
+    save();
   }
 }
 
@@ -206,16 +298,22 @@ function logic() {
   }
 
   for (const ev of events) {
-    if (ev === 'wake') say('Bien dormi ! ☀️');
+    if (ev === 'wake') { play('stretch', 1500); say('Bien dormi ! ☀️'); }
     if (ev === 'collapse') say('Trop fatigué… je m\'endors…');
-    if (ev === 'poop') { addPoop(); say('Oups… 💩'); }
-    if (ev === 'dead') { save(); showDead(); }
+    if (ev === 'poop') { addPoop(); Sound.play('poop'); say('Oups… 💩'); }
+    if (ev === 'dead') { Sound.play('sad'); save(); showDead(); }
   }
+
+  dayRhythm();
+
+  // Petit ronflement de temps en temps
+  if (state.sleeping && ++snoreTick % 4 === 0) Sound.play('snore');
 
   const now = performance.now();
   const need = Pet.need(state);
   if (need && now - lastNeedAt > 3 * 60 * 1000 && now > bubbleUntil) {
     lastNeedAt = now;
+    Sound.play('alert');
     say(need, 5000);
   }
   if (Pet.isSick(state) && now - lastNotifAt > 3 * 3600 * 1000 && 'Notification' in window) {
@@ -224,6 +322,7 @@ function logic() {
   }
 
   if (!panel.classList.contains('hidden')) updatePanel();
+  if (++unlockTick % 30 === 0) checkUnlocks();
   if (now - lastSaveAt > 15000) {
     lastSaveAt = now;
     save();
@@ -265,7 +364,8 @@ function doAction(act) {
     case 'feed': say('Glisse un fichier sur moi pour me nourrir ! 📄'); return;
     case 'drink': r = Pet.drink(state); break;
     case 'sleep': r = Pet.toggleSleep(state); break;
-    case 'play': r = Pet.play(state); break;
+    case 'play': Games.open(); return;
+    case 'ball': r = Pet.play(state); if (r.ok) r.anim = 'play'; break;
     case 'wash': r = Pet.wash(state); break;
     case 'heal': r = Pet.heal(state); break;
     case 'settings': openSettings(); return;
@@ -294,7 +394,7 @@ function overInteractive(x, y) {
 
 // x, y : coordonnées dans la fenêtre ; la zone du petit être peut être décalée quand la fenêtre est agrandie
 function overPet(x, y) {
-  y -= stage.offsetTop;
+  y -= stageEl.offsetTop;
   return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
 }
 
@@ -406,6 +506,7 @@ document.addEventListener('drop', (e) => {
   meals.slice(0, 5).forEach((meal, i) => {
     setTimeout(() => {
       const r = Pet.feed(state, meal);
+      if (r.ok) checkUnlocks();
       if (r.msg) say(r.msg, 3500);
       if (r.ok) play(r.anim, 1800);
       if (!panel.classList.contains('hidden')) updatePanel();
@@ -414,6 +515,34 @@ document.addEventListener('drop', (e) => {
   });
   if (meals.length > 5) setTimeout(() => say('Ouf, j\'ai assez mangé pour l\'instant !'), 10000);
 });
+
+// ---------- Accessoires ----------
+
+function checkUnlocks() {
+  for (const a of Pet.checkUnlocks(state)) {
+    if (!state.accessory) state.accessory = a.id;
+    Sound.play('win');
+    say(`Cadeau ! ${a.icon} ${a.name} débloqué !`, 5000);
+    save();
+  }
+}
+
+function buildAccessories(container) {
+  container.innerHTML = '';
+  const owned = Pet.ACCESSORIES.filter((a) => state.unlocked.includes(a.id));
+  if (!owned.length) {
+    container.innerHTML = '<span class="hint">Prends bien soin de lui pour gagner des accessoires !</span>';
+    return;
+  }
+  for (const a of [{ id: '', icon: '∅', name: 'Aucun' }, ...owned]) {
+    const b = document.createElement('button');
+    b.dataset.value = a.id;
+    b.textContent = a.icon;
+    b.title = a.name;
+    container.appendChild(b);
+  }
+  bindChoices(container, state.accessory || '', (v) => { state.accessory = v || null; save(); });
+}
 
 // ---------- Fenêtres : nouvel œuf, réglages, décès ----------
 
@@ -459,13 +588,13 @@ async function openModal(id) {
   const extra = Math.max(0, cardH - head);
   const r = extra ? await desk.expand(extra) : { above: true };
   if (r && r.above) {
-    stage.style.top = extra + 'px';
+    stageEl.style.top = extra + 'px';
     modal.style.top = '0px';
     modal.style.height = (extra + head) + 'px';
     modal.style.alignItems = 'flex-end';
   } else {
     // Petit être collé en haut de l'écran : la fenêtre s'agrandit vers le bas
-    stage.style.top = '0px';
+    stageEl.style.top = '0px';
     modal.style.top = (300 + extra - cardH) + 'px';
     modal.style.height = cardH + 'px';
     modal.style.alignItems = 'flex-start';
@@ -477,7 +606,7 @@ async function openModal(id) {
 function closeModal() {
   if (!modalIsOpen()) return;
   modal.classList.add('hidden');
-  stage.style.top = '';
+  stageEl.style.top = '';
   desk.collapse();
   desk.setIgnore(true);
 }
@@ -490,6 +619,10 @@ function openNew() {
   bindChoices(card.querySelector('[data-group=style]'), draft.style, (v) => { draft.style = v; applyStyle(v); });
   bindChoices(card.querySelector('[data-group=species]'), draft.species, (v) => { draft.species = v; });
   buildSwatches(card.querySelector('[data-group=color]'), draft.color, (v) => { draft.color = v; });
+  if (state) {
+    const m = Pet.memorial(state);
+    pendingMemorials = (state.memorials || []).concat(m ? [m] : []).slice(-12);
+  }
   state = null;
   openModal('modal-new');
   setTimeout(() => $('new-name').focus(), 200);
@@ -498,7 +631,8 @@ function openNew() {
 $('new-ok').addEventListener('click', () => {
   const name = $('new-name').value.trim() || 'Didou';
   desk.poopClearAll();
-  state = Pet.create(name, draft.style, draft.color, draft.species);
+  state = Pet.create(name, draft.style, draft.color, draft.species, pendingMemorials);
+  Sound.enabled = true;
   applyStyle(state.style);
   closeModal();
   save();
@@ -512,8 +646,13 @@ async function openSettings() {
   $('set-name').value = state.name;
   bindChoices(card.querySelector('[data-group=style]'), state.style, (v) => { state.style = v; applyStyle(v); save(); });
   bindChoices(card.querySelector('[data-group=species]'), state.species || 'chat', (v) => { state.species = v; save(); });
+  buildAccessories(card.querySelector('[data-group=accessory]'));
   buildSwatches(card.querySelector('[data-group=color]'), state.color, (v) => { state.color = v; save(); });
   $('set-login').checked = await desk.getLogin();
+  $('set-sound').checked = state.sound !== false;
+  const count = await desk.petCount();
+  $('set-adopt').disabled = count >= 5;
+  $('set-release').classList.toggle('hidden', count <= 1);
   openModal('modal-settings');
 }
 
@@ -522,8 +661,24 @@ $('set-name').addEventListener('input', () => {
   if (v) state.name = v;
 });
 $('set-login').addEventListener('change', (e) => desk.setLogin(e.target.checked));
+$('set-sound').addEventListener('change', (e) => {
+  state.sound = e.target.checked;
+  Sound.enabled = state.sound;
+  if (state.sound) Sound.play('voice', state.species);
+  save();
+});
 $('set-close').addEventListener('click', () => { closeModal(); save(); });
 $('set-quit').addEventListener('click', () => { save(); desk.quit(); });
+$('set-adopt').addEventListener('click', () => {
+  closeModal();
+  desk.adopt();
+});
+$('set-release').addEventListener('click', () => {
+  if (!confirm(`Laisser partir ${state.name} ? Il s'en ira pour toujours.`)) return;
+  desk.poopClearAll();
+  desk.release();
+});
+
 $('set-reset').addEventListener('click', () => {
   if (confirm(`Recommencer avec un nouvel œuf ? ${state.name} disparaîtra pour toujours.`)) openNew();
 });
@@ -536,10 +691,31 @@ $('dead-ok').addEventListener('click', openNew);
 
 desk.onMenu((action) => { if (action === 'settings') openSettings(); });
 
+desk.onCursor((pos) => { cursor = pos; });
+
+// On l'a secoué en le déplaçant
+desk.onShaken(() => {
+  if (!state || state.dead || state.sleeping || Pet.isEgg(state)) return;
+  play('dizzy', 2500);
+  state.fun = Math.max(0, state.fun - 3);
+  say('Ouh là… tout tourne ! 😵', 2500);
+});
+
+// Un autre animal passe tout près : petit câlin
+desk.onMeet(({ name, side }) => {
+  if (!state || state.dead || state.sleeping || Pet.isEgg(state) || modalIsOpen()) return;
+  walking = null;
+  facing = side;
+  play('love', 1600);
+  state.fun = Math.min(100, state.fun + 5);
+  say(`Coucou ${name || 'toi'} ! 💕`);
+});
+
 desk.onPoopCleaned((id) => {
   if (!state) return;
   state.poopSpots = (state.poopSpots || []).filter((p) => p.id !== id);
   Pet.cleanPoop(state);
+  Sound.play('sparkle');
   if (!state.dead && !state.sleeping) say(state.poops ? 'Merci ! ✨' : 'Tout propre, merci ! ✨');
   save();
 });
@@ -551,8 +727,10 @@ window.addEventListener('beforeunload', save);
   const saved = await desk.load();
   if (saved && saved.version === 1) {
     state = saved;
+    Pet.upgrade(state);
     const away = Date.now() - state.lastTick;
     const events = Pet.tick(state);
+    Sound.enabled = state.sound !== false;
     applyStyle(state.style);
     await restorePoops();
     if (state.dead) showDead();

@@ -78,12 +78,52 @@
       </div>
       <div class="label">Couleur</div>
       <div class="swatches" data-group="color"></div>
-      <label class="check"><input type="checkbox" id="set-login"> Lancer au démarrage</label>
+      <div class="label">Accessoire</div>
+      <div class="choices wrap" data-group="accessory"></div>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="set-sound"> Sons</label>
+        <label class="check"><input type="checkbox" id="set-login"> Lancer au démarrage</label>
+      </div>
       <div class="row">
         <button id="set-reset" class="danger">Nouvel œuf</button>
         <button id="set-quit">Quitter</button>
         <button id="set-close" class="primary">OK</button>
       </div>
+      <div class="row row2">
+        <button id="set-journal">📖 Carnet</button>
+        <button id="set-adopt">+ Ami</button>
+        <button id="set-release" class="danger">Partir</button>
+      </div>
+    </div>
+
+    <div id="modal-games" class="card hit hidden">
+      <h2>On joue ?</h2>
+      <div class="game-list">
+        <button data-game="ball">🎾 Lancer la balle</button>
+        <button data-game="catch">🍪 Attrape les friandises</button>
+        <button data-game="cups">🥤 Le jeu des gobelets</button>
+      </div>
+      <button class="close-modal">Fermer</button>
+    </div>
+
+    <div id="modal-catch" class="card hit hidden">
+      <h2>Attrape ! <span id="catch-score" class="score">0</span><span id="catch-time" class="time"></span></h2>
+      <div id="catch-area"><div id="catcher"></div></div>
+      <p id="catch-msg" class="hint">Bouge la souris pour attraper les friandises. Évite les 💩 !</p>
+      <div class="row"><button id="catch-again" class="primary hidden">Rejouer</button><button class="close-modal">Fermer</button></div>
+    </div>
+
+    <div id="modal-cups" class="card hit hidden">
+      <h2 id="cups-title">Où est-il caché ?</h2>
+      <div id="cups-area"></div>
+      <p id="cups-msg" class="hint">Regarde bien sous quel gobelet il se cache…</p>
+      <div class="row"><button id="cups-again" class="primary hidden">Rejouer</button><button class="close-modal">Fermer</button></div>
+    </div>
+
+    <div id="modal-journal" class="card hit hidden">
+      <h2 id="journal-title">Carnet</h2>
+      <div id="journal-body"></div>
+      <button class="close-modal primary">Fermer</button>
     </div>
 
     <div id="modal-dead" class="card hit hidden">
@@ -95,6 +135,8 @@
 
   <script src="pet.js"></script>
   <script src="draw.js"></script>
+  <script src="sound.js"></script>
   <script src="app.js"></script>
+  <script src="games.js"></script>
 </body>
 </html>

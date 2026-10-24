@@ -227,3 +227,29 @@ button.danger { background: #ffe0e0 !important; }
 
 .swatches { flex-wrap: wrap; gap: 5px; }
 .swatches button { width: 18px; height: 18px; padding: 0; }
+.row2 { margin-top: 5px; }
+.row button:disabled { opacity: .45; cursor: default; }
+.checks { display: flex; gap: 12px; }
+
+/* ---------- Mini-jeux et carnet ---------- */
+.choices.wrap { flex-wrap: wrap; }
+.choices.wrap button { flex: 0 0 auto; }
+.hint { margin: 4px 0 6px; font-size: 11px; opacity: .8; line-height: 1.3; }
+.game-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
+.game-list button { padding: 6px; font: inherit; font-weight: 600; text-align: left; background: #fff3f7; border: 1.5px solid #3b2a3a; border-radius: 8px; cursor: pointer; }
+.game-list button:hover { background: #ffd9e6; }
+.score { float: right; margin-left: 8px; }
+.time { float: right; font-weight: 400; opacity: .7; }
+#catch-area { position: relative; height: 170px; overflow: hidden; background: linear-gradient(#eaf6ff, #fdf2f7); border: 1.5px solid #3b2a3a; border-radius: 10px; cursor: none; }
+#catcher { position: absolute; bottom: 2px; left: 90px; font-size: 30px; line-height: 1; transform: translateX(-50%); }
+.treat { position: absolute; top: 0; font-size: 20px; line-height: 1; transform: translateX(-50%); pointer-events: none; }
+#cups-area { position: relative; height: 96px; }
+.cup { position: absolute; bottom: 4px; width: 56px; height: 62px; transition: left .28s ease-in-out, transform .3s; cursor: pointer; }
+.cup::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #e8455d, #ff7d8f 45%, #e8455d); border: 2px solid #3b2a3a; border-radius: 10px 10px 4px 4px / 10px 10px 4px 4px; clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%); }
+.cup .peek { position: absolute; left: 50%; bottom: -2px; transform: translateX(-50%); font-size: 26px; opacity: 0; transition: opacity .2s; }
+.cup.up { transform: translateY(-34px); }
+.cup.up .peek { opacity: 1; transform: translate(-50%, 34px); }
+.journal-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed rgba(59,42,58,.2); font-size: 11.5px; }
+.journal-row b { font-weight: 600; }
+.journal-sub { margin: 6px 0 2px; font-weight: 700; font-size: 11.5px; }
+.theme-pixel #catch-area, .theme-pixel .game-list button { border-radius: 0; border-width: 2px; background: #9bbc0f; }
