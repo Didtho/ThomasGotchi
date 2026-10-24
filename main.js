@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -113,6 +113,8 @@ function createPetWindow(id) {
   win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
   win.on('closed', () => { p.win = null; });
+  // Au chargement, il apprend si le mode « ne pas déranger » est actif
+  win.webContents.on('did-finish-load', () => win.webContents.send('dnd', dnd));
   return p;
 }
 
@@ -185,6 +187,11 @@ function buildTrayMenu() {
     settings,
     { label: 'Adopter un autre animal', enabled: list.length < MAX_PETS, click: adoptPet },
     { label: yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶', click: toggleYarn },
+    { label: 'Gamelle 🥣', type: 'checkbox', checked: !!furniture, click: () => (furniture ? removeFurniture() : spawnFurniture()) },
+    { type: 'separator' },
+    { label: '🔕 Ne pas déranger', type: 'checkbox', checked: dnd, click: (item) => setDnd(item.checked) },
+    { label: '🏖️ Pause vacances (tous)', type: 'checkbox', checked: allPaused, click: (item) => setAllPaused(item.checked) },
+    { label: 'Importer un animal…', enabled: list.length < MAX_PETS, click: importPet },
     updateMenuItem(),
     { type: 'separator' },
     {
@@ -534,6 +541,186 @@ ipcMain.on('yarn-ignore', (_e, ignore) => {
   if (yarn && !yarn.win.isDestroyed()) yarn.win.setIgnoreMouseEvents(ignore, { forward: true });
 });
 
+// ---- Gamelle : partagée par tous les animaux, posée en bas de l'écran ----
+
+const FURN = { bowl: { w: 84, h: 50 } };
+let furniture = null; // { bowl: { win, x, food, water } }
+
+function furnitureArea() {
+  const first = [...pets.values()].find(alive);
+  return first ? screen.getDisplayMatching(first.win.getBounds()).workArea : screen.getPrimaryDisplay().workArea;
+}
+
+function saveFurniture() {
+  const f = furniture;
+  try {
+    writeJson('furniture.json', f
+      ? { on: true, bowl: { x: f.bowl.x, food: f.bowl.food, water: f.bowl.water } }
+      : { on: false });
+  } catch { /* sans gravité */ }
+}
+
+function createFurnitureWindow(kind, x) {
+  const { w, h } = FURN[kind];
+  const wa = screen.getAllDisplays().map((d) => d.workArea).find((a) => x >= a.x && x < a.x + a.width) || furnitureArea();
+  const win = new BrowserWindow({
+    width: w, height: h,
+    x: Math.round(Math.min(Math.max(x - w / 2, wa.x), wa.x + wa.width - w)),
+    y: wa.y + wa.height - h,
+    transparent: true, frame: false, resizable: false, maximizable: false, minimizable: false, fullscreenable: false,
+    skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true, backgroundColor: '#00000000',
+    webPreferences: { preload: path.join(__dirname, 'preload-furniture.js'), contextIsolation: true, nodeIntegration: false },
+  });
+  win.setAlwaysOnTop(true, 'floating');
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.loadFile(path.join(__dirname, 'src', 'furniture.html'), { query: { kind } });
+  win.webContents.on('did-finish-load', sendFurnitureState);
+  return win;
+}
+
+function spawnFurniture(saved) {
+  if (furniture) return;
+  const first = [...pets.values()].find(alive);
+  const px = first ? first.win.getBounds().x + W / 2 : furnitureArea().x + 300;
+  const s = saved && saved.bowl ? saved : { bowl: { x: px - 170, food: 100, water: 100 } };
+  furniture = { bowl: { ...s.bowl, win: createFurnitureWindow('bowl', s.bowl.x) } };
+  saveFurniture();
+  buildTrayMenu();
+}
+
+function removeFurniture() {
+  if (!furniture) return;
+  if (!furniture.bowl.win.isDestroyed()) furniture.bowl.win.destroy();
+  furniture = null;
+  saveFurniture();
+  for (const p of pets.values()) if (alive(p)) p.win.webContents.send('furniture', null);
+  buildTrayMenu();
+}
+
+function sendFurnitureState() {
+  if (!furniture) return;
+  const { bowl } = furniture;
+  if (!bowl.win.isDestroyed()) bowl.win.webContents.send('furn-state', { food: bowl.food, water: bowl.water });
+}
+
+// Les animaux savent où est la gamelle (position par rapport à leur fenêtre)
+function sendFurnitureToPets() {
+  if (!furniture) return;
+  for (const p of pets.values()) {
+    if (!alive(p)) continue;
+    const bx = p.win.getBounds().x;
+    p.win.webContents.send('furniture', {
+      bowl: { x: furniture.bowl.x - bx, food: furniture.bowl.food, water: furniture.bowl.water },
+    });
+  }
+}
+
+function furnitureOf(sender) {
+  if (!furniture) return null;
+  return !furniture.bowl.win.isDestroyed() && furniture.bowl.win.webContents === sender ? 'bowl' : null;
+}
+
+ipcMain.on('furn-click', (e) => {
+  const k = furnitureOf(e.sender);
+  if (k === 'bowl') Object.assign(furniture.bowl, { food: 100, water: 100 });
+  sendFurnitureState();
+  saveFurniture();
+});
+
+let furnDrag = null;
+ipcMain.on('furn-drag-start', (e) => {
+  const k = furnitureOf(e.sender);
+  if (!k) return;
+  const item = furniture[k];
+  const ox = screen.getCursorScreenPoint().x - item.win.getBounds().x;
+  clearInterval(furnDrag);
+  furnDrag = setInterval(() => {
+    if (!furniture || item.win.isDestroyed()) return clearInterval(furnDrag);
+    // Elle glisse le long du bas de l'écran (et peut changer d'écran)
+    const cx = screen.getCursorScreenPoint().x;
+    const wa = screen.getAllDisplays().map((d) => d.workArea).find((a) => cx >= a.x && cx < a.x + a.width) || furnitureArea();
+    const { w, h } = FURN[k];
+    const x = Math.round(Math.min(Math.max(cx - ox, wa.x), wa.x + wa.width - w));
+    item.win.setBounds({ x, y: wa.y + wa.height - h, width: w, height: h });
+    item.x = x + w / 2;
+  }, 16);
+});
+ipcMain.on('furn-drag-end', () => { clearInterval(furnDrag); saveFurniture(); });
+
+// Un animal se sert : renvoie la quantité obtenue (0 si le bol est vide)
+ipcMain.handle('bowl-use', (_e, what) => {
+  if (!furniture) return 0;
+  const key = what === 'water' ? 'water' : 'food';
+  const amount = Math.min(25, furniture.bowl[key]);
+  furniture.bowl[key] -= amount;
+  sendFurnitureState();
+  saveFurniture();
+  return amount;
+});
+
+
+// ---- Export / import d'un animal (fichier .thomasgotchi) ----
+
+ipcMain.handle('export-pet', async (e, state) => {
+  const p = petOf(e.sender);
+  if (!p || !state) return false;
+  const res = await dialog.showSaveDialog(p.win, {
+    title: 'Exporter ' + state.name,
+    defaultPath: path.join(app.getPath('documents'), `${state.name}.thomasgotchi`),
+    filters: [{ name: 'Animal ThomasGotchi', extensions: ['thomasgotchi'] }],
+  });
+  if (res.canceled || !res.filePath) return false;
+  // Les crottes et surprises restent sur ce bureau-ci
+  const pet = { ...state, poops: 0, poopSpots: [], treatSpots: [], poopAt: null, peeAt: null };
+  fs.writeFileSync(res.filePath, JSON.stringify({ format: 'thomasgotchi', exportedAt: Date.now(), pet }, null, 1));
+  return true;
+});
+
+async function importPet() {
+  const res = await dialog.showOpenDialog({
+    title: 'Importer un animal',
+    filters: [{ name: 'Animal ThomasGotchi', extensions: ['thomasgotchi', 'json'] }],
+    properties: ['openFile'],
+  });
+  if (res.canceled || !res.filePaths.length) return;
+  let pet = null;
+  try {
+    const data = JSON.parse(fs.readFileSync(res.filePaths[0], 'utf8'));
+    if (data.format === 'thomasgotchi' && data.pet && data.pet.version === 1 && typeof data.pet.name === 'string') pet = data.pet;
+  } catch { /* fichier illisible */ }
+  if (!pet) return dialog.showMessageBox({ type: 'warning', message: 'Ce fichier n\'est pas un animal ThomasGotchi.' });
+  if (pets.size >= MAX_PETS) return dialog.showMessageBox({ type: 'info', message: `Il y a déjà ${MAX_PETS} animaux : laisses-en partir un avant d'en importer un autre.` });
+  // Le temps écoulé depuis l'export ne compte pas : il reprend sa vie là où elle s'était arrêtée
+  pet.lastTick = Date.now();
+  const id = Date.now().toString(36);
+  writeJson(stateFile(id), pet);
+  createPetWindow(id);
+  savePetList();
+  buildTrayMenu();
+}
+
+// ---- Pause vacances et « ne pas déranger » (pour tous les animaux) ----
+
+let dnd = false;
+let allPaused = false;
+
+function sendToPets(channel, value) {
+  for (const p of pets.values()) if (alive(p)) p.win.webContents.send(channel, value);
+}
+
+function setDnd(on) {
+  dnd = on;
+  sendToPets('dnd', dnd);
+  try { writeJson('settings.json', { dnd }); } catch { /* sans gravité */ }
+  buildTrayMenu();
+}
+
+function setAllPaused(on) {
+  allPaused = on;
+  sendToPets('menu', on ? 'pause' : 'resume');
+  buildTrayMenu();
+}
+
 // ---- Ce que les animaux perçoivent autour d'eux ----
 
 // Position de la souris, pour que leurs yeux la suivent
@@ -656,6 +843,10 @@ app.whenReady().then(() => {
   setInterval(sendCursor, 80);
   setInterval(checkMeetings, 1000);
   setInterval(yarnTick, 33);
+  setInterval(sendFurnitureToPets, 500);
+  const furn = readJson('furniture.json');
+  if (furn && furn.on) spawnFurniture(furn);
+  dnd = !!(readJson('settings.json') || {}).dnd;
   setupAutoUpdater();
   checkForUpdates();
   setInterval(checkForUpdates, 6 * 3600 * 1000);

@@ -95,6 +95,9 @@ const FOODS = [
 ];
 const DEFAULT_FOOD = { cat: 'fichiers bizarres', hunger: 10, msgs: ['Bizarre… mais mangeable.', 'Hmm, goût inconnu.'] };
 
+// Rythme de vie : multiplie la vitesse à laquelle les jauges baissent (zen ≈ 5 jours sans soins, exigeant ≈ 1 jour)
+const PACES = { zen: 0.5, normal: 1, exigeant: 2 };
+
 const clamp = (v) => Math.max(0, Math.min(100, v));
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
@@ -165,11 +168,32 @@ const Pet = {
     s.unlocked = s.unlocked || [];
     s.memorials = s.memorials || [];
     if (s.accessory === undefined) s.accessory = null;
+    s.pace = s.pace || 'normal';
+  },
+
+  // ---- Pause vacances : le temps s'arrête pour lui (il ne vieillit pas, n'a ni faim ni soif) ----
+
+  pause(s, now = Date.now()) {
+    if (s.paused || s.dead) return;
+    s.paused = true;
+    s.pausedAt = now;
+  },
+
+  resume(s, now = Date.now()) {
+    if (!s.paused) return;
+    const away = now - s.pausedAt;
+    // On décale toutes les échéances de la durée de la pause
+    s.hatchAt += away;
+    if (s.poopAt) s.poopAt += away;
+    if (s.peeAt) s.peeAt += away;
+    s.paused = false;
+    s.pausedAt = null;
+    s.lastTick = now;
   },
 
   tick(s, now = Date.now()) {
     const events = [];
-    if (s.dead) { s.lastTick = now; return events; }
+    if (s.dead || s.paused) { s.lastTick = now; return events; }
     // Rattrapage par pas d'une minute (temps écoulé pendant que l'application était fermée)
     const maxCatchUp = 14 * 24 * HOUR;
     let t = Math.max(s.lastTick, now - maxCatchUp);
@@ -185,11 +209,12 @@ const Pet = {
   step(s, dtH, now, events) {
     if (Pet.isEgg(s, now)) return;
     const slow = s.sleeping ? 0.5 : 1;
-    s.hunger = clamp(s.hunger - RATES.hunger * dtH * slow);
-    s.thirst = clamp(s.thirst - RATES.thirst * dtH * slow);
-    s.energy = clamp(s.energy + (s.sleeping ? RATES.energySleep : -RATES.energy) * dtH);
-    if (!s.sleeping) s.fun = clamp(s.fun - RATES.fun * dtH);
-    s.clean = clamp(s.clean - (RATES.clean + RATES.cleanPerPoop * s.poops) * dtH);
+    const k = PACES[s.pace] || 1; // les jauges baissent plus ou moins vite selon le rythme choisi
+    s.hunger = clamp(s.hunger - RATES.hunger * dtH * slow * k);
+    s.thirst = clamp(s.thirst - RATES.thirst * dtH * slow * k);
+    s.energy = clamp(s.energy + (s.sleeping ? RATES.energySleep : -RATES.energy * k) * dtH);
+    if (!s.sleeping) s.fun = clamp(s.fun - RATES.fun * dtH * k);
+    s.clean = clamp(s.clean - (RATES.clean + RATES.cleanPerPoop * s.poops) * dtH * k);
 
     // La nuit, il dort jusqu'au matin même une fois reposé (voir app.js)
     if (s.sleeping && s.energy >= 100 && !s.nightSleep) { s.sleeping = false; events.push('wake'); }
@@ -207,7 +232,7 @@ const Pet = {
     }
 
     const empty = [s.hunger, s.thirst, s.clean].filter((v) => v <= 0).length + (s.fun <= 0 ? 0.5 : 0);
-    if (empty > 0) s.health = clamp(s.health - RATES.healthLoss * empty * dtH);
+    if (empty > 0) s.health = clamp(s.health - RATES.healthLoss * empty * dtH * k);
     else if (s.hunger > 40 && s.thirst > 40 && s.clean > 30) s.health = clamp(s.health + RATES.healthGain * dtH);
 
     // Moyenne glissante de la qualité des soins (sur environ une journée) : décide de l'évolution adulte
@@ -228,7 +253,7 @@ const Pet = {
 
   mood(s) {
     if (s.dead) return 'dead';
-    if (s.sleeping) return 'sleep';
+    if (s.sleeping || s.paused) return 'sleep';
     if (Pet.isSick(s)) return 'sick';
     const low = Math.min(s.hunger, s.thirst, s.fun, s.clean, s.energy);
     if (low < 20) return 'sad';
@@ -238,7 +263,7 @@ const Pet = {
 
   // Ce que le petit être réclame, pour la bulle de dialogue
   need(s) {
-    if (s.dead || s.sleeping) return null;
+    if (s.dead || s.sleeping || s.paused) return null;
     if (Pet.isSick(s)) return 'Je ne me sens pas bien… 🤒';
     if (s.thirst < 20) return 'J\'ai soif ! 💧';
     if (s.hunger < 20) return 'J\'ai faim ! Donne-moi un fichier 📄';

@@ -115,7 +115,7 @@ const Sound = (() => {
     enabled: true,
     // name : nom d'un effet, ou 'voice' pour le cri de l'animal
     play(name, species) {
-      if (!this.enabled) return;
+      if (!this.enabled || this.muted) return;
       try {
         if (name === 'voice' || name === 'love') (voices[species] || voices.chat)();
         else if (effects[name]) effects[name]();

@@ -26,5 +26,9 @@ contextBridge.exposeInMainWorld('desk', {
   onYarn: (cb) => ipcRenderer.on('yarn', (_e, info) => cb(info)),
   yarnKick: (dir) => ipcRenderer.send('yarn-kick', dir),
   yarnToggle: () => ipcRenderer.send('yarn-toggle'),
+  onFurniture: (cb) => ipcRenderer.on('furniture', (_e, f) => cb(f)),
+  bowlUse: (what) => ipcRenderer.invoke('bowl-use', what),
+  exportPet: (state) => ipcRenderer.invoke('export-pet', state),
+  onDnd: (cb) => ipcRenderer.on('dnd', (_e, on) => cb(on)),
   onMeet: (cb) => ipcRenderer.on('meet', (_e, info) => cb(info)),
 });

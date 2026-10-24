@@ -19,6 +19,11 @@ Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper p
   ils se font un câlin, jouent à chat (l'un fuit, l'autre poursuit) ou sautent ensemble.
 - 🧶 **Pelote de laine** (menu de l'icône ou bouton jouer) : les animaux courent après et lui donnent des coups de patte ;
   elle se déroule en roulant. Cliquer dessus pour la rembobiner.
+- 🥣 **Gamelle** (menu de l'icône) : il va y manger et boire tout seul. Clic pour la remplir, glisser pour la déplacer.
+- 🏖️ **Pause vacances** (réglages, ou menu de l'icône pour tous) : il ne vieillit pas et n'a ni faim ni soif pendant l'absence.
+- 🔕 **Ne pas déranger** (menu de l'icône) : plus de bruit, de bulles ni de promenades.
+- **Rythme de vie** (réglages) : zen, normal ou exigeant.
+- 💾 **Exporter** un animal dans un fichier (réglages) et l'**importer** sur un autre ordinateur (menu de l'icône).
 - L'icône près de l'horloge (barre des menus sur Mac) permet de le cacher, de le ramener, d'en adopter un autre ou de quitter.
 
 **Fêtes** : décors et surprises aux bonnes dates — Halloween (citrouille, chauves-souris), Noël (neige, sapin,

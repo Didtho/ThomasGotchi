@@ -32,6 +32,8 @@ let hungryLook = false;
 let snoreTick = 0;
 let unlockTick = 0;
 let pendingMemorials = []; // souvenirs à transmettre au prochain œuf
+let furn = null; // gamelle : { bowl: { x, food, water } }
+let dnd = false; // mode « ne pas déranger »
 let festivity = null; // fête du moment (voir seasons.js), recalculée chaque minute
 let cursor = null; // position de la souris par rapport à la fenêtre (envoyée par main.js)
 let yarnInfo = null; // pelote de laine sortie : { x (par rapport à la fenêtre), moving }
@@ -44,6 +46,8 @@ function save() {
 
 function say(text, ms = 3800) {
   if (!text) return;
+  // « Ne pas déranger » : il ne parle que si on est en train de s'occuper de lui
+  if (dnd && panel.classList.contains('hidden') && !modalIsOpen()) return;
   bubble.textContent = text;
   bubble.classList.remove('hidden');
   bubbleUntil = performance.now() + ms;
@@ -188,7 +192,7 @@ function frame(now) {
 // ---------- Promenade sur le bureau ----------
 
 function canWander(allowedAnim) {
-  return state && !state.dead && !state.sleeping && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
+  return state && !state.dead && !state.sleeping && !state.paused && !dnd && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
     !dragging && panel.classList.contains('hidden') && !modalIsOpen();
 }
 
@@ -208,6 +212,13 @@ function startWalk(dir, steps, speed = 2) {
 function wander(now) {
   if (walking) {
     // En chassant la pelote : arrivé tout près, il bondit dessus
+    // Arrivé à la gamelle
+    if (walking.target === 'bowl' && furn && Math.abs(furn.bowl.x - 120) < 25 && canWander(walking.anim)) {
+      const w = walking;
+      walking = null;
+      arriveFurniture(w.target, w.what);
+      return;
+    }
     if (walking.target === 'yarn' && yarnInfo && Math.abs(yarnInfo.x - 120) < 45 && canWander(walking.anim)) {
       walking = null;
       pounceYarn();
@@ -231,6 +242,11 @@ function wander(now) {
       }
     });
     return;
+  }
+  // Faim ou soif : il va se servir à la gamelle
+  if (furn && canWander() && now > nextWalkAt) {
+    if (state.hunger < 55 && furn.bowl.food >= 10) return goToFurniture('bowl', 'food', now);
+    if (state.thirst < 55 && furn.bowl.water >= 10) return goToFurniture('bowl', 'water', now);
   }
   if (yarnInfo && canWander() && state.energy > 15 && now > nextWalkAt) {
     chaseYarn(now);
@@ -260,6 +276,54 @@ function wander(now) {
     play(trick.anim, trick.dur);
     if (Math.random() < 0.4) say(trick.say[Math.floor(Math.random() * trick.say.length)], 1800);
   }
+}
+
+// ---------- Gamelle ----------
+
+function goToFurniture(kind, what, now) {
+  const dx = furn[kind].x - 120;
+  nextWalkAt = now + 2000;
+  if (Math.abs(dx) < 25) return arriveFurniture(kind, what);
+  startWalk(dx > 0 ? 1 : -1, Math.min(220, Math.ceil(Math.abs(dx) / 3)), 3);
+  walking.target = kind;
+  walking.what = what;
+}
+
+function arriveFurniture(kind, what) {
+  desk.bowlUse(what).then((amount) => {
+    if (!amount) return say('La gamelle est vide ! 🥺');
+    if (what === 'water') {
+      state.thirst = Math.min(100, state.thirst + amount);
+      play('drink', 2000);
+      say('Glou glou… 💧', 2000);
+    } else {
+      state.hunger = Math.min(100, state.hunger + amount);
+      play('eat', 1800);
+      say('Miam, des croquettes ! 😋', 2000);
+    }
+    save();
+  });
+}
+
+// ---------- Pause vacances ----------
+
+function setPause(on) {
+  if (!state || state.dead || Pet.isEgg(state)) return;
+  if (on && !state.paused) {
+    Pet.pause(state);
+    walking = null;
+    say('Bonnes vacances ! À bientôt 🏖️', 4000);
+  } else if (!on && state.paused) {
+    Pet.resume(state);
+    play('stretch', 1500);
+    say('Te revoilà ! C\'étaient de bonnes vacances ? 🏖️', 4000);
+  }
+  updatePauseButton();
+  save();
+}
+
+function updatePauseButton() {
+  $('set-pause').textContent = state && state.paused ? '▶ Reprendre la vie' : '🏖️ Pause vacances';
 }
 
 // ---------- Pelote de laine ----------
@@ -426,7 +490,7 @@ function logic() {
     Sound.play('alert');
     say(need, 5000);
   }
-  if (Pet.isSick(state) && now - lastNotifAt > 3 * 3600 * 1000 && 'Notification' in window) {
+  if (!dnd && Pet.isSick(state) && now - lastNotifAt > 3 * 3600 * 1000 && 'Notification' in window) {
     lastNotifAt = now;
     new Notification('ThomasGotchi', { body: `${state.name} est malade ! Viens vite t'occuper ${Pet.g(state, 'de lui', 'd\'elle')}.` });
   }
@@ -442,7 +506,7 @@ function logic() {
 // ---------- Panneau des jauges ----------
 
 function updatePanel() {
-  $('pet-name').textContent = state.name;
+  $('pet-name').textContent = state.name + (state.paused ? ' 🏖️' : '') + (dnd ? ' 🔕' : '');
   $('pet-age').textContent = Pet.ageText(state);
   for (const key of ['hunger', 'thirst', 'energy', 'fun', 'clean', 'health']) {
     const v = state[key];
@@ -469,6 +533,7 @@ function scheduleHide() {
 
 function doAction(act) {
   if (!state) return;
+  if (state.paused && act !== 'settings') { say('Je suis en vacances 🏖️ (Réglages pour reprendre)'); return; }
   let r;
   switch (act) {
     case 'feed': say('Glisse un fichier sur moi pour me nourrir ! 📄'); return;
@@ -554,6 +619,7 @@ document.addEventListener('contextmenu', (e) => {
 
 function clickPet() {
   if (!state || state.dead) return;
+  if (state.paused) { say('Je suis en vacances 🏖️'); return; }
   if (Pet.isEgg(state)) { say('Toc toc… 🥚'); return; }
   if (state.sleeping) { say('Zzz… chuuut…'); return; }
   const r = Pet.pet(state);
@@ -627,6 +693,7 @@ document.addEventListener('drop', (e) => {
   }
   meals.slice(0, 5).forEach((meal, i) => {
     setTimeout(() => {
+      if (state.paused) return say('Je suis en vacances 🏖️');
       const r = Pet.feed(state, meal);
       if (r.ok) checkUnlocks();
       if (r.msg) say(r.msg, 3500);
@@ -788,6 +855,8 @@ async function openSettings() {
   bindChoices(card.querySelector('[data-group=style]'), state.style, (v) => { state.style = v; applyStyle(v); save(); });
   bindChoices(card.querySelector('[data-group=species]'), state.species || 'chat', (v) => { state.species = v; save(); });
   bindChoices(card.querySelector('[data-group=gender]'), state.gender || 'm', (v) => { state.gender = v; save(); });
+  bindChoices(card.querySelector('[data-group=pace]'), state.pace || 'normal', (v) => { state.pace = v; save(); });
+  updatePauseButton();
   buildAccessories(card.querySelector('[data-group=accessory]'));
   buildSwatches(card.querySelector('[data-group=color]'), state.color, (v) => { state.color = v; save(); });
   $('set-login').checked = await desk.getLogin();
@@ -832,7 +901,23 @@ function showDead() {
 }
 $('dead-ok').addEventListener('click', openNew);
 
-desk.onMenu((action) => { if (action === 'settings') openSettings(); });
+desk.onMenu((action) => {
+  if (action === 'settings') openSettings();
+  if (action === 'pause') setPause(true);
+  if (action === 'resume') setPause(false);
+});
+
+$('set-pause').addEventListener('click', () => setPause(!state.paused));
+$('set-export').addEventListener('click', async () => {
+  if (await desk.exportPet(state)) say(`${state.name} est sauvegardé${Pet.g(state, '', 'e')} dans un fichier 💾`);
+});
+
+desk.onFurniture((f) => { furn = f; });
+desk.onDnd((on) => {
+  dnd = on;
+  Sound.muted = on;
+  if (on) walking = null;
+});
 
 desk.onCursor((pos) => { cursor = pos; });
 
