@@ -491,23 +491,50 @@ function drawAccessory(ctx, kind, cx, g, v) {
   }
 }
 
-// Bonnet de nuit quand il dort le soir
-function drawNightcap(ctx, cx, g, t) {
+// Bonnet de nuit quand il dort le soir : il coiffe le haut de la tête et sa pointe retombe sur le côté
+function drawNightcap(ctx, cx, g, t, species) {
   const { r, headRx, headRy, headCy } = g;
-  const baseY = headCy - headRy * 0.62;
-  const sway = Math.sin(t * 1.2) * 3;
+  const sway = Math.sin(t * 1.2) * 2;
+  // Le lapin le porte entre ses longues oreilles ; chat et ourson ont les oreilles dessous
+  const [a1, a2] = species === 'lapin' ? [Math.PI * 1.25, Math.PI * 1.75] : [Math.PI * 1.1, Math.PI * 1.9];
+  const at = (a, k) => [cx + Math.cos(a) * headRx * k, headCy + Math.sin(a) * headRy * k];
+  const [lx, ly] = at(a1, 1.04);
+  const [rx, ry] = at(a2, 1.04);
+  const top = headCy - headRy;
+  const tipX = cx + headRx * 1.05 + sway;
+  const tipY = headCy - headRy * 0.25;
+
   ctx.beginPath();
-  ctx.moveTo(cx - headRx * 0.62, baseY + 4);
-  ctx.quadraticCurveTo(cx - headRx * 0.1, baseY - r * 0.9, cx + headRx * 0.95 + sway, baseY - r * 0.35);
-  ctx.quadraticCurveTo(cx + headRx * 0.3, baseY - r * 0.3, cx + headRx * 0.62, baseY + 4);
+  ctx.moveTo(lx, ly);
+  ctx.bezierCurveTo(cx - headRx * 0.5, top - r * 0.75, cx + headRx * 0.35, top - r * 0.95, tipX, tipY);
+  ctx.quadraticCurveTo(cx + headRx * 0.75, top - r * 0.15, rx, ry);
+  ctx.ellipse(cx, headCy, headRx * 1.04, headRy * 1.04, 0, a2, a1, true);
   ctx.closePath();
   ctx.fillStyle = '#6f8fe8';
   ctx.fill();
   ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
   ctx.strokeStyle = INK;
   ctx.stroke();
-  ellipse(ctx, cx, baseY + 3, headRx * 0.66, r * 0.12, '#fff', INK, 2);
-  ellipse(ctx, cx + headRx * 0.95 + sway, baseY - r * 0.35, r * 0.13, r * 0.13, '#fff', INK, 2);
+  // Petites étoiles sur le tissu
+  ctx.fillStyle = 'rgba(255,255,255,.7)';
+  for (const [dx, dy] of [[-0.25, -0.25], [0.2, -0.45], [0.55, -0.2]]) {
+    ctx.beginPath();
+    ctx.arc(cx + dx * headRx, top + dy * r, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Revers blanc qui suit l'arrondi du crâne
+  ctx.beginPath();
+  ctx.ellipse(cx, headCy, headRx * 1.06, headRy * 1.06, 0, a1, a2);
+  ctx.ellipse(cx, headCy, headRx * 0.88, headRy * 0.84, 0, a2, a1, true);
+  ctx.closePath();
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ellipse(ctx, tipX, tipY + r * 0.05, r * 0.14, r * 0.14, '#fff', INK, 2);
 }
 
 // Poils longs : joues ébouriffées qui dépassent de la tête
@@ -758,10 +785,10 @@ function drawCreature(ctx, v) {
   // Les chapeaux laissent la place au bonnet de nuit quand il dort
   const hat = ['couronne', 'sorciere', 'noel'].includes(v.accessory);
   if (v.accessory && v.mood !== 'dead' && !(hat && v.nightcap)) drawAccessory(ctx, v.accessory, cx, g, v);
-  if (v.nightcap) drawNightcap(ctx, cx, g, v.t);
+  if (v.nightcap) drawNightcap(ctx, cx, g, v.t, species);
 
   // Adulte bien soigné : une barrette étoile sur la tête
-  if (v.stage === 'adult' && v.mood !== 'dead' && v.care >= 55) {
+  if (v.stage === 'adult' && v.mood !== 'dead' && v.care >= 55 && !v.nightcap) {
     const sx = cx + headRx * 0.5, sy = headCy - headRy * 0.72;
     ctx.beginPath();
     for (let i = 0; i < 10; i++) {

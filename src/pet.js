@@ -195,12 +195,13 @@ const Pet = {
     if (s.sleeping && s.energy >= 100 && !s.nightSleep) { s.sleeping = false; events.push('wake'); }
     if (!s.sleeping && s.energy <= 0) { s.sleeping = true; events.push('collapse'); }
 
-    if (s.peeAt && now >= s.peeAt) {
+    // Pendant son sommeil, il se retient jusqu'au réveil
+    if (s.peeAt && now >= s.peeAt && !s.sleeping) {
       s.peeAt = null;
       if (s.poops < MAX_POOPS) { s.poops++; events.push('pee'); }
     }
 
-    if (s.poopAt && now >= s.poopAt) {
+    if (s.poopAt && now >= s.poopAt && !s.sleeping) {
       s.poopAt = null;
       if (s.poops < MAX_POOPS) { s.poops++; events.push('poop'); }
     }
