@@ -33,6 +33,7 @@ let snoreTick = 0;
 let unlockTick = 0;
 let pendingMemorials = []; // souvenirs à transmettre au prochain œuf
 let cursor = null; // position de la souris par rapport à la fenêtre (envoyée par main.js)
+let yarnInfo = null; // pelote de laine sortie : { x (par rapport à la fenêtre), moving }
 
 // ---------- Utilitaires ----------
 
@@ -203,6 +204,12 @@ function startWalk(dir, steps, speed = 2) {
 
 function wander(now) {
   if (walking) {
+    // En chassant la pelote : arrivé tout près, il bondit dessus
+    if (walking.target === 'yarn' && yarnInfo && Math.abs(yarnInfo.x - 120) < 45 && canWander(walking.anim)) {
+      walking = null;
+      pounceYarn();
+      return;
+    }
     if (!canWander(walking.anim) || walking.steps <= 0) {
       walking = null;
       facing = 0;
@@ -220,6 +227,10 @@ function wander(now) {
         facing = walking.dir;
       }
     });
+    return;
+  }
+  if (yarnInfo && canWander() && state.energy > 15 && now > nextWalkAt) {
+    chaseYarn(now);
     return;
   }
   if (now < nextWalkAt) return;
@@ -246,6 +257,29 @@ function wander(now) {
     play(trick.anim, trick.dur);
     if (Math.random() < 0.4) say(trick.say[Math.floor(Math.random() * trick.say.length)], 1800);
   }
+}
+
+// ---------- Pelote de laine ----------
+
+function chaseYarn(now) {
+  const dx = yarnInfo.x - 120;
+  nextWalkAt = now + 700 + Math.random() * 1300;
+  if (Math.abs(dx) < 45) return pounceYarn();
+  // Il court quand elle est loin ou qu'elle file, sinon il trottine
+  const speed = Math.abs(dx) > 300 || yarnInfo.moving ? 5 : 3;
+  startWalk(dx > 0 ? 1 : -1, Math.min(160, Math.ceil(Math.abs(dx) / speed)), speed);
+  walking.target = 'yarn';
+}
+
+// Coup de patte dans la pelote, qui part rouler
+function pounceYarn() {
+  const dir = yarnInfo.x >= 120 ? 1 : -1;
+  facing = dir;
+  play('jump', 800);
+  setTimeout(() => desk.yarnKick(dir), 350);
+  state.fun = Math.min(100, state.fun + 2);
+  state.energy = Math.max(0, state.energy - 0.5);
+  if (Math.random() < 0.25) say(['Attrape !', 'À moi la pelote !', 'Hop, un coup de patte !'][Math.floor(Math.random() * 3)], 1800);
 }
 
 // ---------- Rythme du jour ----------
@@ -683,6 +717,7 @@ async function openSettings() {
   buildSwatches(card.querySelector('[data-group=color]'), state.color, (v) => { state.color = v; save(); });
   $('set-login').checked = await desk.getLogin();
   $('set-sound').checked = state.sound !== false;
+  $('set-version').textContent = `ThomasGotchi v${await desk.version()}`;
   const count = await desk.petCount();
   $('set-adopt').disabled = count >= 5;
   $('set-release').classList.toggle('hidden', count <= 1);
@@ -735,13 +770,31 @@ desk.onShaken(() => {
 });
 
 // Un autre animal passe tout près : petit câlin
-desk.onMeet(({ name, side }) => {
+desk.onYarn((info) => { yarnInfo = info; });
+
+// Un autre animal passe tout près : câlin, jeu du chat (l'un fuit, l'autre poursuit) ou sauts ensemble
+desk.onMeet(({ name, side, game, role }) => {
   if (!state || state.dead || state.sleeping || Pet.isEgg(state) || modalIsOpen()) return;
   walking = null;
   facing = side;
-  play('love', 1600);
   state.fun = Math.min(100, state.fun + 5);
-  say(`Coucou ${name || 'toi'} ! 💕`);
+  const other = name || 'toi';
+  if (game === 'chase') {
+    if (role === 'flee') {
+      startWalk(-side, 55, 5);
+      say(`Attrape-moi, ${other} ! 😹`, 2200);
+    } else {
+      setTimeout(() => { if (canWander()) startWalk(side, 60, 5); }, 450);
+      say('Je vais t\'attraper !', 2200);
+    }
+  } else if (game === 'jump') {
+    play('jump', 800);
+    setTimeout(() => { if (!anim) play('jump', 800); }, 900);
+    say(role === 'flee' ? 'Hop hop !' : `On saute, ${other} ?`, 1800);
+  } else {
+    play('love', 1600);
+    say(`Coucou ${other} ! 💕`);
+  }
 });
 
 desk.onPoopCleaned((id) => {

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -9,6 +9,7 @@ const isMac = process.platform === 'darwin';
 
 let tray = null;
 let updateUrl = null; // page de la nouvelle version (Mac : mise à jour manuelle)
+let updateState = null; // Windows : { status: 'downloading' | 'ready', version }
 
 // Chaque petit animal a sa propre fenêtre et ses propres fichiers de sauvegarde.
 // p = { id, win, name, active, expandUp, expandDown, dragTimer, ignoring }
@@ -174,6 +175,8 @@ function buildTrayMenu() {
     ? { label: 'Réglages…', click: () => openSettings(list[0]) }
     : { label: 'Réglages', submenu: list.map((p) => ({ label: p.name || 'Œuf', click: () => openSettings(p) })) };
   tray.setContextMenu(Menu.buildFromTemplate([
+    { label: `ThomasGotchi v${app.getVersion()}`, enabled: false },
+    { type: 'separator' },
     { label: anyVisible() ? 'Cacher' : 'Afficher', click: toggleVisible },
     {
       label: 'Ramener au coin de l\'écran',
@@ -181,7 +184,8 @@ function buildTrayMenu() {
     },
     settings,
     { label: 'Adopter un autre animal', enabled: list.length < MAX_PETS, click: adoptPet },
-    ...(updateUrl ? [{ label: '⬇ Nouvelle version disponible', click: () => shell.openExternal(updateUrl) }] : []),
+    { label: yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶', click: toggleYarn },
+    updateMenuItem(),
     { type: 'separator' },
     {
       label: 'Lancer au démarrage', type: 'checkbox', checked: login,
@@ -196,7 +200,7 @@ function createTray() {
   let icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png'));
   icon = icon.resize({ width: isMac ? 18 : 16, height: isMac ? 18 : 16 });
   tray = new Tray(icon);
-  tray.setToolTip('ThomasGotchi');
+  tray.setToolTip(`ThomasGotchi v${app.getVersion()}`);
   if (!isMac) tray.on('click', toggleVisible);
   buildTrayMenu();
 }
@@ -327,6 +331,7 @@ ipcMain.handle('set-login', (_e, on) => {
   buildTrayMenu();
 });
 ipcMain.handle('pet-count', () => pets.size);
+ipcMain.handle('get-version', () => app.getVersion());
 ipcMain.on('adopt', adoptPet);
 ipcMain.on('release', (e) => { const p = petOf(e.sender); if (p) releasePet(p); });
 ipcMain.on('quit', () => app.quit());
@@ -419,6 +424,109 @@ ipcMain.on('poop-clear-all', (e) => {
   for (const poop of poopWindows.values()) if (poop.owner === p.id && !poop.win.isDestroyed()) poop.win.close();
 });
 
+// ---- Pelote de laine : roule en bas de l'écran, les animaux courent après ----
+
+const YARN_H = 90;
+let yarn = null; // { win, wa, x (écran), vx, angle, trail, unrolled, ticks }
+
+const yarnRadius = (y) => Math.max(5, 15 - y.unrolled / 180); // elle rapetisse en se déroulant
+
+function spawnYarn() {
+  const first = [...pets.values()].find(alive);
+  const wa = first ? screen.getDisplayMatching(first.win.getBounds()).workArea : screen.getPrimaryDisplay().workArea;
+  const win = new BrowserWindow({
+    x: wa.x,
+    y: wa.y + wa.height - YARN_H,
+    width: wa.width,
+    height: YARN_H,
+    transparent: true,
+    frame: false,
+    resizable: false,
+    movable: false,
+    maximizable: false,
+    minimizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    hasShadow: false,
+    focusable: false,
+    alwaysOnTop: true,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload-yarn.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  // Un cran en dessous des animaux, pour qu'ils passent devant
+  win.setAlwaysOnTop(true, 'floating');
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.setIgnoreMouseEvents(true, { forward: true });
+  win.loadFile(path.join(__dirname, 'src', 'yarn.html'));
+  const start = first ? first.win.getBounds().x + W / 2 + 110 : wa.x + wa.width / 2;
+  const x = Math.min(Math.max(start, wa.x + 30), wa.x + wa.width - 30);
+  yarn = { win, wa, x, vx: 0, angle: 0, trail: [x], unrolled: 0, ticks: 0 };
+  win.on('closed', () => { if (yarn && yarn.win === win) yarn = null; });
+  buildTrayMenu();
+}
+
+function removeYarn() {
+  if (!yarn) return;
+  const w = yarn.win;
+  yarn = null;
+  if (!w.isDestroyed()) w.close();
+  for (const p of pets.values()) if (alive(p)) p.win.webContents.send('yarn', null);
+  buildTrayMenu();
+}
+
+function toggleYarn() {
+  if (yarn) removeYarn(); else spawnYarn();
+}
+
+function yarnTick() {
+  if (!yarn || yarn.win.isDestroyed()) return;
+  const y = yarn;
+  const r = yarnRadius(y);
+  const moving = Math.abs(y.vx) > 0.05;
+  if (moving) {
+    y.x += y.vx;
+    y.vx *= 0.965;
+    const min = y.wa.x + r + 2, max = y.wa.x + y.wa.width - r - 2;
+    if (y.x < min) { y.x = min; y.vx = -y.vx * 0.6; }
+    if (y.x > max) { y.x = max; y.vx = -y.vx * 0.6; }
+    y.angle += y.vx / r;
+    if (r > 5) {
+      y.unrolled += Math.abs(y.vx);
+      const last = y.trail[y.trail.length - 1];
+      if (Math.abs(y.x - last) > 8) {
+        y.trail.push(y.x);
+        if (y.trail.length > 600) y.trail.shift();
+      }
+    }
+  } else {
+    y.vx = 0;
+  }
+  // Pelote immobile : on ne redessine qu'une fois par demi-seconde
+  if (moving || ++y.ticks % 15 === 0) {
+    y.win.webContents.send('yarn-state', { x: y.x - y.wa.x, r, angle: y.angle, trail: y.trail.map((t) => t - y.wa.x) });
+  }
+  for (const p of pets.values()) {
+    if (!alive(p) || !p.win.isVisible()) continue;
+    p.win.webContents.send('yarn', { x: y.x - p.win.getBounds().x, moving: Math.abs(y.vx) > 0.5 });
+  }
+}
+
+ipcMain.on('yarn-toggle', toggleYarn);
+ipcMain.on('yarn-kick', (_e, dir) => { if (yarn) yarn.vx += dir * (6 + Math.random() * 6); });
+ipcMain.on('yarn-rewind', () => {
+  if (!yarn) return;
+  yarn.trail = [yarn.x];
+  yarn.unrolled = 0;
+  yarn.vx = 0;
+});
+ipcMain.on('yarn-ignore', (_e, ignore) => {
+  if (yarn && !yarn.win.isDestroyed()) yarn.win.setIgnoreMouseEvents(ignore, { forward: true });
+});
+
 // ---- Ce que les animaux perçoivent autour d'eux ----
 
 // Position de la souris, pour que leurs yeux la suivent
@@ -447,8 +555,9 @@ function checkMeetings() {
       const key = [a.id, b.id].sort().join('|');
       if (!close || Date.now() - (lastMeet.get(key) || 0) < 60000) continue;
       lastMeet.set(key, Date.now());
-      a.win.webContents.send('meet', { name: b.name, side: bb.x > ba.x ? 1 : -1 });
-      b.win.webContents.send('meet', { name: a.name, side: ba.x > bb.x ? 1 : -1 });
+      const game = ['hug', 'chase', 'jump'][Math.floor(Math.random() * 3)];
+      a.win.webContents.send('meet', { name: b.name, side: bb.x > ba.x ? 1 : -1, game, role: 'flee' });
+      b.win.webContents.send('meet', { name: a.name, side: ba.x > bb.x ? 1 : -1, game, role: 'chase' });
     }
   }
 }
@@ -466,18 +575,58 @@ function newer(a, b) {
   return false;
 }
 
-async function checkForUpdates() {
+function notify(body) {
+  if (Notification.isSupported()) new Notification({ title: 'ThomasGotchi', body }).show();
+}
+
+// Ligne du menu de l'icône selon l'état de la mise à jour
+function updateMenuItem() {
+  if (updateState && updateState.status === 'ready') {
+    return { label: `🔄 Redémarrer pour installer la v${updateState.version}`, click: () => require('electron-updater').autoUpdater.quitAndInstall() };
+  }
+  if (updateState && updateState.status === 'downloading') {
+    return { label: `⬇ Téléchargement de la v${updateState.version}…`, enabled: false };
+  }
+  if (updateUrl) return { label: '⬇ Nouvelle version disponible', click: () => shell.openExternal(updateUrl) };
+  return { label: 'Rechercher une mise à jour', enabled: app.isPackaged, click: () => checkForUpdates(true) };
+}
+
+function setupAutoUpdater() {
+  if (isMac || !app.isPackaged) return;
+  const { autoUpdater } = require('electron-updater');
+  autoUpdater.on('update-available', (info) => {
+    updateState = { status: 'downloading', version: info.version };
+    buildTrayMenu();
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    updateState = { status: 'ready', version: info.version };
+    buildTrayMenu();
+    notify(`La version ${info.version} est prête : elle s'installera à la prochaine ouverture (ou via le menu de l'icône).`);
+  });
+  autoUpdater.on('error', () => {
+    if (updateState && updateState.status === 'downloading') updateState = null;
+    buildTrayMenu();
+  });
+}
+
+// manual : lancé depuis le menu, on prévient aussi quand il n'y a rien de nouveau
+async function checkForUpdates(manual = false) {
   if (!app.isPackaged) return;
   try {
     if (isMac) {
       const res = await net.fetch('https://api.github.com/repos/Didtho/ThomasGotchi/releases/latest');
       const tag = ((await res.json()).tag_name || '').replace(/^v/, '');
       if (tag && newer(tag, app.getVersion())) { updateUrl = RELEASES; buildTrayMenu(); }
+      else if (manual) notify(`Tu as déjà la dernière version (v${app.getVersion()}).`);
     } else {
       const { autoUpdater } = require('electron-updater');
-      await autoUpdater.checkForUpdatesAndNotify();
+      const result = await autoUpdater.checkForUpdates();
+      const latest = result && result.updateInfo && result.updateInfo.version;
+      if (manual && (!latest || !newer(latest, app.getVersion()))) notify(`Tu as déjà la dernière version (v${app.getVersion()}).`);
     }
-  } catch { /* hors ligne : on réessaiera plus tard */ }
+  } catch {
+    if (manual) notify('Impossible de vérifier les mises à jour (pas de connexion ?).');
+  }
 }
 
 // ---- Cycle de vie ----
@@ -499,6 +648,8 @@ app.whenReady().then(() => {
   setInterval(keepOnTop, 4000);
   setInterval(sendCursor, 80);
   setInterval(checkMeetings, 1000);
+  setInterval(yarnTick, 33);
+  setupAutoUpdater();
   checkForUpdates();
   setInterval(checkForUpdates, 6 * 3600 * 1000);
 });

@@ -39,6 +39,9 @@ document.querySelectorAll('[data-game]').forEach((b) => b.addEventListener('clic
     doAction('ball');
   } else if (game === 'catch') {
     if (canPlay()) Catch.start(); else closeModal();
+  } else if (game === 'yarn') {
+    closeModal();
+    desk.yarnToggle();
   } else if (game === 'cups') {
     if (canPlay()) Cups.start(); else closeModal();
   }

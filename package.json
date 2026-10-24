@@ -1,15 +1,15 @@
 {
   "name": "thomasgotchi",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Un petit être virtuel façon Tamagotchi qui vit sur le bureau (Windows et Mac)",
   "main": "main.js",
   "author": "ThomasGotchi",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "icon": "node scripts/make-icon.js",
-    "dist": "node scripts/make-icon.js && electron-builder --win --publish never",
-    "dist:mac": "node scripts/make-icon.js && electron-builder --mac --publish never"
+    "icon": "electron scripts/make-icon.js",
+    "dist": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never"
   },
   "build": {
     "appId": "com.thomasgotchi.app",
@@ -18,6 +18,7 @@
       "main.js",
       "preload.js",
       "preload-poop.js",
+      "preload-yarn.js",
       "src/**",
       "assets/**"
     ],
@@ -42,8 +43,11 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "ThomasGotchi"
+      "shortcutName": "ThomasGotchi",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     },
     "publish": [
       {

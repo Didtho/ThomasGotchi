@@ -15,7 +15,10 @@ Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper p
 - 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets.
 - 📖 **Carnet** (dans les réglages) : âge, plat préféré, câlins, souvenirs des anciens compagnons.
 - 🎁 **Accessoires** à gagner : nœud papillon, lunettes, fleur, couronne, chapeau de sorcière, bonnet de Noël.
-- **Plusieurs animaux** (jusqu'à 5) : « Adopter un autre animal » dans le menu de l'icône. Ils se font un câlin quand ils se croisent.
+- **Plusieurs animaux** (jusqu'à 5) : « Adopter un autre animal » dans le menu de l'icône. Quand ils se croisent,
+  ils se font un câlin, jouent à chat (l'un fuit, l'autre poursuit) ou sautent ensemble.
+- 🧶 **Pelote de laine** (menu de l'icône ou bouton jouer) : les animaux courent après et lui donnent des coups de patte ;
+  elle se déroule en roulant. Cliquer dessus pour la rembobiner.
 - L'icône près de l'horloge (barre des menus sur Mac) permet de le cacher, de le ramener, d'en adopter un autre ou de quitter.
 
 Ses besoins se lisent sur son visage : langue pendante quand il a soif, bave quand il a faim, thermomètre quand il
@@ -40,7 +43,8 @@ Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien 
 
 Dernière version : https://github.com/Didtho/ThomasGotchi/releases/latest
 (Windows : le fichier `.exe`, Mac : le fichier `.dmg`).
-Sur Windows, l'application se met ensuite à jour toute seule. Sur Mac, le menu de l'icône signale les nouvelles versions.
+Sur Windows, l'application s'installe dans Program Files et se met ensuite à jour toute seule
+(le numéro de version et l'état de la mise à jour sont affichés dans le menu de l'icône). Sur Mac, le menu de l'icône signale les nouvelles versions.
 
 ## Développement
 
@@ -49,6 +53,7 @@ npm install
 npm start          # lancer l'application
 npm run dist       # installateur Windows -> dist/
 npm run dist:mac   # installateur Mac -> dist/ (à lancer sur un Mac)
+npm run icon       # régénère assets/icon.png à partir du dessin de l'animal
 ```
 
 Publier une nouvelle version : changer "version" dans `package.json`, puis créer et pousser le tag correspondant
