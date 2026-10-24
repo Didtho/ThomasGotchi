@@ -10,7 +10,8 @@ Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper p
   Images = friandise, PDF / documents = vrai repas, vidéos = festin, musique = dessert, programmes (.exe…) = mal au ventre !
 - 🥤 boire · 🌙 dormir / réveiller · 🎾 jouer · 🛁 laver · 💊 soigner · ⚙️ réglages
 - **Clic** : un câlin. **Glisser** : le déplacer. **Clic droit** : réglages.
-- **Crottes** 💩 : il fait ses besoins sur le bureau. Cliquer sur une crotte la nettoie (ou le bain pour tout nettoyer).
+- **Crottes et pipi** 💩💦 : il fait ses besoins sur le bureau (et lève la patte contre le bord de l'écran).
+  Cliquer dessus pour nettoyer, ou le bain pour tout nettoyer.
 - 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets.
 - 📖 **Carnet** (dans les réglages) : âge, plat préféré, câlins, souvenirs des anciens compagnons.
 - 🎁 **Accessoires** à gagner : nœud papillon, lunettes, fleur, couronne, chapeau de sorcière, bonnet de Noël.
@@ -31,6 +32,9 @@ Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien 
 - Animal : chat, lapin ou ourson
 - Style : mignon ou pixel rétro
 - Pelage : rose, menthe, ciel, citron, lavande, noir, noir et blanc, roux tigré, gris tacheté
+- Genre : il ou elle (les phrases s'accordent)
+- Modèles prêts à adopter, d'après les chats de la maison : **Simba** (roux crème et blanc),
+  **Snoop** (tigrée grise et pêche) et **Grisette** (noire et blanche à poils longs)
 
 ## Télécharger
 

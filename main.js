@@ -280,8 +280,8 @@ function verticalGap(wa, y) {
   return 0;
 }
 
-// Promenade : il peut passer d'un écran à l'autre. Il est bloqué seulement quand le milieu
-// de son corps sortirait de tous les écrans.
+// Promenade : il peut passer d'un écran à l'autre. Il s'arrête un peu avant le bord extérieur
+// des écrans, pour rester entièrement visible.
 ipcMain.handle('move-by', (e, dx, dy) => {
   const p = petOf(e.sender);
   if (!p || p.dragTimer) return null;
@@ -292,7 +292,9 @@ ipcMain.handle('move-by', (e, dx, dy) => {
     .map((d) => d.workArea)
     .filter((wa) => feetX >= wa.x && feetX < wa.x + wa.width)
     .sort((a, c) => verticalGap(a, feetY) - verticalGap(c, feetY))[0];
-  if (!target) return { blockedLeft: dx < 0, blockedRight: dx > 0 };
+  const ahead = feetX + Math.sign(dx) * 55;
+  const room = screen.getAllDisplays().some(({ workArea: wa }) => ahead >= wa.x && ahead < wa.x + wa.width);
+  if (!target || !room) return { blockedLeft: dx < 0, blockedRight: dx > 0 };
 
   // S'il marchait en bas de l'écran, il reste posé en bas du nouvel écran (même si les hauteurs diffèrent)
   const current = screen.getDisplayMatching(b).workArea;
@@ -334,7 +336,7 @@ ipcMain.on('quit', () => app.quit());
 const POOP = 56;
 const poopWindows = new Map(); // id -> { win, owner }
 
-function createPoop(owner, id, x, y, style) {
+function createPoop(owner, id, x, y, style, kind, edge) {
   const w = new BrowserWindow({
     width: POOP,
     height: POOP,
@@ -361,7 +363,7 @@ function createPoop(owner, id, x, y, style) {
   // Un cran en dessous des animaux, pour qu'ils passent devant en marchant
   w.setAlwaysOnTop(true, 'floating');
   w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  w.loadFile(path.join(__dirname, 'src', 'poop.html'), { query: { style: style || 'cute' } });
+  w.loadFile(path.join(__dirname, 'src', 'poop.html'), { query: { style: style || 'cute', kind: kind || 'poop', edge: edge || '' } });
   poopWindows.set(id, { win: w, owner: owner.id });
   w.on('closed', () => poopWindows.delete(id));
 }
@@ -373,17 +375,20 @@ function onSomeScreen(x, y) {
 }
 
 // Nouvelle crotte à côté de ses pattes ; renvoie sa position pour la sauvegarde
-function poopNextToPet(p, id, side, style) {
+function poopNextToPet(p, id, side, style, kind, edge) {
   const b = p.win.getBounds();
-  const x = Math.round(b.x + W / 2 + side * (75 + Math.random() * 45) - POOP / 2);
+  // Contre le bord de l'écran : juste sous la patte levée ; sinon un peu à côté de lui
+  const dist = edge ? 50 : 75 + Math.random() * 45;
+  const wa = screen.getDisplayMatching(b).workArea;
+  const x = Math.round(Math.min(Math.max(b.x + W / 2 + side * dist - POOP / 2, wa.x), wa.x + wa.width - POOP));
   const y = Math.round(b.y + p.expandUp + H - POOP + 2);
-  createPoop(p, id, x, y, style);
+  createPoop(p, id, x, y, style, kind, edge);
   return { x, y };
 }
 
-ipcMain.handle('poop-add', (e, id, side, style) => {
+ipcMain.handle('poop-add', (e, id, side, style, kind, edge) => {
   const p = petOf(e.sender);
-  return p ? poopNextToPet(p, id, side, style) : null;
+  return p ? poopNextToPet(p, id, side, style, kind, edge) : null;
 });
 
 // Au démarrage : on remet les crottes là où elles étaient (ou près de lui si l'écran a été débranché)
@@ -392,10 +397,10 @@ ipcMain.handle('poop-restore', (e, spots, style) => {
   if (!p) return [];
   return spots.map((s, i) => {
     if (onSomeScreen(s.x, s.y)) {
-      createPoop(p, s.id, s.x, s.y, style);
+      createPoop(p, s.id, s.x, s.y, style, s.kind, s.edge);
       return s;
     }
-    return { id: s.id, ...poopNextToPet(p, s.id, i % 2 ? 1 : -1, style) };
+    return { ...s, ...poopNextToPet(p, s.id, i % 2 ? 1 : -1, style, s.kind, s.edge) };
   });
 });
 

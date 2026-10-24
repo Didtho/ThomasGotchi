@@ -3,6 +3,8 @@
 const INK = '#3b2a3a';
 const params = new URLSearchParams(location.search);
 const pixel = params.get('style') === 'pixel';
+const kind = params.get('kind') || 'poop'; // 'poop' (crotte) ou 'pee' (flaque)
+const edge = params.get('edge'); // pipi contre le bord de l'écran : coulure verticale
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 const scale = pixel ? 0.5 : 1; // en rétro, on dessine en basse résolution puis on agrandit
@@ -43,6 +45,11 @@ function draw(now) {
     return;
   }
 
+  if (kind === 'pee') {
+    drawPuddle(t);
+    setTimeout(() => requestAnimationFrame(draw), 120);
+    return;
+  }
   ellipse(28, 53, 15, 3, 'rgba(0,0,0,.15)');
   for (const [dy, w] of [[0, 14], [-9, 10.5], [-17, 7]]) ellipse(28, 47 + dy, w, 6, '#9a6a43', INK, 2.2);
   ellipse(23, 38, 2.5, 1.6, 'rgba(255,255,255,.45)');
@@ -61,6 +68,27 @@ function draw(now) {
   }
   ctx.globalAlpha = 1;
   setTimeout(() => requestAnimationFrame(draw), 60); // animation lente : quasiment rien pour le processeur
+}
+
+// Flaque jaune ; contre le bord de l'écran, avec une coulure le long du bord
+function drawPuddle(t) {
+  if (edge) {
+    const x = edge === 'left' ? 9 : 47;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(232,196,70,.85)';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(x, 14);
+    ctx.quadraticCurveTo(x + (edge === 'left' ? 3 : -3), 32, x, 48);
+    ctx.stroke();
+  }
+  const cx = edge === 'left' ? 22 : edge === 'right' ? 34 : 28;
+  ellipse(cx, 49, 22, 6.5, 'rgba(244,215,94,.88)', '#c9a530', 1.8);
+  ellipse(cx + 9, 50, 7, 3, 'rgba(244,215,94,.88)');
+  // Reflet qui scintille
+  ctx.globalAlpha = 0.6 + Math.sin(t * 3) * 0.3;
+  ellipse(cx - 8, 47.5, 5, 1.4, '#fffbe0');
+  ctx.globalAlpha = 1;
 }
 
 canvas.addEventListener('click', () => {

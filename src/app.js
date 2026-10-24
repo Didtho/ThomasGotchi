@@ -9,7 +9,7 @@ const modal = $('modal');
 const stageEl = $('stage');
 
 let state = null;
-let draft = { style: 'cute', color: 'rose', species: 'chat' }; // choix en cours dans la fenêtre « nouvel œuf »
+let draft = { style: 'cute', color: 'rose', species: 'chat', gender: 'm' }; // choix en cours dans la fenêtre « nouvel œuf »
 let box = { left: 80, right: 160, top: 200, bottom: 292 };
 let anim = null;
 let animStart = 0;
@@ -215,6 +215,7 @@ function wander(now) {
       walkBusy = false;
       if (!r || !walking) return;
       if ((r.blockedLeft && walking.dir < 0) || (r.blockedRight && walking.dir > 0)) {
+        if (Pet.peeSoon(state)) return peeAgainstEdge(walking.dir);
         walking.dir *= -1;
         facing = walking.dir;
       }
@@ -294,12 +295,13 @@ function logic() {
     say(`Coucou ! Je suis ${state.name} ! 💕`, 5000);
   } else if (before !== after && !state.dead) {
     play('heal', 2000);
-    say(after === 'adult' ? 'Je suis devenu grand ! ⭐' : 'J\'ai grandi ! 🌱', 5000);
+    say(after === 'adult' ? Pet.g(state, 'Je suis devenu grand ! ⭐', 'Je suis devenue grande ! ⭐') : 'J\'ai grandi ! 🌱', 5000);
   }
 
   for (const ev of events) {
     if (ev === 'wake') { play('stretch', 1500); say('Bien dormi ! ☀️'); }
-    if (ev === 'collapse') say('Trop fatigué… je m\'endors…');
+    if (ev === 'collapse') say(Pet.g(state, 'Trop fatigué… je m\'endors…', 'Trop fatiguée… je m\'endors…'));
+    if (ev === 'pee') { addPoop(Math.random() < 0.5 ? -1 : 1, 'pee'); Sound.play('pee'); say('Oups… pipi 💦'); }
     if (ev === 'poop') { addPoop(); Sound.play('poop'); say('Oups… 💩'); }
     if (ev === 'dead') { Sound.play('sad'); save(); showDead(); }
   }
@@ -318,7 +320,7 @@ function logic() {
   }
   if (Pet.isSick(state) && now - lastNotifAt > 3 * 3600 * 1000 && 'Notification' in window) {
     lastNotifAt = now;
-    new Notification('ThomasGotchi', { body: `${state.name} est malade ! Viens vite t'occuper de lui.` });
+    new Notification('ThomasGotchi', { body: `${state.name} est malade ! Viens vite t'occuper ${Pet.g(state, 'de lui', 'd\'elle')}.` });
   }
 
   if (!panel.classList.contains('hidden')) updatePanel();
@@ -453,13 +455,24 @@ function clickPet() {
 // ---------- Crottes sur le bureau ----------
 // Chaque crotte est une petite fenêtre posée à l'endroit où il l'a faite ; un clic dessus la nettoie.
 
-async function addPoop(side = Math.random() < 0.5 ? -1 : 1) {
+// kind : 'poop' (crotte) ou 'pee' (flaque) ; edge : 'left' / 'right' pour un pipi contre le bord de l'écran
+async function addPoop(side = Math.random() < 0.5 ? -1 : 1, kind = 'poop', edge = null) {
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const pos = await desk.poopAdd(id, side, state.style);
+  const pos = await desk.poopAdd(id, side, state.style, kind, edge);
   if (!pos || !state) return;
   state.poopSpots = state.poopSpots || [];
-  state.poopSpots.push({ id, ...pos });
+  state.poopSpots.push({ id, kind, edge, ...pos });
   save();
+}
+
+// Arrivé au bord de l'écran avec une envie pressante : il lève la patte contre le bord
+function peeAgainstEdge(dir) {
+  walking = null;
+  facing = dir;
+  Pet.peeNow(state);
+  play('pee', 2200);
+  say('Je marque mon territoire ! 💦', 2500);
+  setTimeout(() => addPoop(dir, 'pee', dir < 0 ? 'left' : 'right'), 900);
 }
 
 function clearPoops() {
@@ -531,7 +544,7 @@ function buildAccessories(container) {
   container.innerHTML = '';
   const owned = Pet.ACCESSORIES.filter((a) => state.unlocked.includes(a.id));
   if (!owned.length) {
-    container.innerHTML = '<span class="hint">Prends bien soin de lui pour gagner des accessoires !</span>';
+    container.innerHTML = `<span class="hint">Prends bien soin ${Pet.g(state, 'de lui', 'd\'elle')} pour gagner des accessoires !</span>`;
     return;
   }
   for (const a of [{ id: '', icon: '∅', name: 'Aucun' }, ...owned]) {
@@ -613,12 +626,30 @@ function closeModal() {
 
 function openNew() {
   const card = $('modal-new');
-  draft = { style: state ? state.style : 'cute', color: state ? state.color : 'rose', species: (state && state.species) || 'chat' };
+  draft = { style: state ? state.style : 'cute', color: state ? state.color : 'rose', species: (state && state.species) || 'chat', gender: (state && state.gender) || 'm' };
   applyStyle(draft.style);
   $('new-name').value = '';
   bindChoices(card.querySelector('[data-group=style]'), draft.style, (v) => { draft.style = v; applyStyle(v); });
-  bindChoices(card.querySelector('[data-group=species]'), draft.species, (v) => { draft.species = v; });
-  buildSwatches(card.querySelector('[data-group=color]'), draft.color, (v) => { draft.color = v; });
+  const bindDraft = () => {
+    bindChoices(card.querySelector('[data-group=species]'), draft.species, (v) => { draft.species = v; });
+    bindChoices(card.querySelector('[data-group=gender]'), draft.gender, (v) => { draft.gender = v; });
+    buildSwatches(card.querySelector('[data-group=color]'), draft.color, (v) => { draft.color = v; });
+  };
+  bindDraft();
+  // Modèles prêts à adopter : les chats de la maison
+  const presets = $('presets');
+  presets.innerHTML = '';
+  for (const p of Pet.PRESETS) {
+    const b = document.createElement('button');
+    b.textContent = p.icon + ' ' + p.name;
+    b.addEventListener('click', () => {
+      $('new-name').value = p.name;
+      Object.assign(draft, { species: p.species, color: p.color, gender: p.gender });
+      bindDraft();
+      presets.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    });
+    presets.appendChild(b);
+  }
   if (state) {
     const m = Pet.memorial(state);
     pendingMemorials = (state.memorials || []).concat(m ? [m] : []).slice(-12);
@@ -632,11 +663,12 @@ $('new-ok').addEventListener('click', () => {
   const name = $('new-name').value.trim() || 'Didou';
   desk.poopClearAll();
   state = Pet.create(name, draft.style, draft.color, draft.species, pendingMemorials);
+  state.gender = draft.gender;
   Sound.enabled = true;
   applyStyle(state.style);
   closeModal();
   save();
-  say(`Prends soin de cet œuf… il va bientôt éclore !`, 5000);
+  say(`Prends soin de cet œuf… ${Pet.g(state, 'il', 'elle')} va bientôt éclore !`, 5000);
 });
 $('new-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('new-ok').click(); });
 
@@ -646,6 +678,7 @@ async function openSettings() {
   $('set-name').value = state.name;
   bindChoices(card.querySelector('[data-group=style]'), state.style, (v) => { state.style = v; applyStyle(v); save(); });
   bindChoices(card.querySelector('[data-group=species]'), state.species || 'chat', (v) => { state.species = v; save(); });
+  bindChoices(card.querySelector('[data-group=gender]'), state.gender || 'm', (v) => { state.gender = v; save(); });
   buildAccessories(card.querySelector('[data-group=accessory]'));
   buildSwatches(card.querySelector('[data-group=color]'), state.color, (v) => { state.color = v; save(); });
   $('set-login').checked = await desk.getLogin();
@@ -674,7 +707,7 @@ $('set-adopt').addEventListener('click', () => {
   desk.adopt();
 });
 $('set-release').addEventListener('click', () => {
-  if (!confirm(`Laisser partir ${state.name} ? Il s'en ira pour toujours.`)) return;
+  if (!confirm(`Laisser partir ${state.name} ? ${Pet.g(state, 'Il', 'Elle')} s'en ira pour toujours.`)) return;
   desk.poopClearAll();
   desk.release();
 });
@@ -684,7 +717,7 @@ $('set-reset').addEventListener('click', () => {
 });
 
 function showDead() {
-  $('dead-text').textContent = `${state.name} est parti au paradis des pixels après ${Pet.ageText(state)} de vie. Il ne faut pas oublier de le nourrir, de le faire boire et de le laver…`;
+  $('dead-text').textContent = `${state.name} est ${Pet.g(state, 'parti', 'partie')} au paradis des pixels après ${Pet.ageText(state)} de vie. Il ne faut pas oublier de ${Pet.g(state, 'le nourrir, de le faire boire et de le laver', 'la nourrir, de la faire boire et de la laver')}…`;
   openModal('modal-dead');
 }
 $('dead-ok').addEventListener('click', openNew);

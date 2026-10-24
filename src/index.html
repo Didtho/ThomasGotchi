@@ -44,11 +44,18 @@
       <label>Son prénom
         <input id="new-name" maxlength="14" placeholder="Ex : Didou">
       </label>
+      <div class="label">Mes chats</div>
+      <div class="choices" id="presets"></div>
       <div class="label">Animal</div>
       <div class="choices" data-group="species">
         <button data-value="chat">🐱 Chat</button>
         <button data-value="lapin">🐰 Lapin</button>
         <button data-value="ours">🐻 Ourson</button>
+      </div>
+      <div class="label">Genre</div>
+      <div class="choices" data-group="gender">
+        <button data-value="m">♂ Il</button>
+        <button data-value="f">♀ Elle</button>
       </div>
       <div class="label">Style</div>
       <div class="choices" data-group="style">
@@ -71,6 +78,11 @@
         <button data-value="lapin">🐰 Lapin</button>
         <button data-value="ours">🐻 Ourson</button>
       </div>
+      <div class="label">Genre</div>
+      <div class="choices" data-group="gender">
+        <button data-value="m">♂ Il</button>
+        <button data-value="f">♀ Elle</button>
+      </div>
       <div class="label">Style</div>
       <div class="choices" data-group="style">
         <button data-value="cute">Mignon</button>
@@ -85,7 +97,7 @@
         <label class="check"><input type="checkbox" id="set-login"> Lancer au démarrage</label>
       </div>
       <div class="row">
-        <button id="set-reset" class="danger">Nouvel œuf</button>
+        <button id="set-reset" class="danger" title="Recommencer avec un nouvel œuf (l'animal actuel rejoint les souvenirs du carnet)">🥚 Recommencer</button>
         <button id="set-quit">Quitter</button>
         <button id="set-close" class="primary">OK</button>
       </div>

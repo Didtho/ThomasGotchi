@@ -15,7 +15,7 @@ function rewardGame(won, fun) {
 
 function canPlay() {
   if (state.sleeping) { say('Zzz…'); return false; }
-  if (state.energy < 15) { say('Trop fatigué pour jouer…'); return false; }
+  if (state.energy < 15) { say(Pet.g(state, 'Trop fatigué pour jouer…', 'Trop fatiguée pour jouer…')); return false; }
   state.energy = Math.max(0, state.energy - 6);
   return true;
 }
@@ -117,7 +117,7 @@ const Catch = (() => {
     clear();
     const won = score >= 10;
     $('catch-msg').textContent = won
-      ? `Bravo, ${score} friandises ! ${state.name} est ravi 😋`
+      ? `Bravo, ${score} friandises ! ${state.name} est ${Pet.g(state, 'ravi', 'ravie')} 😋`
       : `${score} friandise${score > 1 ? 's' : ''}… Essaie d'en attraper 10 !`;
     $('catch-again').classList.remove('hidden');
     state.hunger = Math.min(100, state.hunger + Math.min(20, score));
@@ -172,8 +172,8 @@ const Cups = (() => {
     build();
     busy = true;
     $('cups-again').classList.add('hidden');
-    $('cups-title').textContent = `Où est caché ${state.name} ?`;
-    $('cups-msg').textContent = 'Regarde bien sous quel gobelet il se cache…';
+    $('cups-title').textContent = `Où est ${Pet.g(state, 'caché', 'cachée')} ${state.name} ?`;
+    $('cups-msg').textContent = `Regarde bien sous quel gobelet ${Pet.g(state, 'il', 'elle')} se cache…`;
     target = Math.floor(Math.random() * 3);
     cups.forEach((c, i) => { c.peek.textContent = i === target ? (SPECIES_EMOJI[state.species] || '🐱') : ''; });
     openModal('modal-cups');
@@ -204,7 +204,7 @@ const Cups = (() => {
       await wait(500);
       cups[target].el.classList.add('up');
     }
-    $('cups-msg').textContent = won ? `Trouvé ! ${state.name} est tout content 🎉` : 'Raté ! Il était là…';
+    $('cups-msg').textContent = won ? `Trouvé ! ${state.name} est ${Pet.g(state, 'tout content', 'toute contente')} 🎉` : `Raté ! ${Pet.g(state, 'Il', 'Elle')} était là…`;
     $('cups-again').classList.remove('hidden');
     if (!won) Sound.play('sad');
     rewardGame(won, won ? 15 : 5);

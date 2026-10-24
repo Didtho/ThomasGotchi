@@ -114,7 +114,7 @@ function drawEyes(ctx, v, cx, ey, gap, er) {
     } else {
       if (v.dark) {
         // Pelage noir : grands yeux jaunes de chat noir
-        ellipse(ctx, x - look * 0.3, ey, er * 0.85, er * 1.1, '#ffd84a', LIGHT_INK, 1.5);
+        ellipse(ctx, x - look * 0.3, ey, er * 0.85, er * 1.1, (v.coat && v.coat.eye) || '#ffd84a', LIGHT_INK, 1.5);
         ellipse(ctx, x, ey + ly, er * 0.42, er * 0.85, '#1c1720');
       } else {
         ellipse(ctx, x, ey + ly, er * 0.8, er * 1.05, INK);
@@ -151,7 +151,7 @@ function drawEyes(ctx, v, cx, ey, gap, er) {
 
 function drawMouth(ctx, v, x, y, s) {
   // Sur le museau blanc du chat noir et blanc, la bouche reste foncée
-  const onWhite = v.coat && v.coat.tuxedo;
+  const onWhite = v.coat && v.coat.muzzle;
   const ink = onWhite ? INK : faceInk(v);
   const inside = v.dark && !onWhite ? '#7a2d3a' : INK;
   ctx.lineCap = 'round';
@@ -340,7 +340,7 @@ function drawEars(ctx, species, cx, g, body, inner, t) {
   }
 }
 
-function drawTail(ctx, species, cx, g, body, side, t) {
+function drawTail(ctx, species, cx, g, body, side, t, coat) {
   const { r, bodyRx, bodyRy, bodyCy } = g;
   const x = cx + side * bodyRx * 0.85;
   const y = bodyCy + bodyRy * 0.2;
@@ -350,12 +350,14 @@ function drawTail(ctx, species, cx, g, body, side, t) {
     ctx.beginPath();
     ctx.moveTo(x - side * r * 0.1, y);
     ctx.bezierCurveTo(x + side * r * 0.55, y + r * 0.1, x + side * r * 0.6 + sway, y - r * 0.6, x + side * r * 0.3 + sway, y - r * 0.8);
-    ctx.lineWidth = r * 0.22 + 5;
+    const w = r * (coat && coat.fluffy ? 0.36 : 0.22); // queue touffue pour les poils longs
+    ctx.lineWidth = w + 5;
     ctx.strokeStyle = INK;
     ctx.stroke();
-    ctx.lineWidth = r * 0.22;
+    ctx.lineWidth = w;
     ctx.strokeStyle = body;
     ctx.stroke();
+    if (coat && coat.tailTip) ellipse(ctx, x + side * r * 0.3 + sway, y - r * 0.8, w * 0.55, w * 0.55, coat.tailTip);
   } else {
     const s = species === 'lapin' ? 0.24 : 0.15;
     ellipse(ctx, x + side * r * 0.05, y, r * s, r * s, species === 'lapin' ? shade(body, 0.12) : body, INK, 2.5);
@@ -508,32 +510,74 @@ function drawNightcap(ctx, cx, g, t) {
   ellipse(ctx, cx + headRx * 0.95 + sway, baseY - r * 0.35, r * 0.13, r * 0.13, '#fff', INK, 2);
 }
 
+// Poils longs : joues ébouriffées qui dépassent de la tête
+function drawCheekTufts(ctx, cx, g, body) {
+  const { r, headRx, headRy, headCy } = g;
+  for (const side of [-1, 1]) {
+    const x = cx + side * headRx * 0.9, y = headCy + headRy * 0.25;
+    ctx.beginPath();
+    ctx.moveTo(x - side * r * 0.1, y - r * 0.3);
+    ctx.lineTo(x + side * r * 0.28, y - r * 0.12);
+    ctx.lineTo(x + side * r * 0.04, y - r * 0.02);
+    ctx.lineTo(x + side * r * 0.3, y + r * 0.14);
+    ctx.lineTo(x - side * r * 0.05, y + r * 0.2);
+    ctx.closePath();
+    ctx.fillStyle = body;
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+  }
+}
+
+// Collerette blanche sous le menton (poils longs)
+function drawRuff(ctx, cx, g) {
+  const { r, headRx, headRy, headCy } = g;
+  const y = headCy + headRy * 0.82;
+  ctx.beginPath();
+  ctx.moveTo(cx - headRx * 0.5, y - r * 0.05);
+  const n = 6;
+  for (let i = 0; i <= n; i++) {
+    const x = cx - headRx * 0.5 + (headRx * i) / n;
+    ctx.lineTo(x, y + (i % 2 ? r * 0.22 : r * 0.08));
+  }
+  ctx.lineTo(cx + headRx * 0.5, y - r * 0.05);
+  ctx.closePath();
+  ctx.fillStyle = WHITE_FUR;
+  ctx.fill();
+}
+
 const WHITE_FUR = '#fbf8f4';
 
 // Motifs du pelage, découpés à la forme de la tête ou du corps
 function drawCoat(ctx, coat, part, cx, cy, rx, ry, r) {
-  if (!coat || !(coat.stripes || coat.spots || coat.tuxedo)) return;
+  if (!coat || !(coat.stripes || coat.spots || coat.muzzle || coat.chest || coat.patches)) return;
   ctx.save();
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
   ctx.clip();
   ctx.lineCap = 'round';
 
-  if (coat.tuxedo) {
-    if (part === 'head') {
-      // Museau blanc et liseré blanc entre les yeux
-      ellipse(ctx, cx, cy + ry * 0.5, rx * 0.46, ry * 0.38, WHITE_FUR);
+  // Taches colorées (pêche de Snoop, taches blanches de Grisette…)
+  for (const [where, dx, dy, prx, pry, color] of coat.patches || []) {
+    if (where === part) ellipse(ctx, cx + dx * rx, cy + dy * ry, prx * rx, pry * ry, color);
+  }
+  if (part === 'head' && coat.muzzle) {
+    // Museau blanc, et liseré blanc entre les yeux (plus large pour Grisette)
+    ellipse(ctx, cx, cy + ry * 0.5, rx * 0.46, ry * 0.38, WHITE_FUR);
+    if (coat.blaze) {
+      const w = coat.blaze === 'wide' ? 0.24 : 0.13;
       ctx.beginPath();
-      ctx.moveTo(cx - rx * 0.13, cy + ry * 0.25);
-      ctx.quadraticCurveTo(cx - rx * 0.02, cy - ry * 0.3, cx, cy - ry * 0.5);
-      ctx.quadraticCurveTo(cx + rx * 0.02, cy - ry * 0.3, cx + rx * 0.13, cy + ry * 0.25);
+      ctx.moveTo(cx - rx * w, cy + ry * 0.25);
+      ctx.quadraticCurveTo(cx - rx * w * 0.2, cy - ry * 0.3, cx, cy - ry * 0.55);
+      ctx.quadraticCurveTo(cx + rx * w * 0.2, cy - ry * 0.3, cx + rx * w, cy + ry * 0.25);
       ctx.closePath();
       ctx.fillStyle = WHITE_FUR;
       ctx.fill();
-    } else {
-      ellipse(ctx, cx, cy + ry * 0.15, rx * 0.6, ry * 0.85, WHITE_FUR);
     }
   }
+  if (part === 'body' && coat.chest) ellipse(ctx, cx, cy + ry * 0.15, rx * 0.6, ry * 0.85, WHITE_FUR);
 
   const col = coat.stripes || coat.spots;
   if (col) {
@@ -643,6 +687,12 @@ function drawCreature(ctx, v) {
     ctx.rotate(v.facing * (v.running ? 0.14 : 0.07) + Math.sin(stride) * 0.035);
     ctx.translate(-cx, -GROUND);
   }
+  if (a === 'pee') {
+    // Pipi : il se penche du côté opposé pour lever la patte
+    ctx.translate(cx, GROUND);
+    ctx.rotate(-(v.facing || 1) * 0.12);
+    ctx.translate(-cx, -GROUND);
+  }
   if (a === 'roll') {
     // Roulade : un tour complet autour du milieu du corps
     const pivot = (headCy + bodyCy) / 2;
@@ -653,12 +703,12 @@ function drawCreature(ctx, v) {
 
   // Pelage foncé : léger halo clair pour rester visible sur un fond sombre
   const halo = (on) => {
-    ctx.shadowColor = on && v.dark ? 'rgba(255,255,255,.6)' : 'transparent';
-    ctx.shadowBlur = on && v.dark ? 7 : 0;
+    ctx.shadowColor = on && v.dark && v.style !== 'pixel' ? 'rgba(255,255,255,.6)' : 'transparent';
+    ctx.shadowBlur = on && v.dark && v.style !== 'pixel' ? 7 : 0;
   };
   halo(true);
   const tailSide = v.facing > 0 ? -1 : 1;
-  drawTail(ctx, species, cx, g, body, tailSide, v.t * (v.walking ? 2.5 : 1));
+  drawTail(ctx, species, cx, g, body, tailSide, v.t * (v.walking ? 2.5 : 1), v.mood === 'dead' ? null : v.coat);
 
   // Corps, ventre, petites pattes
   const grad = ctx.createRadialGradient(cx - bodyRx * 0.3, bodyCy - bodyRy * 0.4, r * 0.1, cx, bodyCy, r);
@@ -667,7 +717,7 @@ function drawCreature(ctx, v) {
   ellipse(ctx, cx, bodyCy, bodyRx, bodyRy, grad, INK, 3);
   halo(false);
   const coat = v.mood === 'dead' ? null : v.coat;
-  if (!(coat && coat.tuxedo)) ellipse(ctx, cx, bodyCy + bodyRy * 0.15, bodyRx * 0.55, bodyRy * 0.6, shade(body, 0.12));
+  if (!(coat && coat.chest)) ellipse(ctx, cx, bodyCy + bodyRy * 0.15, bodyRx * 0.55, bodyRy * 0.6, shade(body, 0.12));
   drawCoat(ctx, coat, 'body', cx, bodyCy, bodyRx, bodyRy, r);
   if (v.mood === 'sick') ellipse(ctx, cx, bodyCy, bodyRx, bodyRy, 'rgba(130,190,70,.28)');
   if (v.dirty) drawDirt(ctx, cx, bodyCy + bodyRy * 0.1, bodyRx, bodyRy);
@@ -675,14 +725,23 @@ function drawCreature(ctx, v) {
   const pawY = bodyCy + bodyRy * 0.82;
   for (const [side, phase] of [[-1, 0], [1, Math.PI]]) {
     const s = v.walking ? Math.sin(stride + phase) : 0;
-    const px = cx + side * bodyRx * 0.42 + v.facing * s * r * 0.14;
-    const py = pawY - Math.max(0, s) * r * 0.14;
-    ellipse(ctx, px, py, r * 0.19, r * 0.12, coat && coat.tuxedo ? WHITE_FUR : body, INK, 2.5);
+    const lifted = a === 'pee' && side === (v.facing || 1); // patte levée côté bord
+    const px = cx + side * bodyRx * 0.42 + v.facing * s * r * 0.14 + (lifted ? side * r * 0.2 : 0);
+    const py = pawY - Math.max(0, s) * r * 0.14 - (lifted ? r * 0.4 : 0);
+    if (lifted && at > 0.4) {
+      // Petit jet vers le bord
+      for (let k = 0; k < 4; k++) {
+        const q = ((at * 3 + k / 4) % 1);
+        ellipse(ctx, px + side * (r * 0.2 + q * r * 0.5), py + q * q * r * 0.6, 2.2, 2.2, '#f4d75e');
+      }
+    }
+    ellipse(ctx, px, py, r * 0.19, r * 0.12, coat && coat.paws ? WHITE_FUR : body, INK, 2.5);
   }
 
   // Tête
   halo(true);
   drawEars(ctx, species, cx, g, body, inner, v.t);
+  if (coat && coat.fluffy) drawCheekTufts(ctx, cx, g, body);
   const hg = ctx.createRadialGradient(cx - headRx * 0.35, headCy - headRy * 0.45, r * 0.1, cx, headCy, r * 1.2);
   hg.addColorStop(0, shade(body, 0.12));
   hg.addColorStop(0.6, body);
@@ -690,6 +749,7 @@ function drawCreature(ctx, v) {
   ellipse(ctx, cx, headCy, headRx, headRy, hg, INK, 3);
   halo(false);
   drawCoat(ctx, coat, 'head', cx, headCy, headRx, headRy, r);
+  if (coat && coat.fluffy && coat.chest) drawRuff(ctx, cx, g);
   if (v.mood === 'sick') ellipse(ctx, cx, headCy, headRx, headRy, 'rgba(130,190,70,.28)');
   ellipse(ctx, cx - headRx * 0.45, headCy - headRy * 0.55, headRx * 0.18, headRy * 0.1, 'rgba(255,255,255,.65)');
   if (v.dirty) drawDirt(ctx, cx, headCy - headRy * 0.3, headRx * 0.9, headRy * 0.5);

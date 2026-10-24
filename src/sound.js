@@ -8,9 +8,11 @@ const Sound = (() => {
     if (!ctx) {
       ctx = new AudioContext();
       master = ctx.createGain();
-      master.gain.value = 0.18;
+      master.gain.value = 0.3;
       master.connect(ctx.destination);
     }
+    // Le système peut suspendre le son d'une fenêtre restée longtemps sans interaction
+    if (ctx.state === 'suspended') ctx.resume();
     return ctx;
   }
 
@@ -94,8 +96,14 @@ const Sound = (() => {
     poop() { tone('sine', 180, 70, 0.22, { vol: 0.8 }); },
     sparkle() { [1568, 2093, 2637].forEach((f, i) => tone('sine', f, f, 0.15, { at: i * 0.07, vol: 0.3 })); },
     alert() { tone('triangle', 880, 880, 0.15, { vol: 0.35 }); tone('triangle', 660, 660, 0.25, { at: 0.17, vol: 0.35 }); },
-    snore() { noise(1.1, { vol: 0.25, freq: 300, q: 2, type: 'lowpass', attack: 0.5 }); },
+    // Ronflement : « rrrr » qui inspire (vibration grave), puis « pfff » qui expire (souffle)
+    snore() {
+      tone('sawtooth', 95, 120, 1.0, { vol: 0.7, filter: { type: 'lowpass', freq: 700, q: 4 } });
+      tone('sawtooth', 47, 60, 1.0, { vol: 0.5, filter: { type: 'lowpass', freq: 400 } });
+      noise(0.9, { at: 1.1, vol: 0.5, freq: 1100, q: 0.8, attack: 0.25 });
+    },
     sad() { tone('sine', 520, 300, 0.6, { vol: 0.35 }); },
+    pee() { noise(1.4, { vol: 0.25, freq: 3500, q: 1.5, attack: 0.2 }); },
     jump() { tone('sine', 300, 900, 0.22, { vol: 0.5 }); },
     roll() { noise(0.5, { vol: 0.4, freq: 900, q: 0.7, attack: 0.2 }); },
     stretch() { tone('sine', 400, 250, 0.5, { vol: 0.3 }); },

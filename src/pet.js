@@ -14,18 +14,45 @@ const COLORS = {
   noirblanc: '#3a3540',
   roux: '#f2a45a',
   gris: '#aaa6b0',
+  simba: '#e9b27c',
+  snoop: '#8f8a93',
+  grisette: '#2f2b33',
 };
 
-// Pelages à motif (dessinés dans draw.js) et aperçu de la pastille dans les réglages
+// Pelages à motif, dessinés dans draw.js. Options possibles :
+//   dark (pelage foncé : yeux jaunes, traits clairs), eye (couleur des yeux sur pelage foncé),
+//   muzzle / blaze / chest / paws (museau, liseré entre les yeux, plastron, pattes blancs),
+//   stripes (rayures), spots (taches), patches (taches colorées : [partie, dx, dy, rx, ry, couleur]),
+//   tailTip (bout de queue), fluffy (poils longs), swatch (aperçu de la pastille dans les réglages)
 const COATS = {
   noir: { name: 'Noir', dark: true },
-  noirblanc: { name: 'Noir et blanc', dark: true, tuxedo: true,
+  noirblanc: { name: 'Noir et blanc', dark: true, muzzle: true, blaze: true, chest: true, paws: true,
     swatch: 'linear-gradient(135deg, #3a3540 50%, #fbf8f4 50%)' },
   roux: { name: 'Roux tigré', stripes: '#c8692a',
     swatch: 'repeating-linear-gradient(45deg, #f2a45a 0 4px, #c8692a 4px 7px)' },
   gris: { name: 'Gris tacheté', spots: '#6c6772',
     swatch: 'radial-gradient(circle at 30% 35%, #6c6772 0 3px, transparent 3.5px), radial-gradient(circle at 70% 65%, #6c6772 0 3px, transparent 3.5px), #aaa6b0' },
+
+  // Les chats de la maison, dessinés d'après leurs photos
+  simba: { name: 'Simba (roux crème et blanc)', stripes: '#cf8a50', muzzle: true, chest: true, paws: true,
+    tailTip: '#f6dcc0',
+    swatch: 'linear-gradient(135deg, #e9b27c 55%, #fbf8f4 55%)' },
+  snoop: { name: 'Snoop (tigrée grise et pêche)', stripes: '#5e5962', muzzle: true, chest: true, paws: true,
+    patches: [['head', -0.45, -0.15, 0.32, 0.28, '#e7b58e'], ['head', 0.05, -0.75, 0.1, 0.22, '#e7b58e'],
+      ['body', 0.55, -0.35, 0.28, 0.2, '#e7b58e'], ['body', -0.65, 0.1, 0.2, 0.25, '#e7b58e']],
+    swatch: 'radial-gradient(circle at 30% 30%, #e7b58e 0 4px, transparent 4.5px), linear-gradient(135deg, #8f8a93 60%, #fbf8f4 60%)' },
+  grisette: { name: 'Grisette (noire et blanche, poils longs)', dark: true, eye: '#cfc65a', fluffy: true,
+    muzzle: true, blaze: 'wide', chest: true, paws: true,
+    patches: [['body', 0.62, -0.42, 0.2, 0.3, '#fbf8f4'], ['body', -0.55, -0.5, 0.22, 0.16, '#fbf8f4']],
+    swatch: 'linear-gradient(135deg, #2f2b33 45%, #fbf8f4 45% 60%, #2f2b33 60%)' },
 };
+
+// Modèles prêts à adopter (un clic remplit le prénom, le pelage et le genre)
+const PRESETS = [
+  { name: 'Simba', species: 'chat', color: 'simba', gender: 'm', icon: '🧡' },
+  { name: 'Snoop', species: 'chat', color: 'snoop', gender: 'f', icon: '🩶' },
+  { name: 'Grisette', species: 'chat', color: 'grisette', gender: 'f', icon: '🖤' },
+];
 
 // Vitesses en points par heure. Calibrées pour qu'un petit être laissé seul tienne quelques jours.
 const RATES = {
@@ -74,6 +101,12 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 const Pet = {
   COLORS,
   COATS,
+  PRESETS,
+
+  // Accord au masculin ou au féminin selon le genre choisi
+  g(s, masc, fem) {
+    return s && s.gender === 'f' ? fem : masc;
+  },
 
   // memorials : souvenirs des compagnons précédents, transmis d'un œuf à l'autre
   create(name, style, color, species, memorials = [], now = Date.now()) {
@@ -93,6 +126,7 @@ const Pet = {
       poops: 0,
       poopSpots: [], // positions des crottes sur l'écran (gérées par app.js)
       poopAt: null,
+      peeAt: null,
       meals: 0,
       lastTick: now,
       stats: { hugs: 0, poopsCleaned: 0, gamesWon: 0, foods: {} },
@@ -161,6 +195,11 @@ const Pet = {
     if (s.sleeping && s.energy >= 100 && !s.nightSleep) { s.sleeping = false; events.push('wake'); }
     if (!s.sleeping && s.energy <= 0) { s.sleeping = true; events.push('collapse'); }
 
+    if (s.peeAt && now >= s.peeAt) {
+      s.peeAt = null;
+      if (s.poops < MAX_POOPS) { s.poops++; events.push('pee'); }
+    }
+
     if (s.poopAt && now >= s.poopAt) {
       s.poopAt = null;
       if (s.poops < MAX_POOPS) { s.poops++; events.push('poop'); }
@@ -202,8 +241,8 @@ const Pet = {
     if (Pet.isSick(s)) return 'Je ne me sens pas bien… 🤒';
     if (s.thirst < 20) return 'J\'ai soif ! 💧';
     if (s.hunger < 20) return 'J\'ai faim ! Donne-moi un fichier 📄';
-    if (s.clean < 20) return 'Je suis tout sale… 🛁';
-    if (s.energy < 15) return 'Je suis fatigué… 😪';
+    if (s.clean < 20) return Pet.g(s, 'Je suis tout sale… 🛁', 'Je suis toute sale… 🛁');
+    if (s.energy < 15) return Pet.g(s, 'Je suis fatigué… 😪', 'Je suis fatiguée… 😪');
     if (s.fun < 20) return 'Je m\'ennuie… on joue ? 🎾';
     return null;
   },
@@ -220,7 +259,7 @@ const Pet = {
     const ext = (file.name.split('.').pop() || '').toLowerCase();
     const food = FOODS.find((f) => f.exts.includes(ext)) || DEFAULT_FOOD;
     let factor = 1;
-    let msg = pick(food.msgs);
+    let msg = pick(food.msgs).replace('repu', Pet.g(s, 'repu', 'repue'));
     if (file.size < 1024) { factor = 0.4; msg = 'Juste une miette…'; }
     else if (file.size > 50 * 1024 * 1024) { factor = 1.3; msg = 'Énorme ! Petite indigestion…'; s.energy = clamp(s.energy - 8); }
 
@@ -242,6 +281,8 @@ const Pet = {
     if (s.sleeping) return { ok: false, msg: 'Zzz…' };
     if (s.thirst > 95) return { ok: false, msg: 'Je n\'ai plus soif !' };
     s.thirst = clamp(s.thirst + 35);
+    // Ce qui rentre doit sortir : un petit pipi un peu plus tard
+    if (!s.peeAt && Math.random() < 0.45) s.peeAt = Date.now() + (15 + Math.random() * 45) * 60000;
     return { ok: true, msg: pick(['Glou glou glou !', 'Ahh, ça fait du bien !', 'Rafraîchissant !']), anim: 'drink' };
   },
 
@@ -252,7 +293,7 @@ const Pet = {
       s.nightSleep = false;
       return { ok: true, msg: s.energy < 60 ? 'Hmm… déjà ? *bâille*' : 'Bonjour ! ☀️' };
     }
-    if (s.energy > 90) return { ok: false, msg: 'Je ne suis pas fatigué !' };
+    if (s.energy > 90) return { ok: false, msg: Pet.g(s, 'Je ne suis pas fatigué !', 'Je ne suis pas fatiguée !') };
     s.sleeping = true;
     return { ok: true, msg: 'Bonne nuit… 🌙' };
   },
@@ -260,7 +301,7 @@ const Pet = {
   play(s) {
     if (s.dead || Pet.isEgg(s)) return { ok: false };
     if (s.sleeping) return { ok: false, msg: 'Zzz…' };
-    if (s.energy < 15) return { ok: false, msg: 'Trop fatigué pour jouer…' };
+    if (s.energy < 15) return { ok: false, msg: Pet.g(s, 'Trop fatigué pour jouer…', 'Trop fatiguée pour jouer…') };
     s.fun = clamp(s.fun + 20);
     s.energy = clamp(s.energy - 8);
     s.hunger = clamp(s.hunger - 3);
@@ -287,6 +328,17 @@ const Pet = {
   },
 
   // Une crotte ramassée à la main sur l'écran
+  // Envie de faire pipi dans la demi-heure : s'il arrive au bord de l'écran, il en profite
+  peeSoon(s) {
+    return !!s.peeAt && s.peeAt - Date.now() < 30 * 60000 && s.poops < MAX_POOPS;
+  },
+
+  // Il lève la patte contre le bord de l'écran
+  peeNow(s) {
+    s.peeAt = null;
+    s.poops = Math.min(MAX_POOPS, s.poops + 1);
+  },
+
   cleanPoop(s) {
     s.stats.poopsCleaned++;
     s.poops = Math.max(0, s.poops - 1);
