@@ -299,7 +299,12 @@ function nightKey() {
 function dayRhythm() {
   if (state.dead || Pet.isEgg(state)) return;
   if (isNight()) {
-    if (!state.sleeping && !anim && !modalIsOpen() && !dragging && state.bedNight !== nightKey()) {
+    // Déjà endormi au moment du coucher : il passe la nuit entière à dormir
+    if (state.sleeping && state.bedNight !== nightKey()) {
+      state.bedNight = nightKey();
+      state.nightSleep = true;
+      save();
+    } else if (!state.sleeping && !anim && !modalIsOpen() && !dragging && state.bedNight !== nightKey()) {
       state.bedNight = nightKey();
       state.sleeping = true;
       state.nightSleep = true;
