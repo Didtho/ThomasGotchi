@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+  <title>ThomasGotchi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-cute">
+  <!-- Zone du petit être (240x300). Quand une fenêtre de réglages est ouverte, la fenêtre
+       s'agrandit et cette zone reste à la même place à l'écran. -->
+  <div id="stage">
+  <canvas id="scene" width="240" height="300"></canvas>
+
+  <div id="bubble" class="hidden"></div>
+
+  <!-- Panneau qui apparaît au survol : jauges + actions -->
+  <div id="panel" class="hit hidden">
+    <div class="title"><span id="pet-name">???</span><span id="pet-age"></span></div>
+    <div class="stats">
+      <div class="stat" title="Faim"><span>🍔</span><div class="bar"><i id="bar-hunger"></i></div></div>
+      <div class="stat" title="Soif"><span>💧</span><div class="bar"><i id="bar-thirst"></i></div></div>
+      <div class="stat" title="Énergie"><span>⚡</span><div class="bar"><i id="bar-energy"></i></div></div>
+      <div class="stat" title="Bonheur"><span>💖</span><div class="bar"><i id="bar-fun"></i></div></div>
+      <div class="stat" title="Propreté"><span>🧼</span><div class="bar"><i id="bar-clean"></i></div></div>
+      <div class="stat" title="Santé"><span>➕</span><div class="bar"><i id="bar-health"></i></div></div>
+    </div>
+    <div class="actions">
+      <button data-act="feed" title="Manger : glisse un fichier sur moi !">🍽️</button>
+      <button data-act="drink" title="Boire">🥤</button>
+      <button data-act="sleep" title="Dormir / Réveiller">🌙</button>
+      <button data-act="play" title="Jouer">🎾</button>
+      <button data-act="wash" title="Laver">🛁</button>
+      <button data-act="heal" title="Soigner">💊</button>
+      <button data-act="settings" title="Réglages">⚙️</button>
+    </div>
+  </div>
+  </div>
+
+  <!-- Fenêtres modales (prénom, réglages, décès) -->
+  <div id="modal" class="hidden">
+    <div id="modal-new" class="card hit hidden">
+      <h2>Un œuf est apparu !</h2>
+      <label>Son prénom
+        <input id="new-name" maxlength="14" placeholder="Ex : Didou">
+      </label>
+      <div class="label">Animal</div>
+      <div class="choices" data-group="species">
+        <button data-value="chat">🐱 Chat</button>
+        <button data-value="lapin">🐰 Lapin</button>
+        <button data-value="ours">🐻 Ourson</button>
+      </div>
+      <div class="label">Style</div>
+      <div class="choices" data-group="style">
+        <button data-value="cute" class="on">Mignon</button>
+        <button data-value="pixel">Pixel rétro</button>
+      </div>
+      <div class="label">Couleur</div>
+      <div class="swatches" data-group="color"></div>
+      <button id="new-ok" class="primary">C'est parti !</button>
+    </div>
+
+    <div id="modal-settings" class="card hit hidden">
+      <h2>Réglages</h2>
+      <label>Prénom
+        <input id="set-name" maxlength="14">
+      </label>
+      <div class="label">Animal</div>
+      <div class="choices" data-group="species">
+        <button data-value="chat">🐱 Chat</button>
+        <button data-value="lapin">🐰 Lapin</button>
+        <button data-value="ours">🐻 Ourson</button>
+      </div>
+      <div class="label">Style</div>
+      <div class="choices" data-group="style">
+        <button data-value="cute">Mignon</button>
+        <button data-value="pixel">Pixel rétro</button>
+      </div>
+      <div class="label">Couleur</div>
+      <div class="swatches" data-group="color"></div>
+      <label class="check"><input type="checkbox" id="set-login"> Lancer au démarrage</label>
+      <div class="row">
+        <button id="set-reset" class="danger">Nouvel œuf</button>
+        <button id="set-quit">Quitter</button>
+        <button id="set-close" class="primary">OK</button>
+      </div>
+    </div>
+
+    <div id="modal-dead" class="card hit hidden">
+      <h2>Oh non…</h2>
+      <p id="dead-text"></p>
+      <button id="dead-ok" class="primary">Faire éclore un nouvel œuf</button>
+    </div>
+  </div>
+
+  <script src="pet.js"></script>
+  <script src="draw.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

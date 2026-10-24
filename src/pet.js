@@ -1,0 +1,283 @@
+// Logique du petit être : jauges, vieillissement, actions. Aucune notion d'affichage ici.
+
+const HOUR = 3600 * 1000;
+const HATCH_DELAY = 40 * 1000;
+const MAX_POOPS = 4;
+
+const COLORS = {
+  rose: '#ffb3c9',
+  menthe: '#9fe3bd',
+  ciel: '#a9d4ff',
+  citron: '#ffe17a',
+  lavande: '#cdb8ff',
+  noir: '#3a3540',
+  noirblanc: '#3a3540',
+  roux: '#f2a45a',
+  gris: '#aaa6b0',
+};
+
+// Pelages à motif (dessinés dans draw.js) et aperçu de la pastille dans les réglages
+const COATS = {
+  noir: { name: 'Noir', dark: true },
+  noirblanc: { name: 'Noir et blanc', dark: true, tuxedo: true,
+    swatch: 'linear-gradient(135deg, #3a3540 50%, #fbf8f4 50%)' },
+  roux: { name: 'Roux tigré', stripes: '#c8692a',
+    swatch: 'repeating-linear-gradient(45deg, #f2a45a 0 4px, #c8692a 4px 7px)' },
+  gris: { name: 'Gris tacheté', spots: '#6c6772',
+    swatch: 'radial-gradient(circle at 30% 35%, #6c6772 0 3px, transparent 3.5px), radial-gradient(circle at 70% 65%, #6c6772 0 3px, transparent 3.5px), #aaa6b0' },
+};
+
+// Vitesses en points par heure. Calibrées pour qu'un petit être laissé seul tienne quelques jours.
+const RATES = {
+  hunger: 2.8,      // ~36 h pour passer de 100 à 0
+  thirst: 3.3,      // ~30 h
+  energy: 2.5,      // ~40 h éveillé
+  energySleep: 25,  // ~4 h de sommeil pour une recharge complète
+  fun: 2.1,         // ~48 h
+  clean: 1.2,
+  cleanPerPoop: 2,
+  healthLoss: 4,    // par jauge vide : ~25 h avant la mort
+  healthGain: 3,
+};
+
+// Valeur nutritive selon le type de fichier. Les fichiers ne sont jamais modifiés ni supprimés :
+// seuls leur nom et leur taille sont utilisés.
+const FOODS = [
+  { exts: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico', 'heic', 'tif', 'tiff'],
+    hunger: 12, fun: 8, msgs: ['Croustillant !', 'Ça a le goût de pixels !', 'Miam, une jolie image !'] },
+  { exts: ['txt', 'md', 'rtf', 'log', 'csv', 'ini'],
+    hunger: 14, msgs: ['Léger comme une salade.', 'Des petits mots, miam !'] },
+  { exts: ['doc', 'docx', 'odt', 'pages'],
+    hunger: 28, msgs: ['Un bon repas de mots !', 'Très nourrissant, ce document.'] },
+  { exts: ['pdf'],
+    hunger: 35, msgs: ['Un PDF bien consistant !', 'Ça cale bien, merci !'] },
+  { exts: ['xls', 'xlsx', 'ods', 'numbers'],
+    hunger: 24, thirst: -5, fun: -2, msgs: ['Des chiffres… c\'est un peu sec.', 'Ça gratte la gorge, tous ces tableaux.'] },
+  { exts: ['ppt', 'pptx', 'odp', 'key'],
+    hunger: 30, fun: 6, msgs: ['Des diapos colorées, miam !', 'Slide après slide… délicieux !'] },
+  { exts: ['js', 'ts', 'py', 'html', 'css', 'json', 'java', 'c', 'cpp', 'cs', 'php', 'rb', 'go', 'rs', 'sh', 'xml'],
+    hunger: 18, fun: 10, msgs: ['Épicé, ce code !', 'Ça pique un peu… j\'adore !'] },
+  { exts: ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'],
+    hunger: 10, fun: 20, msgs: ['Ça chatouille le ventre !', 'Une musique en dessert !'] },
+  { exts: ['mp4', 'avi', 'mkv', 'mov', 'webm', 'wmv'],
+    hunger: 40, fun: 15, msgs: ['Un vrai festin !', 'Tout un film… je suis repu !'] },
+  { exts: ['zip', 'rar', '7z', 'tar', 'gz'],
+    hunger: 45, fun: -5, msgs: ['Très compact… un peu lourd.', 'Ouf, c\'était bien tassé !'] },
+  { exts: ['exe', 'msi', 'bat', 'cmd', 'dll', 'app', 'dmg', 'pkg'],
+    hunger: 5, fun: -10, health: -15, msgs: ['Beurk ! Ça pique !', 'Bwaaah… j\'ai mal au ventre !'] },
+];
+const DEFAULT_FOOD = { hunger: 10, msgs: ['Bizarre… mais mangeable.', 'Hmm, goût inconnu.'] };
+
+const clamp = (v) => Math.max(0, Math.min(100, v));
+const pick = (list) => list[Math.floor(Math.random() * list.length)];
+
+const Pet = {
+  COLORS,
+  COATS,
+
+  create(name, style, color, species, now = Date.now()) {
+    return {
+      version: 1,
+      name: name || 'Didou',
+      style: style || 'cute',
+      species: species || 'chat',
+      color: color || 'rose',
+      born: now,
+      hatchAt: now + HATCH_DELAY,
+      hunger: 80, thirst: 80, energy: 90, fun: 80, clean: 100, health: 100,
+      care: 80,
+      sleeping: false,
+      dead: false,
+      diedAt: null,
+      poops: 0,
+      poopSpots: [], // positions des crottes sur l'écran (gérées par app.js)
+      poopAt: null,
+      meals: 0,
+      lastTick: now,
+    };
+  },
+
+  isEgg(s, now = Date.now()) {
+    return now < s.hatchAt;
+  },
+
+  stage(s, now = Date.now()) {
+    if (Pet.isEgg(s, now)) return 'egg';
+    const ageH = (now - s.hatchAt) / HOUR;
+    if (ageH < 24) return 'baby';
+    if (ageH < 72) return 'child';
+    return 'adult';
+  },
+
+  ageText(s, now = Date.now()) {
+    if (Pet.isEgg(s, now)) return 'œuf';
+    const end = s.dead ? s.diedAt : now;
+    const h = Math.floor((end - s.hatchAt) / HOUR);
+    const d = Math.floor(h / 24);
+    if (d > 0) return `${d} j ${h % 24} h`;
+    if (h > 0) return `${h} h`;
+    return `${Math.max(1, Math.floor((end - s.hatchAt) / 60000))} min`;
+  },
+
+  // Fait avancer le temps. Renvoie la liste des événements survenus ('wake', 'collapse', 'poop', 'dead').
+  tick(s, now = Date.now()) {
+    const events = [];
+    if (s.dead) { s.lastTick = now; return events; }
+    // Rattrapage par pas d'une minute (temps écoulé pendant que l'application était fermée)
+    const maxCatchUp = 14 * 24 * HOUR;
+    let t = Math.max(s.lastTick, now - maxCatchUp);
+    while (t < now && !s.dead) {
+      const next = Math.min(now, t + 60000);
+      Pet.step(s, (next - t) / HOUR, next, events);
+      t = next;
+    }
+    s.lastTick = now;
+    return events;
+  },
+
+  step(s, dtH, now, events) {
+    if (Pet.isEgg(s, now)) return;
+    const slow = s.sleeping ? 0.5 : 1;
+    s.hunger = clamp(s.hunger - RATES.hunger * dtH * slow);
+    s.thirst = clamp(s.thirst - RATES.thirst * dtH * slow);
+    s.energy = clamp(s.energy + (s.sleeping ? RATES.energySleep : -RATES.energy) * dtH);
+    if (!s.sleeping) s.fun = clamp(s.fun - RATES.fun * dtH);
+    s.clean = clamp(s.clean - (RATES.clean + RATES.cleanPerPoop * s.poops) * dtH);
+
+    if (s.sleeping && s.energy >= 100) { s.sleeping = false; events.push('wake'); }
+    if (!s.sleeping && s.energy <= 0) { s.sleeping = true; events.push('collapse'); }
+
+    if (s.poopAt && now >= s.poopAt) {
+      s.poopAt = null;
+      if (s.poops < MAX_POOPS) { s.poops++; events.push('poop'); }
+    }
+
+    const empty = [s.hunger, s.thirst, s.clean].filter((v) => v <= 0).length + (s.fun <= 0 ? 0.5 : 0);
+    if (empty > 0) s.health = clamp(s.health - RATES.healthLoss * empty * dtH);
+    else if (s.hunger > 40 && s.thirst > 40 && s.clean > 30) s.health = clamp(s.health + RATES.healthGain * dtH);
+
+    // Moyenne glissante de la qualité des soins (sur environ une journée) : décide de l'évolution adulte
+    const avg = (s.hunger + s.thirst + s.energy + s.fun + s.clean + s.health) / 6;
+    s.care += (avg - s.care) * Math.min(1, dtH / 24);
+
+    if (s.health <= 0) {
+      s.dead = true;
+      s.sleeping = false;
+      s.diedAt = now;
+      events.push('dead');
+    }
+  },
+
+  isSick(s) {
+    return !s.dead && s.health < 45;
+  },
+
+  mood(s) {
+    if (s.dead) return 'dead';
+    if (s.sleeping) return 'sleep';
+    if (Pet.isSick(s)) return 'sick';
+    const low = Math.min(s.hunger, s.thirst, s.fun, s.clean, s.energy);
+    if (low < 20) return 'sad';
+    if (low > 60) return 'happy';
+    return 'ok';
+  },
+
+  // Ce que le petit être réclame, pour la bulle de dialogue
+  need(s) {
+    if (s.dead || s.sleeping) return null;
+    if (Pet.isSick(s)) return 'Je ne me sens pas bien… 🤒';
+    if (s.thirst < 20) return 'J\'ai soif ! 💧';
+    if (s.hunger < 20) return 'J\'ai faim ! Donne-moi un fichier 📄';
+    if (s.clean < 20) return 'Je suis tout sale… 🛁';
+    if (s.energy < 15) return 'Je suis fatigué… 😪';
+    if (s.fun < 20) return 'Je m\'ennuie… on joue ? 🎾';
+    return null;
+  },
+
+  // ---- Actions ----
+
+  feed(s, file) {
+    if (s.dead) return { ok: false };
+    if (Pet.isEgg(s)) return { ok: false, msg: 'Je suis encore dans l\'œuf !' };
+    if (s.sleeping) return { ok: false, msg: 'Zzz… pas maintenant…' };
+    if (file.isDir) return { ok: false, msg: 'Un dossier entier ? C\'est trop gros !' };
+    if (s.hunger > 95) return { ok: false, msg: 'Je n\'ai plus faim !' };
+
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const food = FOODS.find((f) => f.exts.includes(ext)) || DEFAULT_FOOD;
+    let factor = 1;
+    let msg = pick(food.msgs);
+    if (file.size < 1024) { factor = 0.4; msg = 'Juste une miette…'; }
+    else if (file.size > 50 * 1024 * 1024) { factor = 1.3; msg = 'Énorme ! Petite indigestion…'; s.energy = clamp(s.energy - 8); }
+
+    s.hunger = clamp(s.hunger + food.hunger * factor);
+    s.thirst = clamp(s.thirst + (food.thirst || 0));
+    s.fun = clamp(s.fun + (food.fun || 0) + 2);
+    s.health = clamp(s.health + (food.health || 0));
+    s.meals++;
+    if (!s.poopAt && s.poops < MAX_POOPS && Math.random() < 0.4) {
+      s.poopAt = Date.now() + (10 + Math.random() * 40) * 60000;
+    }
+    const short = file.name.length > 16 ? file.name.slice(0, 14) + '…' : file.name;
+    return { ok: true, msg: `${short} : ${msg}`, anim: 'eat', bad: (food.health || 0) < 0 };
+  },
+
+  drink(s) {
+    if (s.dead || Pet.isEgg(s)) return { ok: false };
+    if (s.sleeping) return { ok: false, msg: 'Zzz…' };
+    if (s.thirst > 95) return { ok: false, msg: 'Je n\'ai plus soif !' };
+    s.thirst = clamp(s.thirst + 35);
+    return { ok: true, msg: pick(['Glou glou glou !', 'Ahh, ça fait du bien !', 'Rafraîchissant !']), anim: 'drink' };
+  },
+
+  toggleSleep(s) {
+    if (s.dead || Pet.isEgg(s)) return { ok: false };
+    if (s.sleeping) {
+      s.sleeping = false;
+      return { ok: true, msg: s.energy < 60 ? 'Hmm… déjà ? *bâille*' : 'Bonjour ! ☀️' };
+    }
+    if (s.energy > 90) return { ok: false, msg: 'Je ne suis pas fatigué !' };
+    s.sleeping = true;
+    return { ok: true, msg: 'Bonne nuit… 🌙' };
+  },
+
+  play(s) {
+    if (s.dead || Pet.isEgg(s)) return { ok: false };
+    if (s.sleeping) return { ok: false, msg: 'Zzz…' };
+    if (s.energy < 15) return { ok: false, msg: 'Trop fatigué pour jouer…' };
+    s.fun = clamp(s.fun + 20);
+    s.energy = clamp(s.energy - 8);
+    s.hunger = clamp(s.hunger - 3);
+    s.thirst = clamp(s.thirst - 4);
+    return { ok: true, msg: pick(['Youpiii !', 'Encore, encore !', 'Hihi, trop drôle !']), anim: 'play' };
+  },
+
+  wash(s) {
+    if (s.dead || Pet.isEgg(s)) return { ok: false };
+    if (s.sleeping) return { ok: false, msg: 'Zzz…' };
+    const hadPoop = s.poops > 0;
+    s.poops = 0;
+    s.clean = 100;
+    return { ok: true, msg: hadPoop ? 'Tout propre, et le sol aussi ! ✨' : 'Plouf ! Tout propre ✨', anim: 'wash' };
+  },
+
+  heal(s) {
+    if (s.dead || Pet.isEgg(s)) return { ok: false };
+    if (!Pet.isSick(s) && s.health > 80) return { ok: false, msg: 'Je ne suis pas malade !' };
+    s.health = clamp(s.health + 35);
+    s.fun = clamp(s.fun - 5);
+    return { ok: true, msg: 'Beurk, le médicament… mais ça va mieux !', anim: 'heal' };
+  },
+
+  // Une crotte ramassée à la main sur l'écran
+  cleanPoop(s) {
+    s.poops = Math.max(0, s.poops - 1);
+    s.clean = clamp(s.clean + 8);
+  },
+
+  pet(s) {
+    if (s.dead || s.sleeping || Pet.isEgg(s)) return { ok: false };
+    s.fun = clamp(s.fun + 3);
+    return { ok: true, anim: 'love' };
+  },
+};

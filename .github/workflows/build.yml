@@ -1,0 +1,34 @@
+# Fabrique les installateurs Windows (.exe) et Mac (.dmg) sur les serveurs de GitHub.
+# Lancement manuel depuis l'onglet « Actions » du dépôt, ou en poussant un tag v1.0.0, v1.1.0…
+name: Construire ThomasGotchi
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            script: dist
+          - os: macos-latest
+            script: dist:mac
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ThomasGotchi-${{ matrix.os }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
