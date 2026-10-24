@@ -849,19 +849,26 @@ async function openModal(id) {
   const cardH = $(id).offsetHeight + 10;
   const head = Draw.restTop(state ? Pet.stage(state) : 'egg', state && state.species);
   const extra = Math.max(0, cardH - head);
-  const r = extra ? await desk.expand(extra) : { above: true };
-  if (r && r.above) {
-    stageEl.style.top = extra + 'px';
+  const r = extra ? await desk.expand(extra) : { above: true, extra: 0 };
+  const got = r ? r.extra : 0; // place réellement obtenue (l'écran peut être trop petit)
+  let room;
+  if (!r || r.above) {
+    stageEl.style.top = got + 'px';
     modal.style.top = '0px';
-    modal.style.height = (extra + head) + 'px';
+    room = got + head;
     modal.style.alignItems = 'flex-end';
   } else {
-    // Petit être collé en haut de l'écran : la fenêtre s'agrandit vers le bas
+    // Pas assez de place au-dessus : la fenêtre s'agrandit vers le bas, sous l'animal
     stageEl.style.top = '0px';
-    modal.style.top = (300 + extra - cardH) + 'px';
-    modal.style.height = cardH + 'px';
+    modal.style.top = Math.max(0, 300 + got - cardH) + 'px';
+    room = Math.min(cardH, 300 + got);
     modal.style.alignItems = 'flex-start';
   }
+  modal.style.height = room + 'px';
+  // Si la carte est plus haute que la place disponible, elle défile
+  const card = $(id);
+  card.style.maxHeight = cardH > room ? (room - 8) + 'px' : '';
+  card.style.overflowY = cardH > room ? 'auto' : '';
   modal.style.visibility = '';
   desk.setIgnore(false);
 }
@@ -870,6 +877,7 @@ function closeModal() {
   if (!modalIsOpen()) return;
   modal.classList.add('hidden');
   stageEl.style.top = '';
+  for (const card of modal.querySelectorAll('.card')) { card.style.maxHeight = ''; card.style.overflowY = ''; }
   desk.collapse();
   desk.setIgnore(true);
 }

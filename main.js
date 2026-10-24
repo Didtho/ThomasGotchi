@@ -268,14 +268,19 @@ ipcMain.handle('drag-end', (e) => {
 ipcMain.handle('expand', (e, extra) => {
   const p = petOf(e.sender);
   if (!p) return null;
-  if (p.expandUp || p.expandDown) return { above: p.expandUp > 0 };
+  if (p.expandUp || p.expandDown) return { above: p.expandUp > 0, extra: p.expandUp || p.expandDown };
   const b = p.win.getBounds();
   const wa = screen.getDisplayMatching(b).workArea;
-  // Vers le haut s'il y a la place, sinon vers le bas (animal collé en haut de l'écran)
-  if (b.y - extra >= wa.y) p.expandUp = extra;
-  else p.expandDown = extra;
-  p.win.setBounds({ x: b.x, y: b.y - p.expandUp, width: W, height: H + extra });
-  return { above: p.expandUp > 0 };
+  const roomUp = Math.max(0, b.y - wa.y);
+  const roomDown = Math.max(0, wa.y + wa.height - (b.y + b.height));
+  // Vers le haut s'il y a la place, sinon vers le bas ; si aucun côté ne suffit, on prend le plus grand
+  // (la fenêtre de réglages défilera) : elle ne sort jamais de l'écran
+  if (roomUp >= extra) p.expandUp = extra;
+  else if (roomDown >= extra) p.expandDown = extra;
+  else if (roomUp >= roomDown) p.expandUp = roomUp;
+  else p.expandDown = roomDown;
+  p.win.setBounds({ x: b.x, y: b.y - p.expandUp, width: W, height: H + p.expandUp + p.expandDown });
+  return { above: p.expandUp > 0, extra: p.expandUp || p.expandDown };
 });
 
 ipcMain.handle('collapse', (e) => {

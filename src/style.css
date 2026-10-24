@@ -257,3 +257,7 @@ button.danger { background: #ffe0e0 !important; }
 #trick-list button:disabled { opacity: .4; cursor: help; }
 .checks { flex-wrap: wrap; gap: 4px 12px; }
 .choices.species button { flex: 0 0 auto; padding: 2px 5px; font-size: 15px; line-height: 1.2; }
+/* 21 animaux : 7 par ligne pour garder la fenêtre compacte */
+.choices.species { gap: 3px; }
+.choices.species button { width: 28px; padding: 2px 0; font-size: 14px; }
+.card { scrollbar-width: thin; }
