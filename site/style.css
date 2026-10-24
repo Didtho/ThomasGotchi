@@ -147,7 +147,7 @@ img { max-width: 100%; }
 .feature h3 { margin: 10px 0 6px; font-size: 21px; }
 .feature p { margin: 0; color: var(--ink-soft); font-size: 16px; }
 
-.animals { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+.animals { display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; }
 .animal {
   margin: 0;
   padding: 12px 8px 10px;

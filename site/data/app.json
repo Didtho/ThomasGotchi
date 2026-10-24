@@ -1,0 +1,91 @@
+{
+ "species": [
+  {
+   "id": "chat",
+   "name": "Chat"
+  },
+  {
+   "id": "lapin",
+   "name": "Lapin"
+  },
+  {
+   "id": "ours",
+   "name": "Ourson"
+  },
+  {
+   "id": "chien",
+   "name": "Chien"
+  },
+  {
+   "id": "renard",
+   "name": "Renard"
+  },
+  {
+   "id": "panda",
+   "name": "Panda"
+  },
+  {
+   "id": "pingouin",
+   "name": "Pingouin"
+  },
+  {
+   "id": "hamster",
+   "name": "Hamster"
+  },
+  {
+   "id": "koala",
+   "name": "Koala"
+  },
+  {
+   "id": "grenouille",
+   "name": "Grenouille"
+  },
+  {
+   "id": "licorne",
+   "name": "Licorne"
+  },
+  {
+   "id": "dragon",
+   "name": "Dragon"
+  },
+  {
+   "id": "loup",
+   "name": "Loup"
+  },
+  {
+   "id": "lion",
+   "name": "Lion"
+  },
+  {
+   "id": "tigre",
+   "name": "Tigre"
+  },
+  {
+   "id": "cochon",
+   "name": "Cochon"
+  },
+  {
+   "id": "mouton",
+   "name": "Mouton"
+  },
+  {
+   "id": "souris",
+   "name": "Souris"
+  },
+  {
+   "id": "hibou",
+   "name": "Hibou"
+  },
+  {
+   "id": "singe",
+   "name": "Singe"
+  },
+  {
+   "id": "raton",
+   "name": "Raton laveur"
+  }
+ ],
+ "coats": 19,
+ "accessories": 7,
+ "tricks": 5
+}

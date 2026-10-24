@@ -5,11 +5,9 @@ date_default_timezone_set('Europe/Paris');
 $release = tg_latest_release();
 $h = fn(string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 
-$animals = [
-    'chat' => 'Chat', 'lapin' => 'Lapin', 'ours' => 'Ourson', 'chien' => 'Chien',
-    'renard' => 'Renard', 'panda' => 'Panda', 'pingouin' => 'Pingouin', 'hamster' => 'Hamster',
-    'koala' => 'Koala', 'grenouille' => 'Grenouille', 'licorne' => 'Licorne', 'dragon' => 'Petit dragon',
-];
+// Animaux et chiffres repris de l'application (générés par « npm run site-assets »)
+$app = json_decode((string) @file_get_contents(__DIR__ . '/data/app.json'), true) ?: ['species' => [], 'coats' => 0];
+$animals = array_column($app['species'], 'name', 'id');
 
 $features = [
     ['🍽️', 'Il mange tes fichiers', 'Glisse une image, un PDF ou une vidéo sur lui : il se régale. Rassure-toi, tes fichiers ne sont jamais effacés.'],
@@ -115,7 +113,7 @@ $faq = [
 
   <section class="section tinted" id="animaux">
     <h2>Choisis ton compagnon</h2>
-    <p class="section-lead">12 animaux, 18 pelages, un style mignon ou pixel rétro, et des accessoires à gagner.</p>
+    <p class="section-lead"><?= count($animals) ?> animaux, <?= (int) $app['coats'] ?> pelages, un style mignon ou pixel rétro, et des accessoires à gagner.</p>
     <div class="animals">
       <?php foreach ($animals as $id => $name): ?>
         <figure class="animal">

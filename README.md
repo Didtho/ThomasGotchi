@@ -47,9 +47,10 @@ Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien 
 
 ## Personnalisation
 
-- Animal : chat, lapin, ourson, chien, renard, panda, pingouin, hamster, koala, grenouille, licorne ou petit dragon
+- Animal (21) : chat, lapin, ourson, chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, petit dragon,
+  loup, lion, tigre, cochon, mouton, souris, hibou, singe, raton laveur
 - Style : mignon ou pixel rétro
-- Pelage : rose, menthe, ciel, citron, lavande, noir, marron, orange, caramel, gris perle, vert, blanc,
+- Pelage : rose, menthe, ciel, citron, lavande, noir, marron, orange, caramel, gris perle, vert, blanc, ardoise,
   noir et blanc, roux tigré, gris tacheté (le panda et le pingouin gardent leurs couleurs naturelles)
 - Genre : il ou elle (les phrases s'accordent)
 - Modèles prêts à adopter, d'après les chats de la maison : **Simba** (roux crème et blanc),

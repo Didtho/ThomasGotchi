@@ -112,6 +112,20 @@ const Sound = (() => {
       tone('sawtooth', 220, 140, 0.45, { vol: 0.5, filter: { type: 'lowpass', freq: 900, q: 2 } });
       noise(0.35, { at: 0.1, vol: 0.25, freq: 900, q: 0.7 });
     },
+    // Ahouuu !
+    loup() { tone('sine', 380, 620, 0.5, { vol: 0.45 }); tone('sine', 620, 420, 0.7, { at: 0.5, vol: 0.4 }); },
+    lion() { tone('sawtooth', 180, 120, 0.6, { vol: 0.55, filter: { type: 'lowpass', freq: 700, q: 2 } }); },
+    tigre() { tone('sawtooth', 200, 130, 0.5, { vol: 0.55, filter: { type: 'lowpass', freq: 800, q: 3 } }); },
+    // Groin groin
+    cochon() { for (let i = 0; i < 2; i++) tone('square', 260, 200, 0.14, { at: i * 0.2, vol: 0.25, filter: { type: 'bandpass', freq: 700, q: 5 } }); },
+    // Bêêê (avec un petit chevrotement)
+    mouton() { for (let i = 0; i < 5; i++) tone('sawtooth', 420 + (i % 2) * 40, 400, 0.09, { at: i * 0.08, vol: 0.35, filter: { type: 'bandpass', freq: 1200, q: 3 } }); },
+    souris() { for (let i = 0; i < 2; i++) tone('sine', 3000, 3600, 0.05, { at: i * 0.1, vol: 0.3 }); },
+    // Hou hou
+    hibou() { tone('sine', 420, 380, 0.25, { vol: 0.5 }); tone('sine', 400, 360, 0.35, { at: 0.35, vol: 0.5 }); },
+    // Ouh ouh ah !
+    singe() { [500, 520, 900].forEach((f, i) => tone('triangle', f, f * 1.2, 0.12, { at: i * 0.15, vol: 0.4 })); },
+    raton() { for (let i = 0; i < 4; i++) tone('triangle', 1500 + Math.random() * 500, 1300, 0.05, { at: i * 0.07, vol: 0.3 }); },
     // Grognement tout doux
     ours() {
       tone('sawtooth', 140, 190, 0.25, { vol: 0.6, filter: { type: 'lowpass', freq: 600 } });

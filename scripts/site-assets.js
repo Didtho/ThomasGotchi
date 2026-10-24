@@ -1,4 +1,5 @@
-// Génère les images du site (site/img/*.png) à partir du dessin de l'application.
+// Génère les images du site (site/img/*.png) à partir du dessin de l'application,
+// ainsi que site/data/app.json (animaux, nombre de pelages…) lu par la page.
 // À lancer avec Electron : npm run site-assets
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
@@ -14,6 +15,9 @@ app.whenReady().then(async () => {
     fs.writeFileSync(path.join(dir, name + '.png'), Buffer.from(dataUrl.split(',')[1], 'base64'));
   }
   fs.copyFileSync(path.join(__dirname, '..', 'assets', 'icon.png'), path.join(dir, 'icon.png'));
+  const data = await win.webContents.executeJavaScript('window.appData()');
+  fs.mkdirSync(path.join(__dirname, '..', 'site', 'data'), { recursive: true });
+  fs.writeFileSync(path.join(__dirname, '..', 'site', 'data', 'app.json'), JSON.stringify(data, null, 1));
   console.log(Object.keys(images).length + 1, 'images générées dans', dir);
   app.quit();
 });

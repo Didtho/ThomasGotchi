@@ -41,3 +41,11 @@ window.renderAll = () => {
   out['scene-soif'] = renderPng(view('hamster', 'caramel', { mood: 'sad', eyes: 'sad', mouth: 'tongue', need: 'thirst', t: 3 }));
   return out;
 };
+
+// Données reprises par le site : liste des animaux, nombre de pelages et d'accessoires
+window.appData = () => ({
+  species: Pet.SPECIES.map((s) => ({ id: s.id, name: s.name })),
+  coats: Object.keys(Pet.COLORS).length,
+  accessories: Pet.ACCESSORIES.length,
+  tricks: Pet.TRICKS.length,
+});

@@ -20,6 +20,7 @@ const COLORS = {
   perle: '#bdb9c4',
   vert: '#8fd16a',
   blanc: '#f7f4fb',
+  ardoise: '#8d8a99',
   simba: '#e9b27c',
   snoop: '#8f8a93',
   grisette: '#2f2b33',
@@ -67,6 +68,15 @@ const SPECIES = [
   { id: 'grenouille', name: 'Grenouille', icon: '🐸', color: 'vert' },
   { id: 'licorne', name: 'Licorne', icon: '🦄', color: 'blanc' },
   { id: 'dragon', name: 'Dragon', icon: '🐲', color: 'vert' },
+  { id: 'loup', name: 'Loup', icon: '🐺', color: 'ardoise' },
+  { id: 'lion', name: 'Lion', icon: '🦁', color: 'caramel' },
+  { id: 'tigre', name: 'Tigre', icon: '🐯', color: 'orange' },
+  { id: 'cochon', name: 'Cochon', icon: '🐷', color: 'rose' },
+  { id: 'mouton', name: 'Mouton', icon: '🐑', color: 'perle' },
+  { id: 'souris', name: 'Souris', icon: '🐭', color: 'perle' },
+  { id: 'hibou', name: 'Hibou', icon: '🦉', color: 'marron' },
+  { id: 'singe', name: 'Singe', icon: '🐵', color: 'marron' },
+  { id: 'raton', name: 'Raton laveur', icon: '🦝', color: 'ardoise' },
 ];
 
 // Modèles prêts à adopter (un clic remplit le prénom, le pelage et le genre)
