@@ -9,7 +9,8 @@
     "start": "electron .",
     "icon": "electron scripts/make-icon.js",
     "dist": "electron-builder --win --publish never",
-    "dist:mac": "electron-builder --mac --publish never"
+    "dist:mac": "electron-builder --mac --publish never",
+    "site-assets": "electron scripts/site-assets.js"
   },
   "build": {
     "appId": "com.thomasgotchi.app",
