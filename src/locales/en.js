@@ -316,6 +316,12 @@
     'La version {v} est prête : elle s\'installera à la prochaine ouverture (ou via le menu de l\'icône).': 'Version {v} is ready: it will be installed next time you open the app (or from the icon menu).',
     'Tu as déjà la dernière version (v{v}).': 'You already have the latest version (v{v}).',
     'Impossible de vérifier les mises à jour (pas de connexion ?).': 'Unable to check for updates (no connection?).',
+    'Nouvelle version {v} trouvée : téléchargement en cours…': 'New version {v} found: downloading…',
+    'La version {v} est prête.': 'Version {v} is ready.',
+    'ThomasGotchi va redémarrer pour l\'installer. Tes animaux sont conservés.': 'ThomasGotchi will restart to install it. Your pets are kept.',
+    'Redémarrer maintenant': 'Restart now',
+    'Plus tard': 'Later',
+    'La version {v} est prête : clique ici pour l\'installer (ou elle s\'installera à la prochaine ouverture).': 'Version {v} is ready: click here to install it (or it will be installed next time you open the app).',
     'ThomasGotchi': 'ThomasGotchi',
     'English': 'English', 'Español': 'Español', 'Français': 'Français', 'Italiano': 'Italiano',
   };

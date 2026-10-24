@@ -941,14 +941,24 @@ function newer(a, b) {
   return false;
 }
 
-function notify(body) {
-  if (Notification.isSupported()) new Notification({ title: 'ThomasGotchi', body }).show();
+// onClick : action quand on clique sur la notification
+function notify(body, onClick) {
+  if (!Notification.isSupported()) return;
+  const n = new Notification({ title: 'ThomasGotchi', body });
+  if (onClick) n.on('click', onClick);
+  n.show();
+}
+
+let manualUpdateCheck = false; // recherche lancée depuis le menu : on guide l'utilisateur jusqu'au bout
+
+function installUpdate() {
+  require('electron-updater').autoUpdater.quitAndInstall();
 }
 
 // Ligne du menu de l'icône selon l'état de la mise à jour
 function updateMenuItem() {
   if (updateState && updateState.status === 'ready') {
-    return { label: tr('🔄 Redémarrer pour installer la v{v}', { v: updateState.version }), click: () => require('electron-updater').autoUpdater.quitAndInstall() };
+    return { label: tr('🔄 Redémarrer pour installer la v{v}', { v: updateState.version }), click: installUpdate };
   }
   if (updateState && updateState.status === 'downloading') {
     return { label: tr('⬇ Téléchargement de la v{v}…', { v: updateState.version }), enabled: false };
@@ -963,11 +973,28 @@ function setupAutoUpdater() {
   autoUpdater.on('update-available', (info) => {
     updateState = { status: 'downloading', version: info.version };
     buildTrayMenu();
+    if (manualUpdateCheck) notify(tr('Nouvelle version {v} trouvée : téléchargement en cours…', { v: info.version }));
   });
-  autoUpdater.on('update-downloaded', (info) => {
+  autoUpdater.on('update-downloaded', async (info) => {
     updateState = { status: 'ready', version: info.version };
     buildTrayMenu();
-    notify(tr('La version {v} est prête : elle s\'installera à la prochaine ouverture (ou via le menu de l\'icône).', { v: info.version }));
+    if (manualUpdateCheck) {
+      // Recherche lancée par l'utilisateur : on lui propose tout de suite d'installer
+      manualUpdateCheck = false;
+      const { response } = await dialog.showMessageBox({
+        type: 'info',
+        title: 'ThomasGotchi',
+        message: tr('La version {v} est prête.', { v: info.version }),
+        detail: tr('ThomasGotchi va redémarrer pour l\'installer. Tes animaux sont conservés.'),
+        buttons: [tr('Redémarrer maintenant'), tr('Plus tard')],
+        defaultId: 0,
+        cancelId: 1,
+      });
+      if (response === 0) installUpdate();
+    } else {
+      // Trouvée en arrière-plan : simple notification ; un clic dessus lance l'installation
+      notify(tr('La version {v} est prête : clique ici pour l\'installer (ou elle s\'installera à la prochaine ouverture).', { v: info.version }), installUpdate);
+    }
   });
   autoUpdater.on('error', () => {
     if (updateState && updateState.status === 'downloading') updateState = null;
@@ -986,6 +1013,7 @@ async function checkForUpdates(manual = false) {
       else if (manual) notify(tr('Tu as déjà la dernière version (v{v}).', { v: app.getVersion() }));
     } else {
       const { autoUpdater } = require('electron-updater');
+      manualUpdateCheck = manual;
       const result = await autoUpdater.checkForUpdates();
       const latest = result && result.updateInfo && result.updateInfo.version;
       if (manual && (!latest || !newer(latest, app.getVersion()))) notify(tr('Tu as déjà la dernière version (v{v}).', { v: app.getVersion() }));

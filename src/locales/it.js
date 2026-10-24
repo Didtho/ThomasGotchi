@@ -316,6 +316,12 @@
     'La version {v} est prête : elle s\'installera à la prochaine ouverture (ou via le menu de l\'icône).': 'La versione {v} è pronta: verrà installata alla prossima apertura (o dal menu dell\'icona).',
     'Tu as déjà la dernière version (v{v}).': 'Hai già l\'ultima versione (v{v}).',
     'Impossible de vérifier les mises à jour (pas de connexion ?).': 'Impossibile cercare aggiornamenti (nessuna connessione?).',
+    'Nouvelle version {v} trouvée : téléchargement en cours…': 'Nuova versione {v} trovata: download in corso…',
+    'La version {v} est prête.': 'La versione {v} è pronta.',
+    'ThomasGotchi va redémarrer pour l\'installer. Tes animaux sont conservés.': 'ThomasGotchi si riavvierà per installarla. I tuoi animali vengono conservati.',
+    'Redémarrer maintenant': 'Riavvia ora',
+    'Plus tard': 'Più tardi',
+    'La version {v} est prête : clique ici pour l\'installer (ou elle s\'installera à la prochaine ouverture).': 'La versione {v} è pronta: clicca qui per installarla (o verrà installata alla prossima apertura).',
     'ThomasGotchi': 'ThomasGotchi',
     'English': 'English', 'Español': 'Español', 'Français': 'Français', 'Italiano': 'Italiano',
   };
