@@ -45,6 +45,11 @@ function draw(now) {
     return;
   }
 
+  if (kind === 'gift' || kind === 'egg') {
+    if (kind === 'gift') drawGift(t); else drawEgg(t);
+    setTimeout(() => requestAnimationFrame(draw), 60);
+    return;
+  }
   if (kind === 'pee') {
     drawPuddle(t);
     setTimeout(() => requestAnimationFrame(draw), 120);
@@ -88,6 +93,40 @@ function drawPuddle(t) {
   // Reflet qui scintille
   ctx.globalAlpha = 0.6 + Math.sin(t * 3) * 0.3;
   ellipse(cx - 8, 47.5, 5, 1.4, '#fffbe0');
+  ctx.globalAlpha = 1;
+}
+
+// Paquet cadeau qui sautille pour attirer l'attention
+function drawGift(t) {
+  const hop = Math.abs(Math.sin(t * 3)) * 4;
+  const y = 50 - hop;
+  ellipse(28, 53, 15, 3, 'rgba(0,0,0,.15)');
+  ctx.fillStyle = '#e8455d';
+  ctx.fillRect(12, y - 24, 32, 24);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = INK;
+  ctx.strokeRect(12, y - 24, 32, 24);
+  ctx.fillStyle = '#ffd84a';
+  ctx.fillRect(25, y - 24, 6, 24);
+  ctx.fillRect(10, y - 30, 36, 7);
+  ctx.strokeRect(10, y - 30, 36, 7);
+  ellipse(23, y - 34, 6, 4, '#ffd84a', INK, 1.8);
+  ellipse(33, y - 34, 6, 4, '#ffd84a', INK, 1.8);
+}
+
+// Œuf en chocolat emballé, qui brille un peu
+function drawEgg(t) {
+  ellipse(28, 53, 11, 2.5, 'rgba(0,0,0,.15)');
+  ellipse(28, 38, 12, 15, '#8a5a3c', INK, 2);
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(28, 38, 12, 15, 0, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.fillStyle = ['#ff9fc6', '#9fe3bd', '#ffe17a', '#a9d4ff'][Math.floor(t / 4) % 4];
+  ctx.fillRect(14, 34, 28, 7);
+  ctx.restore();
+  ctx.globalAlpha = 0.5 + Math.sin(t * 4) * 0.4;
+  ellipse(23, 31, 3, 4, '#fff');
   ctx.globalAlpha = 1;
 }
 

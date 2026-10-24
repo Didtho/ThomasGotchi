@@ -474,6 +474,34 @@ function drawAccessory(ctx, kind, cx, g, v) {
     ctx.fillStyle = '#f2a45a';
     ctx.fillRect(-headRx * 0.46, -r * 0.2, headRx * 0.93, r * 0.12);
     ctx.restore();
+  } else if (kind === 'fete') {
+    const bx = cx + headRx * 0.15, by = headCy - headRy * 0.82;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(0.2);
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.32, 0);
+    ctx.lineTo(0, -r * 0.85);
+    ctx.lineTo(r * 0.32, 0);
+    ctx.closePath();
+    ctx.fillStyle = '#9b6fe8';
+    ctx.fill();
+    ctx.save();
+    ctx.clip();
+    ctx.strokeStyle = '#ffd84a';
+    ctx.lineWidth = r * 0.09;
+    for (let k = 1; k <= 3; k++) {
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.4, -r * 0.2 * k);
+      ctx.lineTo(r * 0.4, -r * 0.2 * k + r * 0.1);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    ellipse(ctx, 0, -r * 0.88, r * 0.1, r * 0.1, '#ff6f91', INK, 1.5);
+    ctx.restore();
   } else if (kind === 'noel') {
     const baseY = headCy - headRy * 0.62;
     const sway = Math.sin(v.t * 1.5) * 2;
@@ -783,7 +811,7 @@ function drawCreature(ctx, v) {
 
   const mouthY = drawFace(ctx, v, cx, g);
   // Les chapeaux laissent la place au bonnet de nuit quand il dort
-  const hat = ['couronne', 'sorciere', 'noel'].includes(v.accessory);
+  const hat = ['couronne', 'sorciere', 'noel', 'fete'].includes(v.accessory);
   if (v.accessory && v.mood !== 'dead' && !(hat && v.nightcap)) drawAccessory(ctx, v.accessory, cx, g, v);
   if (v.nightcap) drawNightcap(ctx, cx, g, v.t, species);
 
@@ -953,6 +981,147 @@ function drawEffects(ctx, v, cx, cy, rx, ry, mouthY) {
   }
 }
 
+// ---- Décors des fêtes (Halloween, Noël, Nouvel An…) ----
+
+// Derrière l'animal : objets posés au sol
+function drawDecorBack(ctx, v) {
+  const t = v.t;
+  if (v.decor === 'halloween') {
+    // Citrouille (son visage s'illumine la nuit)
+    const x = CENTER - 84, y = GROUND - 14;
+    for (const [dx, w] of [[-9, 11], [9, 11], [0, 12]]) ellipse(ctx, x + dx, y, w, 13, '#f28c28', INK, 2);
+    ctx.fillStyle = '#4c7a2e';
+    ctx.fillRect(x - 2, y - 19, 4, 7);
+    ctx.fillStyle = v.night ? `rgba(255,214,90,${0.75 + Math.sin(t * 6) * 0.2})` : '#5a2d0c';
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(x + side * 7, y - 6); ctx.lineTo(x + side * 3, y - 1); ctx.lineTo(x + side * 10, y - 1);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y + 4); ctx.lineTo(x - 4, y + 7); ctx.lineTo(x, y + 4); ctx.lineTo(x + 4, y + 7); ctx.lineTo(x + 8, y + 4);
+    ctx.lineTo(x + 6, y + 9); ctx.lineTo(x - 6, y + 9);
+    ctx.closePath();
+    ctx.fill();
+  } else if (v.decor === 'snow') {
+    // Petit sapin décoré
+    const x = CENTER + 86, y = GROUND;
+    ctx.fillStyle = '#7a4a2a';
+    ctx.fillRect(x - 3, y - 9, 6, 9);
+    for (const [dy, w] of [[-9, 18], [-22, 14], [-33, 10]]) {
+      ctx.beginPath();
+      ctx.moveTo(x - w, y + dy); ctx.lineTo(x, y + dy - 18); ctx.lineTo(x + w, y + dy);
+      ctx.closePath();
+      ctx.fillStyle = '#2e8b57';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = INK;
+      ctx.stroke();
+    }
+    [['#e8455d', -8, -14], ['#ffd84a', 7, -24], ['#6f8fe8', -4, -32], ['#e8455d', 5, -12]].forEach(([c, dx, dy], i) =>
+      ellipse(ctx, x + dx, y + dy, 2.6, 2.6, (Math.floor(t * 2) + i) % 3 ? c : '#fff'));
+    ellipse(ctx, x, y - 53, 4, 4, '#ffd84a', INK, 1.5);
+  } else if (v.decor === 'cake') {
+    // Gâteau d'anniversaire avec une bougie qui vacille
+    const x = CENTER - 84, y = GROUND;
+    ctx.fillStyle = '#ffd1dc';
+    ctx.fillRect(x - 15, y - 18, 30, 18);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = INK;
+    ctx.strokeRect(x - 15, y - 18, 30, 18);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x - 15, y - 18, 30, 5);
+    ctx.fillStyle = '#6f8fe8';
+    ctx.fillRect(x - 1.5, y - 28, 3, 10);
+    ellipse(ctx, x + Math.sin(t * 12) * 0.8, y - 31, 2.5, 4, '#ffb52e');
+  } else if (v.decor === 'spring') {
+    // Œufs de Pâques et fleurs dans l'herbe
+    [['#ff9fc6', -86], ['#9fe3bd', -72], ['#ffe17a', 80]].forEach(([c, dx]) => {
+      ellipse(ctx, CENTER + dx, GROUND - 8, 6, 8, c, INK, 1.8);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(CENTER + dx - 5, GROUND - 8); ctx.lineTo(CENTER + dx + 5, GROUND - 8);
+      ctx.stroke();
+    });
+  }
+}
+
+// Devant l'animal : ce qui vole ou tombe
+function drawDecorFront(ctx, v) {
+  const t = v.t;
+  if (v.decor === 'snow') {
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    for (let i = 0; i < 28; i++) {
+      const speed = 14 + (i % 4) * 6;
+      const x = (i * 53 + Math.sin(t + i) * 8) % 240;
+      const y = (t * speed + i * 37) % 300;
+      ctx.beginPath();
+      ctx.arc(x, y, 1.4 + (i % 3) * 0.7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (v.decor === 'halloween') {
+    // Deux chauves-souris qui volettent
+    for (let i = 0; i < 2; i++) {
+      const x = 120 + Math.sin(t * 0.7 + i * 3) * 95;
+      const y = 120 + i * 30 + Math.sin(t * 2 + i) * 15;
+      const flap = Math.sin(t * 14 + i) * 5;
+      ctx.fillStyle = '#2b1d33';
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x - 7, y - 6 - flap, x - 14, y - flap);
+      ctx.quadraticCurveTo(x - 8, y + 1, x, y + 3);
+      ctx.quadraticCurveTo(x + 8, y + 1, x + 14, y - flap);
+      ctx.quadraticCurveTo(x + 7, y - 6 - flap, x, y);
+      ctx.fill();
+      ellipse(ctx, x, y + 1, 3, 3.5, '#2b1d33');
+    }
+  } else if (v.decor === 'fireworks') {
+    // Bouquets de feu d'artifice qui éclatent à tour de rôle
+    const colors = ['#ffd84a', '#ff6f91', '#6fd3ff', '#9fe3bd'];
+    for (let i = 0; i < 3; i++) {
+      const phase = (t / 2.2 + i / 3) % 1;
+      const seed = Math.floor(t / 2.2 + i / 3) * 7 + i;
+      const cx = 40 + (seed * 61) % 160, cy = 40 + (seed * 37) % 90;
+      ctx.globalAlpha = Math.max(0, 1 - phase);
+      ctx.fillStyle = colors[seed % 4];
+      for (let k = 0; k < 12; k++) {
+        const a = k * Math.PI / 6;
+        const d = phase * 32;
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d + phase * phase * 10, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    drawConfetti(ctx, t, 14);
+  } else if (v.decor === 'confetti') {
+    drawConfetti(ctx, t, 22);
+  } else if (v.decor === 'hearts') {
+    for (let i = 0; i < 6; i++) {
+      const k = (t * 0.25 + i / 6) % 1;
+      ctx.globalAlpha = Math.sin(k * Math.PI);
+      heart(ctx, 25 + ((i * 71) % 190) + Math.sin(t * 2 + i) * 6, 290 - k * 230, 9, '#ff6f91');
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawConfetti(ctx, t, n) {
+  const colors = ['#ffd84a', '#ff6f91', '#6fd3ff', '#9fe3bd', '#cdb8ff'];
+  for (let i = 0; i < n; i++) {
+    const x = (i * 47 + Math.sin(t * 1.5 + i) * 10) % 240;
+    const y = (t * (18 + (i % 5) * 5) + i * 41) % 300;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(t * 3 + i);
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(-3, -1.5, 6, 3);
+    ctx.restore();
+  }
+}
+
 // ---- Rendu, avec passage optionnel en pixel art ----
 
 const lowRes = document.createElement('canvas');
@@ -1012,7 +1181,9 @@ const Draw = {
       lowCtx.setTransform(1 / PIXEL, 0, 0, 1 / PIXEL, 0, 0);
     }
     target.save();
+    if (v.decor) drawDecorBack(target, v);
     const box = v.stage === 'egg' ? drawEgg(target, v) : drawCreature(target, v);
+    if (v.decor) drawDecorFront(target, v);
     target.restore();
     if (pixel) {
       pixelate();

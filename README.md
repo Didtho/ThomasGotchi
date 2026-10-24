@@ -21,6 +21,10 @@ Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper p
   elle se déroule en roulant. Cliquer dessus pour la rembobiner.
 - L'icône près de l'horloge (barre des menus sur Mac) permet de le cacher, de le ramener, d'en adopter un autre ou de quitter.
 
+**Fêtes** : décors et surprises aux bonnes dates — Halloween (citrouille, chauves-souris), Noël (neige, sapin,
+cadeau à ouvrir sur le bureau les 24 et 25), Nouvel An (feux d'artifice, chapeau de fête), Saint-Valentin (cœurs),
+Pâques (chasse aux œufs cachés sur l'écran), Journée du chat (8 août), et anniversaire de l'animal chaque mois.
+
 Ses besoins se lisent sur son visage : langue pendante quand il a soif, bave quand il a faim, thermomètre quand il
 est malade, taches et odeurs quand il est sale.
 

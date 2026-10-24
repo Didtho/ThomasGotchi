@@ -369,7 +369,7 @@ function createPoop(owner, id, x, y, style, kind, edge) {
   w.setAlwaysOnTop(true, 'floating');
   w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   w.loadFile(path.join(__dirname, 'src', 'poop.html'), { query: { style: style || 'cute', kind: kind || 'poop', edge: edge || '' } });
-  poopWindows.set(id, { win: w, owner: owner.id });
+  poopWindows.set(id, { win: w, owner: owner.id, kind: kind || 'poop' });
   w.on('closed', () => poopWindows.delete(id));
 }
 
@@ -385,8 +385,13 @@ function poopNextToPet(p, id, side, style, kind, edge) {
   // Contre le bord de l'écran : juste sous la patte levée ; sinon un peu à côté de lui
   const dist = edge ? 50 : 75 + Math.random() * 45;
   const wa = screen.getDisplayMatching(b).workArea;
-  const x = Math.round(Math.min(Math.max(b.x + W / 2 + side * dist - POOP / 2, wa.x), wa.x + wa.width - POOP));
-  const y = Math.round(b.y + p.expandUp + H - POOP + 2);
+  let x = Math.round(Math.min(Math.max(b.x + W / 2 + side * dist - POOP / 2, wa.x), wa.x + wa.width - POOP));
+  let y = Math.round(b.y + p.expandUp + H - POOP + 2);
+  if (kind === 'egg') {
+    // Œufs de Pâques cachés n'importe où sur l'écran
+    x = Math.round(wa.x + 40 + Math.random() * (wa.width - 80 - POOP));
+    y = Math.round(wa.y + 80 + Math.random() * (wa.height - 120 - POOP));
+  }
   createPoop(p, id, x, y, style, kind, edge);
   return { x, y };
 }
@@ -421,7 +426,9 @@ ipcMain.on('poop-clean', (e) => {
 ipcMain.on('poop-clear-all', (e) => {
   const p = petOf(e.sender);
   if (!p) return;
-  for (const poop of poopWindows.values()) if (poop.owner === p.id && !poop.win.isDestroyed()) poop.win.close();
+  for (const poop of poopWindows.values()) {
+    if (poop.owner === p.id && (poop.kind === 'poop' || poop.kind === 'pee') && !poop.win.isDestroyed()) poop.win.close();
+  }
 });
 
 // ---- Pelote de laine : roule en bas de l'écran, les animaux courent après ----

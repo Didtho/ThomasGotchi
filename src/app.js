@@ -32,6 +32,7 @@ let hungryLook = false;
 let snoreTick = 0;
 let unlockTick = 0;
 let pendingMemorials = []; // souvenirs à transmettre au prochain œuf
+let festivity = null; // fête du moment (voir seasons.js), recalculée chaque minute
 let cursor = null; // position de la souris par rapport à la fenêtre (envoyée par main.js)
 let yarnInfo = null; // pelote de laine sortie : { x (par rapport à la fenêtre), moving }
 
@@ -145,6 +146,8 @@ function buildView(now) {
     running: !!walking && walking.speed > 3,
     nightcap: state.sleeping && isNight(),
     accessory: state.accessory,
+    decor: festivity ? festivity.decor : null,
+    night: isNight(),
     eggProgress: Math.min(1, Math.max(0, 1 - (state.hatchAt - Date.now()) / HATCH_DELAY)),
   };
 }
@@ -282,6 +285,70 @@ function pounceYarn() {
   if (Math.random() < 0.25) say(['Attrape !', 'À moi la pelote !', 'Hop, un coup de patte !'][Math.floor(Math.random() * 3)], 1800);
 }
 
+// ---------- Fêtes ----------
+// Le jour J, il souhaite la fête une fois (par fête et par an). À Noël un cadeau apparaît
+// sur le bureau, à Pâques des œufs en chocolat sont cachés sur l'écran.
+
+function celebrate() {
+  const f = festivity;
+  if (!f || state.dead || state.sleeping || Pet.isEgg(state) || modalIsOpen()) return;
+  state.greeted = state.greeted || [];
+  if (f.greetToday && !state.greeted.includes(f.key)) {
+    state.greeted.push(f.key);
+    state.fun = Math.min(100, state.fun + 10);
+    play('jump', 800);
+    Sound.play('win');
+    say(f.greeting, 6000);
+    checkUnlocks();
+    save();
+  }
+  if (f.gift && !state.greeted.includes(f.key + '-cadeau')) {
+    state.greeted.push(f.key + '-cadeau');
+    addTreat('gift');
+    setTimeout(() => say('Oh ! Un cadeau est apparu sur le bureau 🎁', 5000), 7000);
+  }
+  if (f.eggs && !state.greeted.includes(f.key + '-oeufs')) {
+    state.greeted.push(f.key + '-oeufs');
+    for (let i = 0; i < 5; i++) addTreat('egg');
+  }
+}
+
+// Surprises posées sur le bureau (cadeau, œufs) : comme les crottes, une petite fenêtre qu'on clique
+async function addTreat(kind) {
+  const id = kind + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const pos = await desk.poopAdd(id, Math.random() < 0.5 ? -1 : 1, state.style, kind);
+  if (!pos || !state) return;
+  state.treatSpots = state.treatSpots || [];
+  state.treatSpots.push({ id, kind, ...pos });
+  save();
+}
+
+function openTreat(spot) {
+  state.treatSpots = state.treatSpots.filter((t) => t.id !== spot.id);
+  Sound.play('win');
+  if (spot.kind === 'gift') {
+    // Le cadeau contient un accessoire pas encore gagné, sinon un grand moment de joie
+    const missing = Pet.ACCESSORIES.filter((a) => !state.unlocked.includes(a.id));
+    const prize = missing[Math.floor(Math.random() * missing.length)];
+    state.fun = Math.min(100, state.fun + 25);
+    play('love', 1600);
+    if (prize) {
+      state.unlocked.push(prize.id);
+      state.accessory = prize.id;
+      say(`Un cadeau ! C'est… ${prize.icon} ${prize.name} ! Merci !`, 6000);
+    } else {
+      say('Un cadeau ! J\'adore, merci ! 🎁💕', 5000);
+    }
+  } else {
+    state.fun = Math.min(100, state.fun + 8);
+    state.hunger = Math.min(100, state.hunger + 5);
+    const left = state.treatSpots.filter((t) => t.kind === 'egg').length;
+    say(left ? `Un œuf en chocolat ! Encore ${left} à trouver 🥚` : 'Tous les œufs trouvés ! Bravo 🐣🍫', 4000);
+    play(left ? 'jump' : 'love', 1200);
+  }
+  save();
+}
+
 // ---------- Rythme du jour ----------
 
 function isNight() {
@@ -346,6 +413,8 @@ function logic() {
   }
 
   dayRhythm();
+  if (unlockTick % 60 === 1) festivity = Seasons.birthday(state) || Seasons.current();
+  celebrate();
 
   // Petit ronflement de temps en temps
   if (state.sleeping && ++snoreTick % 4 === 0) Sound.play('snore');
@@ -525,6 +594,7 @@ async function restorePoops() {
   const spots = (state.poopSpots || []).slice(0, state.poops);
   state.poopSpots = spots.length ? await desk.poopRestore(spots, state.style) : [];
   for (let i = state.poopSpots.length; i < state.poops; i++) await addPoop(i % 2 ? 1 : -1);
+  if (state.treatSpots && state.treatSpots.length) state.treatSpots = await desk.poopRestore(state.treatSpots, state.style);
 }
 
 // ---------- Glisser-déposer de fichiers = nourriture ----------
@@ -804,6 +874,8 @@ desk.onMeet(({ name, side, game, role }) => {
 
 desk.onPoopCleaned((id) => {
   if (!state) return;
+  const treat = (state.treatSpots || []).find((t) => t.id === id);
+  if (treat) return openTreat(treat);
   state.poopSpots = (state.poopSpots || []).filter((p) => p.id !== id);
   Pet.cleanPoop(state);
   Sound.play('sparkle');

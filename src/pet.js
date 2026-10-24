@@ -387,5 +387,7 @@ const ACCESSORIES = [
   { id: 'sorciere', name: 'Chapeau de sorcière', icon: '🎃', hint: 'être là pour Halloween',
     earned: (s, d) => (d.getMonth() === 9 && d.getDate() >= 15) || (d.getMonth() === 10 && d.getDate() <= 2) },
   { id: 'noel', name: 'Bonnet de Noël', icon: '🎅', hint: 'être là en décembre', earned: (s, d) => d.getMonth() === 11 },
+  { id: 'fete', name: 'Chapeau de fête', icon: '🥳', hint: 'fêter la nouvelle année',
+    earned: (s, d) => (d.getMonth() === 11 && d.getDate() === 31) || (d.getMonth() === 0 && d.getDate() <= 2) },
 ];
 Pet.ACCESSORIES = ACCESSORIES;
