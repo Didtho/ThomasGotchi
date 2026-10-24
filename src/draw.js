@@ -1124,26 +1124,14 @@ function drawWeatherBack(ctx, v) {
   }
 }
 
-// Devant l'animal : pluie, neige, éclairs
+// Devant l'animal : neige et éclairs. La pluie n'est pas dessinée (les gouttes gênaient) :
+// les nuages gris et le parapluie suffisent à la montrer.
 function drawWeatherFront(ctx, v) {
   const t = v.t;
   const w = v.weather;
-  if (w === 'rain' || w === 'storm') {
-    ctx.strokeStyle = 'rgba(120,170,230,.75)';
-    ctx.lineWidth = 1.6;
-    ctx.lineCap = 'round';
-    for (let i = 0; i < 34; i++) {
-      const x = (i * 37 + t * 40) % 250 - 5;
-      const y = (t * 260 + i * 53) % 300;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x - 3, y + 10);
-      ctx.stroke();
-    }
-    if (w === 'storm' && (t % 6) < 0.12) {
-      // Éclair : un flash bref et un zigzag
-      ctx.fillStyle = 'rgba(255,255,255,.35)';
-      ctx.fillRect(0, 0, 240, 300);
+  if (w === 'storm') {
+    if ((t % 6) < 0.25) {
+      // Petit éclair de temps en temps, sans flash
       ctx.strokeStyle = '#ffe66b';
       ctx.lineWidth = 3;
       ctx.beginPath();
