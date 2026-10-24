@@ -159,7 +159,7 @@ $faq = [
         <ol>
           <li>Télécharge le fichier <strong>.dmg</strong> et ouvre-le.</li>
           <li>Glisse ThomasGotchi dans le dossier <strong>Applications</strong>.</li>
-          <li>La première fois : <strong>clic droit</strong> sur l'application → <em>Ouvrir</em> → <em>Ouvrir</em>.</li>
+          <li>La première fois : fais un <strong>clic droit</strong> sur l'application et choisis <em>Ouvrir</em>. macOS affiche alors un avertissement : confirme avec le bouton <em>Ouvrir</em>.</li>
         </ol>
         <p class="note">Si macOS indique que l'application est « endommagée », ouvre le Terminal et tape :<br><code>xattr -cr /Applications/ThomasGotchi.app</code></p>
       </article>

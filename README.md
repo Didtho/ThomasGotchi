@@ -76,7 +76,7 @@ npm run icon       # régénère assets/icon.png à partir du dessin de l'animal
 Publier une nouvelle version : changer "version" dans `package.json`, puis créer et pousser le tag correspondant
 (`git tag v1.2.0 && git push origin v1.2.0`). GitHub fabrique alors les deux installateurs et les publie.
 
-L'application n'est pas signée : au premier lancement sur Mac, faire **clic droit → Ouvrir**. Si macOS dit qu'elle est
+L'application n'est pas signée : au premier lancement sur Mac, faire un **clic droit → Ouvrir**, puis confirmer avec le bouton **Ouvrir** de l'avertissement. Si macOS dit qu'elle est
 « endommagée », taper dans le Terminal : `xattr -cr /Applications/ThomasGotchi.app`.
 
 Sauvegarde : `%APPDATA%\thomasgotchi\pet.json` (Windows) ou `~/Library/Application Support/thomasgotchi/pet.json` (Mac).
