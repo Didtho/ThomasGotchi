@@ -33,6 +33,7 @@ let snoreTick = 0;
 let unlockTick = 0;
 let pendingMemorials = []; // souvenirs à transmettre au prochain œuf
 let furn = null; // gamelle : { bowl: { x, food, water } }
+let friends = []; // autres animaux : [{ name, x, points, level }] (envoyé par main.js)
 let dnd = false; // mode « ne pas déranger »
 let festivity = null; // fête du moment (voir seasons.js), recalculée chaque minute
 let cursor = null; // position de la souris par rapport à la fenêtre (envoyée par main.js)
@@ -84,7 +85,7 @@ function buildView(now) {
   if (mood === 'dead') eyes = 'dead';
   else if (mood === 'sleep') eyes = 'closed';
   else if (anim === 'dizzy') eyes = 'dizzy';
-  else if (anim === 'play' || anim === 'love' || anim === 'hatch' || anim === 'jump' || anim === 'roll') eyes = 'joy';
+  else if (['play', 'love', 'hatch', 'jump', 'roll', 'dance', 'spin', 'backflip', 'wave', 'tussle'].includes(anim)) eyes = 'joy';
   else if (blinking) eyes = 'closed';
   else if (mood === 'sick' || state.energy < 25) eyes = 'tired';
   else if (mood === 'sad') eyes = 'sad';
@@ -99,7 +100,7 @@ function buildView(now) {
   let mouth = 'smile';
   if (anim === 'eat') mouth = Math.sin(animT * 14) > 0 ? 'chomp' : 'flat';
   else if (anim === 'drink' || mood === 'sleep' || hungryLook) mouth = hungryLook ? 'open' : 'o';
-  else if (anim === 'play' || anim === 'love' || anim === 'hatch') mouth = 'open';
+  else if (['play', 'love', 'hatch', 'dance', 'spin', 'backflip', 'wave', 'tussle'].includes(anim)) mouth = 'open';
   else if (mood === 'dead') mouth = 'flat';
   else if (mood === 'sick') mouth = 'wavy';
   else if (need === 'thirst') mouth = 'tongue';
@@ -197,7 +198,7 @@ function canWander(allowedAnim) {
 }
 
 // Petits numéros quand il ne marche pas : saut, roulade, étirement, regard autour de lui
-const TRICKS = [
+const WANDER_TRICKS = [
   { anim: 'jump', dur: 800, say: ['Hop !', 'Youpi !'] },
   { anim: 'roll', dur: 900, say: ['Roulade !', 'Wiii !'], move: 5 },
   { anim: 'stretch', dur: 1500, say: ['Étiiiirement…'] },
@@ -259,6 +260,12 @@ function wander(now) {
   // Curieux : la souris bouge près du sol à côté de lui, il va voir
   const cursorNear = cursor && Math.abs(cursor.x - 120) < 450 && Math.abs(cursor.y - (stageEl.offsetTop + 270)) < 250;
   const roll = Math.random();
+  // Il va rendre visite à son meilleur ami
+  const buddy = friends.filter((f) => Math.abs(f.x) > 130 && Math.abs(f.x) < 1600).sort((a, b) => b.points - a.points)[0];
+  if (buddy && roll < 0.2 + buddy.points / 400) {
+    startWalk(buddy.x > 0 ? 1 : -1, Math.ceil((Math.abs(buddy.x) - 90) / 3), 3);
+    return;
+  }
   if (cursorNear && roll < 0.35) {
     const dx = cursor.x - 120;
     startWalk(dx > 0 ? 1 : -1, Math.min(150, Math.abs(dx) / 2), 2);
@@ -267,8 +274,12 @@ function wander(now) {
   } else if (roll < 0.72) {
     // Petite course
     startWalk(Math.random() < 0.5 ? -1 : 1, 30 + Math.floor(Math.random() * 40), 5);
+  } else if (state.tricks && state.tricks.length && Math.random() < 0.35) {
+    // Il montre spontanément un des tours qu'il a appris
+    const r = Pet.doTrick(state, state.tricks[Math.floor(Math.random() * state.tricks.length)]);
+    if (r.ok) play(r.anim, r.dur);
   } else {
-    const trick = TRICKS[Math.floor(Math.random() * TRICKS.length)];
+    const trick = WANDER_TRICKS[Math.floor(Math.random() * WANDER_TRICKS.length)];
     if (trick.move) {
       startWalk(Math.random() < 0.5 ? -1 : 1, Math.round(trick.dur / 33), trick.move);
       walking.anim = trick.anim;
@@ -448,6 +459,7 @@ function dayRhythm() {
     state.nightSleep = false;
     play('stretch', 1500);
     say('Bonjour ! ☀️ Bien dormi !', 4000);
+    speak(`Bonjour${owner()} !`);
     save();
   }
 }
@@ -463,6 +475,7 @@ function logic() {
   if (before === 'egg' && after !== 'egg') {
     play('hatch', 2000);
     say(`Coucou ! Je suis ${state.name} ! 💕`, 5000);
+    speak(`Bonjour${owner()}, je suis ${state.name} !`);
   } else if (before !== after && !state.dead) {
     play('heal', 2000);
     say(after === 'adult' ? Pet.g(state, 'Je suis devenu grand ! ⭐', 'Je suis devenue grande ! ⭐') : 'J\'ai grandi ! 🌱', 5000);
@@ -624,6 +637,7 @@ function clickPet() {
   if (state.sleeping) { say('Zzz… chuuut…'); return; }
   const r = Pet.pet(state);
   if (r.ok) play('love', 1400);
+  if (r.ok && Math.random() < 0.12) speak(`Je t'aime${owner()} !`);
 }
 
 // ---------- Crottes sur le bureau ----------
@@ -705,9 +719,24 @@ document.addEventListener('drop', (e) => {
   if (meals.length > 5) setTimeout(() => say('Ouf, j\'ai assez mangé pour l\'instant !'), 10000);
 });
 
+// ---------- Voix : il dit le prénom de son maître ou de sa maîtresse ----------
+
+const owner = () => (state && state.owner ? ' ' + state.owner : '');
+
+// La voix vient du système (voir main.js) : elle marche même sans voix dans le navigateur intégré
+function speak(text) {
+  if (!state || state.voice === false || dnd) return;
+  desk.speak(text);
+}
+
 // ---------- Accessoires ----------
 
 function checkUnlocks() {
+  for (const t of Pet.learnTricks(state)) {
+    Sound.play('win');
+    say(`J'ai appris un tour : ${t.icon} ${t.name} ! (bouton 🎾)`, 5500);
+    save();
+  }
   for (const a of Pet.checkUnlocks(state)) {
     if (!state.accessory) state.accessory = a.id;
     Sound.play('win');
@@ -861,6 +890,8 @@ async function openSettings() {
   buildSwatches(card.querySelector('[data-group=color]'), state.color, (v) => { state.color = v; save(); });
   $('set-login').checked = await desk.getLogin();
   $('set-sound').checked = state.sound !== false;
+  $('set-voice').checked = state.voice !== false;
+  $('set-owner').value = state.owner || '';
   $('set-version').textContent = `ThomasGotchi v${await desk.version()}`;
   const count = await desk.petCount();
   $('set-adopt').disabled = count >= 5;
@@ -873,6 +904,12 @@ $('set-name').addEventListener('input', () => {
   if (v) state.name = v;
 });
 $('set-login').addEventListener('change', (e) => desk.setLogin(e.target.checked));
+$('set-owner').addEventListener('input', () => { state.owner = $('set-owner').value.trim(); save(); });
+$('set-voice').addEventListener('change', (e) => {
+  state.voice = e.target.checked;
+  if (state.voice) speak(`Bonjour${owner()} !`);
+  save();
+});
 $('set-sound').addEventListener('change', (e) => {
   state.sound = e.target.checked;
   Sound.enabled = state.sound;
@@ -933,12 +970,44 @@ desk.onShaken(() => {
 desk.onYarn((info) => { yarnInfo = info; });
 
 // Un autre animal passe tout près : câlin, jeu du chat (l'un fuit, l'autre poursuit) ou sauts ensemble
-desk.onMeet(({ name, side, game, role }) => {
+desk.onFriends((list) => { friends = list || []; });
+
+// Ce que fait l'utilisateur sur l'ordinateur
+desk.onUserEvent((ev) => {
+  if (!state || state.dead || state.sleeping || state.paused || Pet.isEgg(state) || modalIsOpen()) return;
+  if (ev.type === 'back') {
+    play('jump', 800);
+    say(`Te revoilà${owner()} ! Tu m'as manqué 💕`, 4500);
+    speak(`Te revoilà${owner()} !`);
+  } else if (ev.type === 'typing') {
+    play('stretch', 1500);
+    say('Tu tapes beaucoup… 🥱 Une petite pause ?', 4500);
+  }
+});
+
+desk.onMeet(({ name, side, game, role, levelUp }) => {
   if (!state || state.dead || state.sleeping || Pet.isEgg(state) || modalIsOpen()) return;
   walking = null;
   facing = side;
   state.fun = Math.min(100, state.fun + 5);
   const other = name || 'toi';
+  if (levelUp && levelUp !== 'connaissances') {
+    play('love', 1600);
+    say(`${other} et moi, on est ${levelUp} ! 💞`, 4500);
+    return;
+  }
+  if (game === 'groom') {
+    // Toilette : il lèche la tête de son ami
+    play('love', 2200);
+    say(role === 'flee' ? 'Slurp slurp ! 👅' : `Merci pour la toilette, ${other} 😽`, 2500);
+    return;
+  }
+  if (game === 'tussle') {
+    // Chamaillerie pour rire
+    play('tussle', 1800);
+    say(role === 'flee' ? 'Chamaillerie ! 😼' : 'Même pas mal ! 😹', 2000);
+    return;
+  }
   if (game === 'chase') {
     if (role === 'flee') {
       startWalk(-side, 55, 5);

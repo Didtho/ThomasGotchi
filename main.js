@@ -1,5 +1,6 @@
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification, dialog, powerMonitor } = require('electron');
 const path = require('path');
+const { spawn } = require('child_process');
 const fs = require('fs');
 
 const W = 240;
@@ -730,6 +731,7 @@ function sendCursor() {
   const key = c.x + ',' + c.y;
   if (key === lastCursor) return;
   lastCursor = key;
+  cursorMovedAt = Date.now();
   for (const p of pets.values()) {
     if (!alive(p) || !p.win.isVisible()) continue;
     const b = p.win.getBounds();
@@ -737,7 +739,16 @@ function sendCursor() {
   }
 }
 
-// Deux animaux qui se croisent se font un câlin (au plus une fois par minute pour chaque paire)
+// ---- Amitié : deux animaux qui se croisent jouent ensemble et deviennent amis ----
+// Points d'amitié par paire (0 à 100), sauvegardés dans friends.json
+
+let friendship = {};
+const friendLevel = (pts) => (pts >= 60 ? 'meilleurs amis' : pts >= 20 ? 'copains' : 'connaissances');
+
+function saveFriendship() {
+  try { writeJson('friends.json', friendship); } catch { /* sans gravité */ }
+}
+
 const lastMeet = new Map();
 function checkMeetings() {
   const list = [...pets.values()].filter((p) => alive(p) && p.active && p.win.isVisible() && !p.dragTimer);
@@ -747,12 +758,83 @@ function checkMeetings() {
       const ba = a.win.getBounds(), bb = b.win.getBounds();
       const close = Math.abs(ba.x - bb.x) < 110 && Math.abs((ba.y + ba.height) - (bb.y + bb.height)) < 60;
       const key = [a.id, b.id].sort().join('|');
-      if (!close || Date.now() - (lastMeet.get(key) || 0) < 60000) continue;
+      if (!close || Date.now() - (lastMeet.get(key) || 0) < 45000) continue;
       lastMeet.set(key, Date.now());
-      const game = ['hug', 'chase', 'jump'][Math.floor(Math.random() * 3)];
-      a.win.webContents.send('meet', { name: b.name, side: bb.x > ba.x ? 1 : -1, game, role: 'flee' });
-      b.win.webContents.send('meet', { name: a.name, side: ba.x > bb.x ? 1 : -1, game, role: 'chase' });
+      const before = friendLevel(friendship[key] || 0);
+      friendship[key] = Math.min(100, (friendship[key] || 0) + 5);
+      const level = friendLevel(friendship[key]);
+      saveFriendship();
+      // Plus ils sont amis, plus leurs jeux sont variés et tendres
+      const games = ['hug', 'chase', 'jump'];
+      if (level !== 'connaissances') games.push('groom', 'tussle');
+      if (level === 'meilleurs amis') games.push('hug', 'groom');
+      const game = games[Math.floor(Math.random() * games.length)];
+      const levelUp = level !== before ? level : null;
+      a.win.webContents.send('meet', { name: b.name, side: bb.x > ba.x ? 1 : -1, game, role: 'flee', levelUp });
+      b.win.webContents.send('meet', { name: a.name, side: ba.x > bb.x ? 1 : -1, game, role: 'chase', levelUp });
     }
+  }
+}
+
+// Chaque animal sait où sont ses amis (pour aller les voir) et où en est leur amitié (pour le carnet)
+function sendFriends() {
+  const list = [...pets.values()].filter((p) => alive(p));
+  for (const p of list) {
+    const bx = p.win.getBounds().x;
+    p.win.webContents.send('friends', list.filter((o) => o !== p && o.active).map((o) => {
+      const pts = friendship[[p.id, o.id].sort().join('|')] || 0;
+      return { name: o.name, x: o.win.getBounds().x - bx, points: pts, level: friendLevel(pts) };
+    }));
+  }
+}
+
+// ---- Voix : on utilise la synthèse vocale du système (Windows : voix française installée ; Mac : say) ----
+
+let speaking = null;
+ipcMain.on('speak', (_e, text) => {
+  if (typeof text !== 'string' || !text.trim() || speaking) return;
+  text = text.slice(0, 120);
+  if (isMac) {
+    speaking = spawn('say', ['-v', 'Amelie', '-r', '190', text]);
+    speaking.on('error', () => { speaking = null; });
+  } else {
+    // Le texte passe par une variable d'environnement (jamais dans la commande elle-même)
+    const script = [
+      'Add-Type -AssemblyName System.Speech',
+      '$s = New-Object System.Speech.Synthesis.SpeechSynthesizer',
+      '$fr = $s.GetInstalledVoices() | Where-Object { $_.Enabled -and $_.VoiceInfo.Culture.Name -like "fr*" } | Select-Object -First 1',
+      'if ($fr) { $s.SelectVoice($fr.VoiceInfo.Name) }',
+      '$t = [Security.SecurityElement]::Escape($env:TG_TEXT)',
+      // Voix plus aiguë et un peu plus rapide : un petit animal
+      '$s.SpeakSsml("<speak version=\'1.0\' xmlns=\'http://www.w3.org/2001/10/synthesis\' xml:lang=\'fr-FR\'><prosody pitch=\'+45%\' rate=\'+10%\'>$t</prosody></speak>")',
+    ].join('; ');
+    speaking = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      env: { ...process.env, TG_TEXT: text },
+      windowsHide: true,
+    });
+    speaking.on('error', () => { speaking = null; });
+  }
+  speaking.on('exit', () => { speaking = null; });
+});
+
+// ---- Ce que fait l'utilisateur sur l'ordinateur ----
+// Clavier très utilisé (la souris ne bouge pas mais l'ordinateur est actif) → il conseille une pause.
+// Retour après une longue absence → il fait la fête.
+
+let cursorMovedAt = Date.now();
+let awaySince = 0;
+let lastTypingTip = 0;
+function watchUser() {
+  const idle = powerMonitor.getSystemIdleTime(); // secondes sans clavier ni souris
+  const now = Date.now();
+  if (idle >= 600 && !awaySince) awaySince = now - idle * 1000;
+  if (idle < 5 && awaySince) {
+    sendToPets('user-event', { type: 'back', minutes: Math.round((now - awaySince) / 60000) });
+    awaySince = 0;
+  }
+  if (idle < 3 && now - cursorMovedAt > 120000 && now - lastTypingTip > 30 * 60000) {
+    lastTypingTip = now;
+    sendToPets('user-event', { type: 'typing' });
   }
 }
 
@@ -841,7 +923,10 @@ app.whenReady().then(() => {
   // Certaines applications plein écran repassent devant : on réaffirme régulièrement
   setInterval(keepOnTop, 4000);
   setInterval(sendCursor, 80);
+  friendship = readJson('friends.json') || {};
   setInterval(checkMeetings, 1000);
+  setInterval(sendFriends, 1000);
+  setInterval(watchUser, 5000);
   setInterval(yarnTick, 33);
   setInterval(sendFurnitureToPets, 500);
   const furn = readJson('furniture.json');

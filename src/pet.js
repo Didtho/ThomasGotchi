@@ -169,6 +169,7 @@ const Pet = {
     s.memorials = s.memorials || [];
     if (s.accessory === undefined) s.accessory = null;
     s.pace = s.pace || 'normal';
+    s.tricks = s.tricks || [];
   },
 
   // ---- Pause vacances : le temps s'arrête pour lui (il ne vieillit pas, n'a ni faim ni soif) ----
@@ -393,6 +394,26 @@ const Pet = {
       hours: ((s.dead ? s.diedAt : Date.now()) - s.hatchAt) / HOUR };
   },
 
+  // Tours appris à force de soins et de jeux ; renvoie ceux qui viennent d'être appris
+  learnTricks(s) {
+    if (s.dead || Pet.isEgg(s)) return [];
+    s.tricks = s.tricks || [];
+    const fresh = TRICKS.filter((t) => !s.tricks.includes(t.id) && t.earned(s));
+    for (const t of fresh) s.tricks.push(t.id);
+    return fresh;
+  },
+
+  // Faire un tour sur demande : un peu fatigant, mais ça rend heureux
+  doTrick(s, id) {
+    if (s.dead || s.sleeping || s.paused || Pet.isEgg(s)) return { ok: false };
+    if (s.energy < 10) return { ok: false, msg: Pet.g(s, 'Trop fatigué pour faire des tours…', 'Trop fatiguée pour faire des tours…') };
+    const t = TRICKS.find((x) => x.id === id);
+    if (!t || !s.tricks.includes(id)) return { ok: false };
+    s.fun = clamp(s.fun + 4);
+    s.energy = clamp(s.energy - 2);
+    return { ok: true, anim: t.anim, dur: t.dur, msg: t.say };
+  },
+
   // Débloque les accessoires mérités ; renvoie ceux qui viennent d'être gagnés
   checkUnlocks(s, now = new Date()) {
     if (s.dead || Pet.isEgg(s)) return [];
@@ -416,3 +437,18 @@ const ACCESSORIES = [
     earned: (s, d) => (d.getMonth() === 11 && d.getDate() === 31) || (d.getMonth() === 0 && d.getDate() <= 2) },
 ];
 Pet.ACCESSORIES = ACCESSORIES;
+
+// Tours que l'animal apprend petit à petit
+const TRICKS = [
+  { id: 'salut', name: 'Dire bonjour', icon: '👋', hint: 'recevoir 15 câlins', anim: 'wave', dur: 1800, say: 'Coucou ! 👋',
+    earned: (s) => s.stats.hugs >= 15 },
+  { id: 'roulade', name: 'Roulade', icon: '🌀', hint: 'gagner 3 mini-jeux', anim: 'roll', dur: 900, say: 'Et hop, une roulade !',
+    earned: (s) => s.stats.gamesWon >= 3 },
+  { id: 'danse', name: 'Danse', icon: '💃', hint: 'manger 10 fichiers', anim: 'dance', dur: 3000, say: '♪ Je danse ! ♫',
+    earned: (s) => s.meals >= 10 },
+  { id: 'toupie', name: 'Toupie', icon: '🌪️', hint: 'ramasser 8 crottes', anim: 'spin', dur: 1500, say: 'Je tourne, je tourne !',
+    earned: (s) => s.stats.poopsCleaned >= 8 },
+  { id: 'salto', name: 'Saut périlleux', icon: '🤸', hint: 'devenir adulte', anim: 'backflip', dur: 1100, say: 'Ta-daaa ! 🤸',
+    earned: (s) => Pet.stage(s) === 'adult' },
+];
+Pet.TRICKS = TRICKS;

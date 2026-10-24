@@ -72,6 +72,9 @@
       <label>Prénom
         <input id="set-name" maxlength="14">
       </label>
+      <label>Ton prénom (il te le dira à voix haute)
+        <input id="set-owner" maxlength="16" placeholder="Ex : Léa">
+      </label>
       <div class="label">Animal</div>
       <div class="choices" data-group="species">
         <button data-value="chat">🐱 Chat</button>
@@ -100,6 +103,7 @@
       <div class="choices wrap" data-group="accessory"></div>
       <div class="checks">
         <label class="check"><input type="checkbox" id="set-sound"> Sons</label>
+        <label class="check"><input type="checkbox" id="set-voice"> Voix</label>
         <label class="check"><input type="checkbox" id="set-login"> Lancer au démarrage</label>
       </div>
       <div class="row">
@@ -127,6 +131,8 @@
         <button data-game="cups">🥤 Le jeu des gobelets</button>
         <button data-game="yarn">🧶 Sortir / ranger la pelote de laine</button>
       </div>
+      <div class="label">Ses tours</div>
+      <div id="trick-list" class="choices wrap"></div>
       <button class="close-modal">Fermer</button>
     </div>
 

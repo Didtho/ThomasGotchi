@@ -23,9 +23,30 @@ function canPlay() {
 const Games = {
   open() {
     if (!state || state.dead || Pet.isEgg(state)) return;
+    buildTricks();
     openModal('modal-games');
   },
 };
+
+// Boutons des tours : ceux qu'il connaît, et ceux qui restent à apprendre (grisés, avec l'astuce)
+function buildTricks() {
+  const box = $('trick-list');
+  box.innerHTML = '';
+  for (const t of Pet.TRICKS) {
+    const b = document.createElement('button');
+    const known = (state.tricks || []).includes(t.id);
+    b.textContent = t.icon + ' ' + t.name;
+    b.disabled = !known;
+    b.title = known ? 'Faire ce tour' : 'À apprendre : ' + t.hint;
+    b.addEventListener('click', () => {
+      const r = Pet.doTrick(state, t.id);
+      closeModal();
+      if (r.msg) say(r.msg, 2500);
+      if (r.ok) { play(r.anim, r.dur); save(); }
+    });
+    box.appendChild(b);
+  }
+}
 
 document.querySelectorAll('.close-modal').forEach((b) => b.addEventListener('click', () => {
   Catch.stop();
@@ -250,6 +271,17 @@ function openJournal() {
   // Prochain accessoire à gagner
   const next = Pet.ACCESSORIES.find((a) => !s.unlocked.includes(a.id));
   if (next) addRow('Prochain cadeau', `${next.icon} ${next.hint}`);
+
+  if (friends.length) {
+    const sub = document.createElement('div');
+    sub.className = 'journal-sub';
+    sub.textContent = 'Amis';
+    body.appendChild(sub);
+    for (const f of friends) {
+      const hearts = f.level === 'meilleurs amis' ? '💞' : f.level === 'copains' ? '💗' : '🤍';
+      addRow(`${hearts} ${f.name || 'Œuf'}`, f.level);
+    }
+  }
 
   if (s.memorials.length) {
     const sub = document.createElement('div');

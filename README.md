@@ -19,6 +19,10 @@ Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper p
   ils se font un câlin, jouent à chat (l'un fuit, l'autre poursuit) ou sautent ensemble.
 - 🧶 **Pelote de laine** (menu de l'icône ou bouton jouer) : les animaux courent après et lui donnent des coups de patte ;
   elle se déroule en roulant. Cliquer dessus pour la rembobiner.
+- 🎓 **Tours** appris petit à petit (dire bonjour, roulade, danse, toupie, saut périlleux) : bouton jouer, ou spontanément.
+- 💞 **Amitié** : vos animaux deviennent copains puis meilleurs amis, se rendent visite, se font la toilette et se chamaillent.
+- 🗣️ **Voix** : il dit ton prénom (réglages) avec la voix de l'ordinateur.
+- Il remarque quand tu tapes longtemps (« une petite pause ? ») et fait la fête quand tu reviens.
 - 🥣 **Gamelle** (menu de l'icône) : il va y manger et boire tout seul. Clic pour la remplir, glisser pour la déplacer.
 - 🏖️ **Pause vacances** (réglages, ou menu de l'icône pour tous) : il ne vieillit pas et n'a ni faim ni soif pendant l'absence.
 - 🔕 **Ne pas déranger** (menu de l'icône) : plus de bruit, de bulles ni de promenades.

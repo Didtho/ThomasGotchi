@@ -30,5 +30,8 @@ contextBridge.exposeInMainWorld('desk', {
   bowlUse: (what) => ipcRenderer.invoke('bowl-use', what),
   exportPet: (state) => ipcRenderer.invoke('export-pet', state),
   onDnd: (cb) => ipcRenderer.on('dnd', (_e, on) => cb(on)),
+  onFriends: (cb) => ipcRenderer.on('friends', (_e, list) => cb(list)),
+  onUserEvent: (cb) => ipcRenderer.on('user-event', (_e, ev) => cb(ev)),
+  speak: (text) => ipcRenderer.send('speak', text),
   onMeet: (cb) => ipcRenderer.on('meet', (_e, info) => cb(info)),
 });

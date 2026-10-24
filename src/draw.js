@@ -703,6 +703,10 @@ function drawCreature(ctx, v) {
   if (a === 'jump') { const k = Math.min(1, at / 0.8); jump = Math.sin(k * Math.PI) * 48; squash = k < 0.12 || k > 0.88 ? 1.1 : 0.94; }
   if (a === 'roll') jump = Math.sin(Math.min(1, at / 0.9) * Math.PI) * 28;
   if (a === 'stretch') squash = 1 + Math.sin(Math.min(1, at / 1.5) * Math.PI) * 0.16;
+  if (a === 'dance') jump = Math.abs(Math.sin(at * 8)) * 6;
+  if (a === 'spin') jump = Math.abs(Math.sin(at * 6)) * 4;
+  if (a === 'backflip') jump = Math.sin(Math.min(1, at / 1.0) * Math.PI) * 60;
+  if (a === 'tussle') { jump = Math.abs(Math.sin(at * 14)) * 8; squash = 1 + Math.sin(at * 20) * 0.05; }
   if (v.mood === 'dead') float = 40 + Math.sin(v.t * 1.5) * 6;
 
   const cx = CENTER;
@@ -741,6 +745,25 @@ function drawCreature(ctx, v) {
     ctx.translate(cx, GROUND);
     ctx.rotate(v.facing * (v.running ? 0.14 : 0.07) + Math.sin(stride) * 0.035);
     ctx.translate(-cx, -GROUND);
+  }
+  if (a === 'dance' || a === 'tussle') {
+    // Danse : il se dandine ; chamaillerie : il gigote dans tous les sens
+    ctx.translate(cx, GROUND);
+    ctx.rotate(Math.sin(at * (a === 'dance' ? 8 : 16)) * (a === 'dance' ? 0.16 : 0.14));
+    ctx.translate(-cx, -GROUND);
+  }
+  if (a === 'spin') {
+    // Toupie : il tourne sur lui-même (vu de face, il s'amincit puis s'élargit)
+    ctx.translate(cx, 0);
+    ctx.scale(Math.cos(at * 14), 1);
+    ctx.translate(-cx, 0);
+  }
+  if (a === 'backflip') {
+    // Saut périlleux arrière
+    const pivot = (headCy + bodyCy) / 2;
+    ctx.translate(cx, pivot);
+    ctx.rotate(-Math.min(1, at / 1.0) * Math.PI * 2 * (v.facing || 1));
+    ctx.translate(-cx, -pivot);
   }
   if (a === 'pee') {
     // Pipi : il se penche du côté opposé pour lever la patte
@@ -783,6 +806,7 @@ function drawCreature(ctx, v) {
     const lifted = a === 'pee' && side === (v.facing || 1); // patte levée côté bord
     const px = cx + side * bodyRx * 0.42 + v.facing * s * r * 0.14 + (lifted ? side * r * 0.2 : 0);
     const py = pawY - Math.max(0, s) * r * 0.14 - (lifted ? r * 0.4 : 0);
+    if (a === 'wave' && side === 1) continue; // cette patte fait coucou (dessinée après la tête)
     if (lifted && at > 0.4) {
       // Petit jet vers le bord
       for (let k = 0; k < 4; k++) {
@@ -810,6 +834,12 @@ function drawCreature(ctx, v) {
   if (v.dirty) drawDirt(ctx, cx, headCy - headRy * 0.3, headRx * 0.9, headRy * 0.5);
 
   const mouthY = drawFace(ctx, v, cx, g);
+  if (a === 'wave') {
+    // Patte levée qui fait coucou, à côté de la joue
+    const wx = cx + headRx * 0.95 + Math.sin(at * 12) * r * 0.1;
+    const wy = headCy + headRy * 0.45 - Math.abs(Math.sin(at * 12)) * r * 0.08;
+    ellipse(ctx, wx, wy, r * 0.17, r * 0.21, coat && coat.paws ? WHITE_FUR : body, INK, 2.5);
+  }
   // Les chapeaux laissent la place au bonnet de nuit quand il dort
   const hat = ['couronne', 'sorciere', 'noel', 'fete'].includes(v.accessory);
   if (v.accessory && v.mood !== 'dead' && !(hat && v.nightcap)) drawAccessory(ctx, v.accessory, cx, g, v);
@@ -960,6 +990,29 @@ function drawEffects(ctx, v, cx, cy, rx, ry, mouthY) {
       ctx.fillRect(x - 7, y - 2, 14, 4);
     }
     ctx.globalAlpha = 1;
+  }
+  if (v.anim === 'dance') {
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = INK;
+    for (let i = 0; i < 3; i++) {
+      const k = (at * 0.8 + i / 3) % 1;
+      ctx.globalAlpha = Math.sin(k * Math.PI);
+      ctx.fillText(i % 2 ? '♫' : '♪', cx + (i - 1) * rx * 0.9 + Math.sin(at * 3 + i) * 6, cy - ry - k * 40);
+    }
+    ctx.globalAlpha = 1;
+  }
+  if (v.anim === 'tussle') {
+    // Petit nuage de poussière et étoiles, comme dans les dessins animés
+    for (let i = 0; i < 5; i++) {
+      const a2 = at * 6 + i * 1.3;
+      ellipse(ctx, cx + Math.cos(a2) * rx * 1.1, GROUND - 10 - Math.abs(Math.sin(a2)) * 18, 7, 6, 'rgba(200,190,180,.7)');
+    }
+    ctx.fillStyle = '#ffd84a';
+    for (let i = 0; i < 2; i++) {
+      const x = cx + (i ? 1 : -1) * rx * 0.9, y = cy - ry * 0.9 + Math.sin(at * 10 + i) * 5;
+      ctx.fillRect(x - 1.5, y - 5, 3, 10);
+      ctx.fillRect(x - 5, y - 1.5, 10, 3);
+    }
   }
   if (v.anim === 'dizzy') {
     // Petites étoiles qui tournent autour de la tête

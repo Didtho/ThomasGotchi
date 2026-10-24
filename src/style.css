@@ -254,3 +254,5 @@ button.danger { background: #ffe0e0 !important; }
 .journal-sub { margin: 6px 0 2px; font-weight: 700; font-size: 11.5px; }
 .theme-pixel #catch-area, .theme-pixel .game-list button { border-radius: 0; border-width: 2px; background: #9bbc0f; }
 .version { margin: 5px 0 0; font-size: 10px; text-align: right; opacity: .55; }
+#trick-list button:disabled { opacity: .4; cursor: help; }
+.checks { flex-wrap: wrap; gap: 4px 12px; }

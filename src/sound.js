@@ -108,6 +108,10 @@ const Sound = (() => {
     roll() { noise(0.5, { vol: 0.4, freq: 900, q: 0.7, attack: 0.2 }); },
     stretch() { tone('sine', 400, 250, 0.5, { vol: 0.3 }); },
     dizzy() { for (let i = 0; i < 6; i++) tone('sine', 900 - i * 80, 700 - i * 80, 0.1, { at: i * 0.09, vol: 0.3 }); },
+    dance() { [523, 659, 784, 659, 523, 784].forEach((f, i) => tone('triangle', f, f, 0.16, { at: i * 0.2, vol: 0.35 })); },
+    spin() { tone('sine', 300, 1200, 0.6, { vol: 0.35 }); },
+    backflip() { tone('sine', 250, 1000, 0.4, { vol: 0.45 }); tone('triangle', 1000, 1000, 0.15, { at: 0.8, vol: 0.3 }); },
+    tussle() { for (let i = 0; i < 5; i++) noise(0.08, { at: i * 0.15, vol: 0.5, freq: 600 + Math.random() * 800, q: 1 }); },
     win() { [523, 659, 784, 1047, 1319].forEach((f, i) => tone('square', f, f, 0.12, { at: i * 0.08, vol: 0.15 })); },
   };
 
