@@ -256,3 +256,4 @@ button.danger { background: #ffe0e0 !important; }
 .version { margin: 5px 0 0; font-size: 10px; text-align: right; opacity: .55; }
 #trick-list button:disabled { opacity: .4; cursor: help; }
 .checks { flex-wrap: wrap; gap: 4px 12px; }
+.choices.species button { flex: 0 0 auto; padding: 2px 5px; font-size: 15px; line-height: 1.2; }

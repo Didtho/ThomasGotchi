@@ -78,6 +78,40 @@ const Sound = (() => {
       tone('sine', 1400, 2000, 0.08, { vol: 0.5 });
       tone('sine', 1600, 2300, 0.08, { at: 0.11, vol: 0.4 });
     },
+    // Ouaf ouaf !
+    chien() {
+      tone('sawtooth', 380, 240, 0.12, { vol: 0.6, filter: { type: 'bandpass', freq: 900, q: 2 } });
+      tone('sawtooth', 380, 240, 0.12, { at: 0.2, vol: 0.6, filter: { type: 'bandpass', freq: 900, q: 2 } });
+    },
+    // Petit glapissement aigu
+    renard() {
+      tone('sawtooth', 900, 1500, 0.1, { vol: 0.45, filter: { type: 'bandpass', freq: 1600, q: 3 } });
+      tone('sawtooth', 1400, 800, 0.15, { at: 0.12, vol: 0.4, filter: { type: 'bandpass', freq: 1400, q: 3 } });
+    },
+    panda() { voices.ours(); },
+    // Coin-coin de pingouin
+    pingouin() {
+      for (let i = 0; i < 2; i++) tone('square', 600, 450, 0.12, { at: i * 0.18, vol: 0.25, filter: { type: 'bandpass', freq: 1100, q: 4 } });
+    },
+    // Couic couic
+    hamster() {
+      for (let i = 0; i < 3; i++) tone('sine', 2200, 2800, 0.05, { at: i * 0.08, vol: 0.35 });
+    },
+    koala() { tone('sawtooth', 110, 90, 0.4, { vol: 0.5, filter: { type: 'lowpass', freq: 400 } }); },
+    // Croâ croâ
+    grenouille() {
+      for (let i = 0; i < 2; i++) tone('sawtooth', 160, 120, 0.15, { at: i * 0.22, vol: 0.55, filter: { type: 'bandpass', freq: 500, q: 5 } });
+    },
+    // Hennissement et paillettes magiques
+    licorne() {
+      tone('triangle', 700, 1100, 0.3, { vol: 0.35 });
+      [1568, 2093, 2637].forEach((f, i) => tone('sine', f, f, 0.12, { at: 0.3 + i * 0.07, vol: 0.25 }));
+    },
+    // Petit rugissement de bébé dragon
+    dragon() {
+      tone('sawtooth', 220, 140, 0.45, { vol: 0.5, filter: { type: 'lowpass', freq: 900, q: 2 } });
+      noise(0.35, { at: 0.1, vol: 0.25, freq: 900, q: 0.7 });
+    },
     // Grognement tout doux
     ours() {
       tone('sawtooth', 140, 190, 0.25, { vol: 0.6, filter: { type: 'lowpass', freq: 600 } });

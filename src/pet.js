@@ -14,6 +14,12 @@ const COLORS = {
   noirblanc: '#3a3540',
   roux: '#f2a45a',
   gris: '#aaa6b0',
+  marron: '#b07a52',
+  orange: '#f08a3c',
+  caramel: '#f0c27b',
+  perle: '#bdb9c4',
+  vert: '#8fd16a',
+  blanc: '#f7f4fb',
   simba: '#e9b27c',
   snoop: '#8f8a93',
   grisette: '#2f2b33',
@@ -46,6 +52,22 @@ const COATS = {
     patches: [['body', 0.62, -0.42, 0.2, 0.3, '#fbf8f4'], ['body', -0.55, -0.5, 0.22, 0.16, '#fbf8f4']],
     swatch: 'linear-gradient(135deg, #2f2b33 45%, #fbf8f4 45% 60%, #2f2b33 60%)' },
 };
+
+// Espèces disponibles, avec leur couleur de départ (panda et pingouin gardent leurs couleurs naturelles)
+const SPECIES = [
+  { id: 'chat', name: 'Chat', icon: '🐱' },
+  { id: 'lapin', name: 'Lapin', icon: '🐰' },
+  { id: 'ours', name: 'Ourson', icon: '🐻' },
+  { id: 'chien', name: 'Chien', icon: '🐶', color: 'marron' },
+  { id: 'renard', name: 'Renard', icon: '🦊', color: 'orange' },
+  { id: 'panda', name: 'Panda', icon: '🐼' },
+  { id: 'pingouin', name: 'Pingouin', icon: '🐧' },
+  { id: 'hamster', name: 'Hamster', icon: '🐹', color: 'caramel' },
+  { id: 'koala', name: 'Koala', icon: '🐨', color: 'perle' },
+  { id: 'grenouille', name: 'Grenouille', icon: '🐸', color: 'vert' },
+  { id: 'licorne', name: 'Licorne', icon: '🦄', color: 'blanc' },
+  { id: 'dragon', name: 'Dragon', icon: '🐲', color: 'vert' },
+];
 
 // Modèles prêts à adopter (un clic remplit le prénom, le pelage et le genre)
 const PRESETS = [
@@ -105,6 +127,7 @@ const Pet = {
   COLORS,
   COATS,
   PRESETS,
+  SPECIES,
 
   // Accord au masculin ou au féminin selon le genre choisi
   g(s, masc, fem) {

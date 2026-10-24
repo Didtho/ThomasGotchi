@@ -1,6 +1,6 @@
 // Mini-jeux et carnet de vie. S'appuie sur les fonctions de app.js (state, say, play, save, openModal…).
 
-const SPECIES_EMOJI = { chat: '🐱', lapin: '🐰', ours: '🐻' };
+const SPECIES_EMOJI = Object.fromEntries(Pet.SPECIES.map((s) => [s.id, s.icon]));
 
 // Le bonheur gagné dépend du score ; un jeu fatigue un peu
 function rewardGame(won, fun) {

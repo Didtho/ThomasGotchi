@@ -815,6 +815,17 @@ function buildSwatches(container, current, onPick) {
   }
 }
 
+// Boutons des espèces (émoji seul, nom au survol), construits une fois au démarrage
+for (const box of document.querySelectorAll('[data-group=species]')) {
+  for (const sp of Pet.SPECIES) {
+    const b = document.createElement('button');
+    b.dataset.value = sp.id;
+    b.textContent = sp.icon;
+    b.title = sp.name;
+    box.appendChild(b);
+  }
+}
+
 function bindChoices(container, current, onPick) {
   container.querySelectorAll('button').forEach((b) => {
     b.classList.toggle('on', b.dataset.value === current);
@@ -870,7 +881,14 @@ function openNew() {
   $('new-name').value = '';
   bindChoices(card.querySelector('[data-group=style]'), draft.style, (v) => { draft.style = v; applyStyle(v); });
   const bindDraft = () => {
-    bindChoices(card.querySelector('[data-group=species]'), draft.species, (v) => { draft.species = v; });
+    bindChoices(card.querySelector('[data-group=species]'), draft.species, (v) => {
+      draft.species = v;
+      const sp = Pet.SPECIES.find((x) => x.id === v);
+      if (sp && sp.color) {
+        draft.color = sp.color;
+        buildSwatches(card.querySelector('[data-group=color]'), draft.color, (c) => { draft.color = c; });
+      }
+    });
     bindChoices(card.querySelector('[data-group=gender]'), draft.gender, (v) => { draft.gender = v; });
     buildSwatches(card.querySelector('[data-group=color]'), draft.color, (v) => { draft.color = v; });
   };

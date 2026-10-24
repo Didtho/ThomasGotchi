@@ -286,124 +286,6 @@ function drawThought(ctx, need, x, y, t) {
   }
 }
 
-// Proportions du petit animal : grosse tête ronde posée sur un petit corps (style chibi)
-function geometry(stage, species, jump = 0, squash = 1) {
-  const r = SIZES[stage] || SIZES.baby;
-  const bodyRx = r * 0.72 * squash;
-  const bodyRy = r * 0.55 / squash;
-  const bodyCy = GROUND - bodyRy * 0.95 - jump;
-  const headRx = r * 1.0;
-  const headRy = r * 0.86;
-  const headCy = bodyCy - bodyRy * 0.55 - headRy * 0.75 + (squash - 1) * r * 2;
-  const earH = { chat: 0.45, lapin: 0.95, ours: 0.22 }[species] || 0.45;
-  return { r, bodyRx, bodyRy, bodyCy, headRx, headRy, headCy, top: headCy - headRy - r * earH };
-}
-
-function drawEars(ctx, species, cx, g, body, inner, t) {
-  const { r, headRx, headRy, headCy } = g;
-  for (const side of [-1, 1]) {
-    ctx.save();
-    if (species === 'lapin') {
-      // Longues oreilles ; l'une se plie légèrement et bouge
-      const flop = side > 0 ? 0.35 + Math.sin(t * 2) * 0.05 : -0.12;
-      ctx.translate(cx + side * headRx * 0.38, headCy - headRy * 0.7);
-      ctx.rotate(flop);
-      ellipse(ctx, 0, -r * 0.55, r * 0.22, r * 0.6, body, INK, 2.5);
-      ellipse(ctx, 0, -r * 0.5, r * 0.1, r * 0.42, inner);
-    } else if (species === 'ours') {
-      ellipse(ctx, cx + side * headRx * 0.68, headCy - headRy * 0.7, r * 0.26, r * 0.25, body, INK, 2.5);
-      ellipse(ctx, cx + side * headRx * 0.68, headCy - headRy * 0.68, r * 0.13, r * 0.12, inner);
-    } else {
-      // Oreilles de chat : triangles aux pointes arrondies
-      ctx.translate(cx + side * headRx * 0.55, headCy - headRy * 0.55);
-      ctx.rotate(side * 0.3);
-      const w = r * 0.36, h = r * 0.72;
-      ctx.beginPath();
-      ctx.moveTo(-w, 0);
-      ctx.quadraticCurveTo(-w * 0.25, -h, 0, -h);
-      ctx.quadraticCurveTo(w * 0.25, -h, w, 0);
-      ctx.closePath();
-      ctx.fillStyle = body;
-      ctx.fill();
-      ctx.lineWidth = 2.5;
-      ctx.lineJoin = 'round';
-      ctx.strokeStyle = INK;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-w * 0.5, -h * 0.12);
-      ctx.quadraticCurveTo(0, -h * 0.85, w * 0.5, -h * 0.12);
-      ctx.closePath();
-      ctx.fillStyle = inner;
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-}
-
-function drawTail(ctx, species, cx, g, body, side, t, coat) {
-  const { r, bodyRx, bodyRy, bodyCy } = g;
-  const x = cx + side * bodyRx * 0.85;
-  const y = bodyCy + bodyRy * 0.2;
-  if (species === 'chat') {
-    const sway = Math.sin(t * 2.2) * r * 0.15;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(x - side * r * 0.1, y);
-    ctx.bezierCurveTo(x + side * r * 0.55, y + r * 0.1, x + side * r * 0.6 + sway, y - r * 0.6, x + side * r * 0.3 + sway, y - r * 0.8);
-    const w = r * (coat && coat.fluffy ? 0.36 : 0.22); // queue touffue pour les poils longs
-    ctx.lineWidth = w + 5;
-    ctx.strokeStyle = INK;
-    ctx.stroke();
-    ctx.lineWidth = w;
-    ctx.strokeStyle = body;
-    ctx.stroke();
-    if (coat && coat.tailTip) ellipse(ctx, x + side * r * 0.3 + sway, y - r * 0.8, w * 0.55, w * 0.55, coat.tailTip);
-  } else {
-    const s = species === 'lapin' ? 0.24 : 0.15;
-    ellipse(ctx, x + side * r * 0.05, y, r * s, r * s, species === 'lapin' ? shade(body, 0.12) : body, INK, 2.5);
-  }
-}
-
-function drawFace(ctx, v, cx, g) {
-  const { r, headRx, headRy, headCy } = g;
-  const fx = cx + v.facing * 3;
-  const er = r * 0.14;
-  const ey = headCy + headRy * 0.02;
-  const gap = headRx * 0.4;
-  const mouthY = ey + er * 2.1;
-
-  ellipse(ctx, fx - headRx * 0.66, ey + er * 1.5, headRx * 0.15, headRy * 0.09, 'rgba(255,110,140,.45)');
-  ellipse(ctx, fx + headRx * 0.66, ey + er * 1.5, headRx * 0.15, headRy * 0.09, 'rgba(255,110,140,.45)');
-
-  if (v.species === 'ours') {
-    ellipse(ctx, fx, mouthY - er * 0.2, headRx * 0.3, headRy * 0.24, shade(v.bodyColor, 0.14), INK, 2);
-  }
-  drawEyes(ctx, v, cx, ey, gap, er);
-
-  // Petit nez
-  const ny = ey + er * 1.35;
-  if (v.species === 'ours') ellipse(ctx, fx, ny, r * 0.08, r * 0.055, v.dark ? '#1c1720' : INK);
-  else ellipse(ctx, fx, ny, r * 0.055, r * 0.04, '#ff7d96', INK, 1.5);
-
-  if (v.species === 'chat' && v.mood !== 'dead') {
-    // Moustaches
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = faceInk(v);
-    ctx.lineCap = 'round';
-    for (const side of [-1, 1]) {
-      for (const dy of [-0.06, 0.08]) {
-        ctx.beginPath();
-        ctx.moveTo(fx + side * headRx * 0.55, ny + r * dy);
-        ctx.lineTo(fx + side * headRx * 0.95, ny + r * dy * 2.2 - r * 0.03);
-        ctx.stroke();
-      }
-    }
-  }
-  drawMouth(ctx, v, fx, mouthY - er * 0.3, r * 0.12);
-  if (v.mood === 'sick' && !v.anim) drawThermometer(ctx, fx + r * 0.1, mouthY - er * 0.1, r);
-  return mouthY;
-}
-
 // Accessoires gagnés en prenant soin de lui
 function drawAccessory(ctx, kind, cx, g, v) {
   const { r, headRx, headRy, headCy, bodyCy, bodyRy } = g;
@@ -712,7 +594,12 @@ function drawCreature(ctx, v) {
   const cx = CENTER;
   const g = geometry(v.stage, species, jump + float, squash);
   const { r, bodyRx, bodyRy, bodyCy, headRx, headRy, headCy } = g;
-  const body = v.mood === 'dead' ? '#f4f1ff' : v.color;
+  const body = v.mood === 'dead' ? '#f4f1ff' : FIXED_BODY[species] || v.color;
+  if (FIXED_BODY[species] && v.mood !== 'dead') {
+    // Couleurs naturelles : pas de motif ; le panda a des yeux clairs sur ses taches noires
+    v.coat = species === 'panda' ? { eye: '#f4f4f4', muzzle: true } : null;
+    v.dark = species === 'panda';
+  }
   const inner = v.mood === 'dead' ? '#e6e0f5' : '#ff9fb9';
   v.bodyColor = body;
 
@@ -787,6 +674,7 @@ function drawCreature(ctx, v) {
   halo(true);
   const tailSide = v.facing > 0 ? -1 : 1;
   drawTail(ctx, species, cx, g, body, tailSide, v.t * (v.walking ? 2.5 : 1), v.mood === 'dead' ? null : v.coat);
+  speciesLayer(ctx, 'back', species, cx, g, body, v);
 
   // Corps, ventre, petites pattes
   const grad = ctx.createRadialGradient(cx - bodyRx * 0.3, bodyCy - bodyRy * 0.4, r * 0.1, cx, bodyCy, r);
@@ -794,9 +682,10 @@ function drawCreature(ctx, v) {
   grad.addColorStop(1, shade(body, -0.08));
   ellipse(ctx, cx, bodyCy, bodyRx, bodyRy, grad, INK, 3);
   halo(false);
-  const coat = v.mood === 'dead' ? null : v.coat;
+  const coat = v.mood === 'dead' || FIXED_BODY[species] ? null : v.coat;
   if (!(coat && coat.chest)) ellipse(ctx, cx, bodyCy + bodyRy * 0.15, bodyRx * 0.55, bodyRy * 0.6, shade(body, 0.12));
   drawCoat(ctx, coat, 'body', cx, bodyCy, bodyRx, bodyRy, r);
+  speciesLayer(ctx, 'body', species, cx, g, body, v);
   if (v.mood === 'sick') ellipse(ctx, cx, bodyCy, bodyRx, bodyRy, 'rgba(130,190,70,.28)');
   if (v.dirty) drawDirt(ctx, cx, bodyCy + bodyRy * 0.1, bodyRx, bodyRy);
   // Pattes : en marchant, elles avancent et se lèvent chacune leur tour
@@ -814,7 +703,7 @@ function drawCreature(ctx, v) {
         ellipse(ctx, px + side * (r * 0.2 + q * r * 0.5), py + q * q * r * 0.6, 2.2, 2.2, '#f4d75e');
       }
     }
-    ellipse(ctx, px, py, r * 0.19, r * 0.12, coat && coat.paws ? WHITE_FUR : body, INK, 2.5);
+    ellipse(ctx, px, py, r * 0.19, r * 0.12, pawColor(species, coat) || body, INK, 2.5);
   }
 
   // Tête
@@ -829,16 +718,18 @@ function drawCreature(ctx, v) {
   halo(false);
   drawCoat(ctx, coat, 'head', cx, headCy, headRx, headRy, r);
   if (coat && coat.fluffy && coat.chest) drawRuff(ctx, cx, g);
+  speciesLayer(ctx, 'head', species, cx, g, body, v);
   if (v.mood === 'sick') ellipse(ctx, cx, headCy, headRx, headRy, 'rgba(130,190,70,.28)');
   ellipse(ctx, cx - headRx * 0.45, headCy - headRy * 0.55, headRx * 0.18, headRy * 0.1, 'rgba(255,255,255,.65)');
   if (v.dirty) drawDirt(ctx, cx, headCy - headRy * 0.3, headRx * 0.9, headRy * 0.5);
 
   const mouthY = drawFace(ctx, v, cx, g);
+  speciesLayer(ctx, 'top', species, cx, g, body, v);
   if (a === 'wave') {
     // Patte levée qui fait coucou, à côté de la joue
     const wx = cx + headRx * 0.95 + Math.sin(at * 12) * r * 0.1;
     const wy = headCy + headRy * 0.45 - Math.abs(Math.sin(at * 12)) * r * 0.08;
-    ellipse(ctx, wx, wy, r * 0.17, r * 0.21, coat && coat.paws ? WHITE_FUR : body, INK, 2.5);
+    ellipse(ctx, wx, wy, r * 0.17, r * 0.21, pawColor(species, coat) || body, INK, 2.5);
   }
   // Les chapeaux laissent la place au bonnet de nuit quand il dort
   const hat = ['couronne', 'sorciere', 'noel', 'fete'].includes(v.accessory);

@@ -47,11 +47,7 @@
       <div class="label">Mes chats</div>
       <div class="choices" id="presets"></div>
       <div class="label">Animal</div>
-      <div class="choices" data-group="species">
-        <button data-value="chat">🐱 Chat</button>
-        <button data-value="lapin">🐰 Lapin</button>
-        <button data-value="ours">🐻 Ourson</button>
-      </div>
+      <div class="choices wrap species" data-group="species"></div>
       <div class="label">Genre</div>
       <div class="choices" data-group="gender">
         <button data-value="m">♂ Il</button>
@@ -79,11 +75,7 @@
         <input id="set-owner" maxlength="16" placeholder="Ex : Léa">
       </label>
       <div class="label">Animal</div>
-      <div class="choices" data-group="species">
-        <button data-value="chat">🐱 Chat</button>
-        <button data-value="lapin">🐰 Lapin</button>
-        <button data-value="ours">🐻 Ourson</button>
-      </div>
+      <div class="choices wrap species" data-group="species"></div>
       <div class="label">Genre</div>
       <div class="choices" data-group="gender">
         <button data-value="m">♂ Il</button>
@@ -168,6 +160,7 @@
 
   <script src="pet.js"></script>
   <script src="draw.js"></script>
+  <script src="species.js"></script>
   <script src="sound.js"></script>
   <script src="seasons.js"></script>
   <script src="app.js"></script>
