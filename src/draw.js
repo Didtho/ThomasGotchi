@@ -844,6 +844,7 @@ function drawCreature(ctx, v) {
   const hat = ['couronne', 'sorciere', 'noel', 'fete'].includes(v.accessory);
   if (v.accessory && v.mood !== 'dead' && !(hat && v.nightcap)) drawAccessory(ctx, v.accessory, cx, g, v);
   if (v.nightcap) drawNightcap(ctx, cx, g, v.t, species);
+  if (v.gear && v.mood !== 'dead') drawWeatherGear(ctx, v.gear, cx, g, v);
 
   // Adulte bien soigné : une barrette étoile sur la tête
   if (v.stage === 'adult' && v.mood !== 'dead' && v.care >= 55 && !v.nightcap) {
@@ -1175,6 +1176,163 @@ function drawConfetti(ctx, t, n) {
   }
 }
 
+// ---- Météo réelle autour de l'animal ----
+
+function drawCloud(ctx, x, y, s, color) {
+  ctx.fillStyle = color;
+  for (const [dx, dy, r] of [[-14, 2, 9], [-3, -5, 12], [11, 0, 10], [0, 4, 10]]) {
+    ctx.beginPath();
+    ctx.arc(x + dx * s, y + dy * s, r * s, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// Derrière l'animal : soleil, nuages, brouillard
+function drawWeatherBack(ctx, v) {
+  const t = v.t;
+  const w = v.weather;
+  if (w === 'clear' && v.isDay) {
+    const x = 34, y = 52;
+    ctx.strokeStyle = '#ffc940';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4 + t * 0.4;
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(a) * 17, y + Math.sin(a) * 17);
+      ctx.lineTo(x + Math.cos(a) * 24, y + Math.sin(a) * 24);
+      ctx.stroke();
+    }
+    ellipse(ctx, x, y, 12, 12, '#ffd84a', '#f2a440', 2);
+  } else if (w === 'clear') {
+    // Nuit claire : quelques étoiles qui scintillent
+    for (let i = 0; i < 6; i++) {
+      ctx.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(t * 1.5 + i * 1.7));
+      ellipse(ctx, 20 + ((i * 67) % 200), 30 + ((i * 41) % 90), 1.8, 1.8, '#fff6c2');
+    }
+    ctx.globalAlpha = 1;
+  }
+  if (w === 'clouds' || w === 'rain' || w === 'storm' || w === 'snow') {
+    const dark = w === 'storm' ? '#8d8a99' : w === 'rain' ? '#b8bcc8' : '#e9edf3';
+    drawCloud(ctx, 60 + ((t * 6) % 300) - 60, 45, 1.3, dark);
+    drawCloud(ctx, 200 - ((t * 4) % 300) + 60, 80, 1, dark);
+  }
+  if (w === 'fog') {
+    // Nappes de brume douces qui dérivent lentement
+    for (let i = 0; i < 7; i++) {
+      const x = ((i * 70 + t * (6 + (i % 3) * 3)) % 340) - 50;
+      const y = 170 + (i % 4) * 32;
+      const grad = ctx.createRadialGradient(x, y, 4, x, y, 60);
+      grad.addColorStop(0, 'rgba(236,239,246,.55)');
+      grad.addColorStop(1, 'rgba(236,239,246,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 60, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+// Devant l'animal : pluie, neige, éclairs
+function drawWeatherFront(ctx, v) {
+  const t = v.t;
+  const w = v.weather;
+  if (w === 'rain' || w === 'storm') {
+    ctx.strokeStyle = 'rgba(120,170,230,.75)';
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 34; i++) {
+      const x = (i * 37 + t * 40) % 250 - 5;
+      const y = (t * 260 + i * 53) % 300;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - 3, y + 10);
+      ctx.stroke();
+    }
+    if (w === 'storm' && (t % 6) < 0.12) {
+      // Éclair : un flash bref et un zigzag
+      ctx.fillStyle = 'rgba(255,255,255,.35)';
+      ctx.fillRect(0, 0, 240, 300);
+      ctx.strokeStyle = '#ffe66b';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(180, 40); ctx.lineTo(168, 75); ctx.lineTo(182, 75); ctx.lineTo(165, 115);
+      ctx.stroke();
+    }
+  } else if (w === 'snow') {
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    for (let i = 0; i < 26; i++) {
+      const x = (i * 53 + Math.sin(t + i) * 8) % 240;
+      const y = (t * (12 + (i % 4) * 5) + i * 37) % 300;
+      ctx.beginPath();
+      ctx.arc(x, y, 1.4 + (i % 3) * 0.7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+// Équipement selon la météo : parapluie, écharpe, lunettes de soleil
+function drawWeatherGear(ctx, gear, cx, g, v) {
+  const { r, headRx, headRy, headCy, bodyCy, bodyRx, bodyRy } = g;
+  if (gear === 'umbrella') {
+    const top = headCy - headRy - r * 0.75;
+    const hx = cx + bodyRx * 0.85;
+    // Manche tenu par la patte
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx + headRx * 0.15, top);
+    ctx.lineTo(hx, bodyCy);
+    ctx.stroke();
+    // Toile à festons
+    const span = headRx * 1.35;
+    ctx.beginPath();
+    ctx.moveTo(cx - span, top + r * 0.35);
+    ctx.quadraticCurveTo(cx, top - r * 0.75, cx + span, top + r * 0.35);
+    for (let i = 3; i >= 0; i--) {
+      const x0 = cx - span + (span * 2 * (i + 1)) / 4, x1 = cx - span + (span * 2 * i) / 4;
+      ctx.quadraticCurveTo((x0 + x1) / 2, top + r * 0.1, x1, top + r * 0.35);
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#e8455d';
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ellipse(ctx, cx, top - r * 0.2, r * 0.06, r * 0.06, INK);
+    ellipse(ctx, hx, bodyCy, r * 0.14, r * 0.12, v.bodyColor, INK, 2);
+  } else if (gear === 'scarf') {
+    const y = headCy + headRy * 0.92;
+    ctx.fillStyle = '#e8455d';
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, y, headRx * 0.62, r * 0.13, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    // Pan de l'écharpe qui flotte
+    ctx.beginPath();
+    ctx.moveTo(cx + headRx * 0.3, y);
+    ctx.quadraticCurveTo(cx + headRx * 0.55, y + r * 0.35, cx + headRx * 0.45 + Math.sin(v.t * 3) * 3, y + r * 0.6);
+    ctx.lineTo(cx + headRx * 0.25, y + r * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    for (let i = -2; i <= 2; i++) ctx.fillRect(cx + i * headRx * 0.22 - 1.5, y - 2, 3, 4);
+  } else if (gear === 'sunglasses') {
+    const ey = headCy + headRy * 0.02;
+    const gap = headRx * 0.4;
+    for (const side of [-1, 1]) ellipse(ctx, cx + side * gap, ey, r * 0.2, r * 0.15, '#2b2b33', INK, 2);
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - gap + r * 0.18, ey - r * 0.03);
+    ctx.lineTo(cx + gap - r * 0.18, ey - r * 0.03);
+    ctx.stroke();
+    ellipse(ctx, cx - gap - r * 0.07, ey - r * 0.05, r * 0.05, r * 0.03, 'rgba(255,255,255,.7)');
+  }
+}
+
 // ---- Rendu, avec passage optionnel en pixel art ----
 
 const lowRes = document.createElement('canvas');
@@ -1234,9 +1392,11 @@ const Draw = {
       lowCtx.setTransform(1 / PIXEL, 0, 0, 1 / PIXEL, 0, 0);
     }
     target.save();
+    if (v.weather) drawWeatherBack(target, v);
     if (v.decor) drawDecorBack(target, v);
     const box = v.stage === 'egg' ? drawEgg(target, v) : drawCreature(target, v);
     if (v.decor) drawDecorFront(target, v);
+    if (v.weather) drawWeatherFront(target, v);
     target.restore();
     if (pixel) {
       pixelate();

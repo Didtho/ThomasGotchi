@@ -23,6 +23,8 @@ Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper p
 - 💞 **Amitié** : vos animaux deviennent copains puis meilleurs amis, se rendent visite, se font la toilette et se chamaillent.
 - 🗣️ **Voix** : il dit ton prénom (réglages) avec la voix de l'ordinateur.
 - Il remarque quand tu tapes longtemps (« une petite pause ? ») et fait la fête quand tu reviens.
+- 🌦️ **Météo réelle** (Lyon par défaut, ville modifiable dans les réglages) : pluie, neige, soleil, nuages, brouillard, orage ;
+  il sort son parapluie, son écharpe ou ses lunettes de soleil. Données : Open-Meteo.
 - 🥣 **Gamelle** (menu de l'icône) : il va y manger et boire tout seul. Clic pour la remplir, glisser pour la déplacer.
 - 🏖️ **Pause vacances** (réglages, ou menu de l'icône pour tous) : il ne vieillit pas et n'a ni faim ni soif pendant l'absence.
 - 🔕 **Ne pas déranger** (menu de l'icône) : plus de bruit, de bulles ni de promenades.

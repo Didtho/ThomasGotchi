@@ -115,7 +115,10 @@ function createPetWindow(id) {
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
   win.on('closed', () => { p.win = null; });
   // Au chargement, il apprend si le mode « ne pas déranger » est actif
-  win.webContents.on('did-finish-load', () => win.webContents.send('dnd', dnd));
+  win.webContents.on('did-finish-load', () => {
+    win.webContents.send('dnd', dnd);
+    if (weather) win.webContents.send('weather', weather);
+  });
   return p;
 }
 
@@ -709,10 +712,14 @@ function sendToPets(channel, value) {
   for (const p of pets.values()) if (alive(p)) p.win.webContents.send(channel, value);
 }
 
+function saveSettings() {
+  try { writeJson('settings.json', { dnd, city }); } catch { /* sans gravité */ }
+}
+
 function setDnd(on) {
   dnd = on;
   sendToPets('dnd', dnd);
-  try { writeJson('settings.json', { dnd }); } catch { /* sans gravité */ }
+  saveSettings();
   buildTrayMenu();
 }
 
@@ -815,6 +822,51 @@ ipcMain.on('speak', (_e, text) => {
     speaking.on('error', () => { speaking = null; });
   }
   speaking.on('exit', () => { speaking = null; });
+});
+
+// ---- Météo réelle (Open-Meteo : gratuit, sans compte) ----
+
+let city = 'Lyon';
+let cityGeo = null; // { name, lat, lon } trouvé pour la ville choisie
+let weather = null; // { city, condition, temp, isDay }
+
+// Codes météo de l'OMM -> grandes familles qu'on sait dessiner
+function weatherCondition(code) {
+  if (code === 0 || code === 1) return 'clear';
+  if (code === 2 || code === 3) return 'clouds';
+  if (code === 45 || code === 48) return 'fog';
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow';
+  if (code >= 95) return 'storm';
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain';
+  return 'clouds';
+}
+
+async function fetchWeather() {
+  if (!city) {
+    weather = null;
+    sendToPets('weather', null);
+    return;
+  }
+  try {
+    if (!cityGeo || cityGeo.query !== city) {
+      const g = await (await net.fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr`)).json();
+      const r = g.results && g.results[0];
+      if (!r) { weather = null; sendToPets('weather', null); return; }
+      cityGeo = { query: city, name: r.name, lat: r.latitude, lon: r.longitude };
+    }
+    const f = await (await net.fetch(`https://api.open-meteo.com/v1/forecast?latitude=${cityGeo.lat}&longitude=${cityGeo.lon}&current=temperature_2m,weather_code,is_day&timezone=auto`)).json();
+    const c = f.current;
+    weather = { city: cityGeo.name, condition: weatherCondition(c.weather_code), temp: Math.round(c.temperature_2m), isDay: c.is_day === 1 };
+    sendToPets('weather', weather);
+  } catch { /* hors ligne : on garde la dernière météo connue */ }
+}
+
+ipcMain.handle('get-city', () => city);
+ipcMain.handle('set-city', (_e, c) => {
+  city = String(c || '').trim().slice(0, 60);
+  saveSettings();
+  fetchWeather();
+  return city;
 });
 
 // ---- Ce que fait l'utilisateur sur l'ordinateur ----
@@ -931,7 +983,11 @@ app.whenReady().then(() => {
   setInterval(sendFurnitureToPets, 500);
   const furn = readJson('furniture.json');
   if (furn && furn.on) spawnFurniture(furn);
-  dnd = !!(readJson('settings.json') || {}).dnd;
+  const settings = readJson('settings.json') || {};
+  dnd = !!settings.dnd;
+  if (typeof settings.city === 'string') city = settings.city;
+  fetchWeather();
+  setInterval(fetchWeather, 30 * 60000);
   setupAutoUpdater();
   checkForUpdates();
   setInterval(checkForUpdates, 6 * 3600 * 1000);

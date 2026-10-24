@@ -34,6 +34,7 @@ let unlockTick = 0;
 let pendingMemorials = []; // souvenirs à transmettre au prochain œuf
 let furn = null; // gamelle : { bowl: { x, food, water } }
 let friends = []; // autres animaux : [{ name, x, points, level }] (envoyé par main.js)
+let weather = null; // météo réelle : { city, condition, temp, isDay } (envoyée par main.js)
 let dnd = false; // mode « ne pas déranger »
 let festivity = null; // fête du moment (voir seasons.js), recalculée chaque minute
 let cursor = null; // position de la souris par rapport à la fenêtre (envoyée par main.js)
@@ -152,6 +153,9 @@ function buildView(now) {
     nightcap: state.sleeping && isNight(),
     accessory: state.accessory,
     decor: festivity ? festivity.decor : null,
+    weather: weather ? weather.condition : null,
+    isDay: weather ? weather.isDay : !isNight(),
+    gear: weatherGear(mood),
     night: isNight(),
     eggProgress: Math.min(1, Math.max(0, 1 - (state.hatchAt - Date.now()) / HATCH_DELAY)),
   };
@@ -287,6 +291,36 @@ function wander(now) {
     play(trick.anim, trick.dur);
     if (Math.random() < 0.4) say(trick.say[Math.floor(Math.random() * trick.say.length)], 1800);
   }
+}
+
+// ---------- Météo ----------
+
+const WEATHER_ICONS = { clear: '☀️', clouds: '☁️', rain: '🌧️', storm: '⛈️', snow: '❄️', fog: '🌫️' };
+
+// Ce qu'il porte selon le temps qu'il fait (rien quand il dort)
+function weatherGear(mood) {
+  if (!weather || mood === 'sleep' || mood === 'dead') return null;
+  if (weather.condition === 'rain' || weather.condition === 'storm') return 'umbrella';
+  if (weather.temp <= 5 || weather.condition === 'snow') return 'scarf';
+  if (weather.condition === 'clear' && weather.isDay && weather.temp >= 26) return 'sunglasses';
+  return null;
+}
+
+// Il commente quand le temps change
+function reactToWeather(prev, w) {
+  if (!w || !state || state.dead || state.sleeping || Pet.isEgg(state)) return;
+  if (prev && prev.condition === w.condition && Math.abs(prev.temp - w.temp) < 8) return;
+  const msg = {
+    rain: `Il pleut à ${w.city}… heureusement j'ai mon parapluie ☔`,
+    storm: `Orage à ${w.city} ! J'ai un peu peur… ⛈️`,
+    snow: `Il neige à ${w.city} ! ❄️`,
+    fog: `Quel brouillard à ${w.city} ! 🌫️`,
+    clouds: `Ciel gris à ${w.city}, ${w.temp}°C ☁️`,
+    clear: w.isDay ? `Grand soleil à ${w.city}, ${w.temp}°C ☀️` : `Belle nuit étoilée à ${w.city} ✨`,
+  }[w.condition];
+  if (w.temp >= 30) say(`Il fait ${w.temp}°C à ${w.city}, quelle chaleur ! 🥵`, 5000);
+  else if (w.temp <= 0) say(`Brrr, ${w.temp}°C à ${w.city} ! Heureusement j'ai mon écharpe 🧣`, 5000);
+  else if (msg) say(msg, 5000);
 }
 
 // ---------- Gamelle ----------
@@ -520,7 +554,7 @@ function logic() {
 
 function updatePanel() {
   $('pet-name').textContent = state.name + (state.paused ? ' 🏖️' : '') + (dnd ? ' 🔕' : '');
-  $('pet-age').textContent = Pet.ageText(state);
+  $('pet-age').textContent = Pet.ageText(state) + (weather ? `  ${weather.condition === 'clear' && !weather.isDay ? '🌙' : WEATHER_ICONS[weather.condition] || ''} ${weather.temp}°` : '');
   for (const key of ['hunger', 'thirst', 'energy', 'fun', 'clean', 'health']) {
     const v = state[key];
     const el = $('bar-' + key);
@@ -892,6 +926,7 @@ async function openSettings() {
   $('set-sound').checked = state.sound !== false;
   $('set-voice').checked = state.voice !== false;
   $('set-owner').value = state.owner || '';
+  $('set-city').value = await desk.getCity();
   $('set-version').textContent = `ThomasGotchi v${await desk.version()}`;
   const count = await desk.petCount();
   $('set-adopt').disabled = count >= 5;
@@ -905,6 +940,7 @@ $('set-name').addEventListener('input', () => {
 });
 $('set-login').addEventListener('change', (e) => desk.setLogin(e.target.checked));
 $('set-owner').addEventListener('input', () => { state.owner = $('set-owner').value.trim(); save(); });
+$('set-city').addEventListener('change', () => desk.setCity($('set-city').value));
 $('set-voice').addEventListener('change', (e) => {
   state.voice = e.target.checked;
   if (state.voice) speak(`Bonjour${owner()} !`);
@@ -971,6 +1007,11 @@ desk.onYarn((info) => { yarnInfo = info; });
 
 // Un autre animal passe tout près : câlin, jeu du chat (l'un fuit, l'autre poursuit) ou sauts ensemble
 desk.onFriends((list) => { friends = list || []; });
+desk.onWeather((w) => {
+  const prev = weather;
+  weather = w;
+  reactToWeather(prev, w);
+});
 
 // Ce que fait l'utilisateur sur l'ordinateur
 desk.onUserEvent((ev) => {

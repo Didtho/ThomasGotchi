@@ -33,5 +33,8 @@ contextBridge.exposeInMainWorld('desk', {
   onFriends: (cb) => ipcRenderer.on('friends', (_e, list) => cb(list)),
   onUserEvent: (cb) => ipcRenderer.on('user-event', (_e, ev) => cb(ev)),
   speak: (text) => ipcRenderer.send('speak', text),
+  onWeather: (cb) => ipcRenderer.on('weather', (_e, w) => cb(w)),
+  getCity: () => ipcRenderer.invoke('get-city'),
+  setCity: (c) => ipcRenderer.invoke('set-city', c),
   onMeet: (cb) => ipcRenderer.on('meet', (_e, info) => cb(info)),
 });
