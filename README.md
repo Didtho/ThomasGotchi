@@ -47,6 +47,8 @@ Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien 
 
 ## Personnalisation
 
+- Langue : français, anglais, espagnol, italien (automatique selon l'ordinateur, ou au choix dans les réglages)
+
 - Animal (21) : chat, lapin, ourson, chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, petit dragon,
   loup, lion, tigre, cochon, mouton, souris, hibou, singe, raton laveur
 - Style : mignon ou pixel rétro
@@ -55,6 +57,11 @@ Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien 
 - Genre : il ou elle (les phrases s'accordent)
 - Modèles prêts à adopter, d'après les chats de la maison : **Simba** (roux crème et blanc),
   **Snoop** (tigrée grise et pêche) et **Grisette** (noire et blanche à poils longs)
+
+## Traductions
+
+Le français sert de référence : chaque texte français est la clé de sa traduction dans
+`src/locales/en.js`, `es.js`, `it.js` (application) et `site/lang/*.php` (site).
 
 ## Télécharger
 
@@ -71,6 +78,8 @@ npm start          # lancer l'application
 npm run dist       # installateur Windows -> dist/
 npm run dist:mac   # installateur Mac -> dist/ (à lancer sur un Mac)
 npm run icon       # régénère assets/icon.png à partir du dessin de l'animal
+node scripts/i18n-check.js              # phrases de l'application sans traduction
+php scripts/site-i18n-check.php en      # phrases du site sans traduction (en, es, it)
 ```
 
 Publier une nouvelle version : changer "version" dans `package.json`, puis créer et pousser le tag correspondant

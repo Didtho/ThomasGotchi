@@ -1,6 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Langue connue dès le chargement (pour afficher tout de suite les bons textes)
+const initialLang = ipcRenderer.sendSync('get-lang');
+
 contextBridge.exposeInMainWorld('desk', {
+  lang: initialLang,
+  setLang: (value) => ipcRenderer.send('set-lang', value),
+  onLang: (cb) => ipcRenderer.on('lang', (_e, l) => cb(l)),
   setIgnore: (ignore) => ipcRenderer.send('set-ignore', ignore),
   dragStart: () => ipcRenderer.send('drag-start'),
   dragEnd: () => ipcRenderer.invoke('drag-end'),

@@ -185,13 +185,13 @@ const Pet = {
   },
 
   ageText(s, now = Date.now()) {
-    if (Pet.isEgg(s, now)) return 'œuf';
+    if (Pet.isEgg(s, now)) return t('œuf');
     const end = s.dead ? s.diedAt : now;
     const h = Math.floor((end - s.hatchAt) / HOUR);
     const d = Math.floor(h / 24);
-    if (d > 0) return `${d} j ${h % 24} h`;
-    if (h > 0) return `${h} h`;
-    return `${Math.max(1, Math.floor((end - s.hatchAt) / 60000))} min`;
+    if (d > 0) return t('{d} j {h} h', { d, h: h % 24 });
+    if (h > 0) return t('{h} h', { h });
+    return t('{m} min', { m: Math.max(1, Math.floor((end - s.hatchAt) / 60000)) });
   },
 
   // Fait avancer le temps. Renvoie la liste des événements survenus ('wake', 'collapse', 'poop', 'dead').
@@ -230,11 +230,11 @@ const Pet = {
     if (s.dead || s.paused) { s.lastTick = now; return events; }
     // Rattrapage par pas d'une minute (temps écoulé pendant que l'application était fermée)
     const maxCatchUp = 14 * 24 * HOUR;
-    let t = Math.max(s.lastTick, now - maxCatchUp);
-    while (t < now && !s.dead) {
-      const next = Math.min(now, t + 60000);
-      Pet.step(s, (next - t) / HOUR, next, events);
-      t = next;
+    let time = Math.max(s.lastTick, now - maxCatchUp);
+    while (time < now && !s.dead) {
+      const next = Math.min(now, time + 60000);
+      Pet.step(s, (next - time) / HOUR, next, events);
+      time = next;
     }
     s.lastTick = now;
     return events;
@@ -333,7 +333,7 @@ const Pet = {
       s.poopAt = Date.now() + (10 + Math.random() * 40) * 60000;
     }
     const short = file.name.length > 16 ? file.name.slice(0, 14) + '…' : file.name;
-    return { ok: true, msg: `${short} : ${msg}`, anim: 'eat', bad: (food.health || 0) < 0 };
+    return { ok: true, msg: t('{file} : {msg}', { file: short, msg: t(msg) }), anim: 'eat', bad: (food.health || 0) < 0 };
   },
 
   drink(s) {
@@ -414,6 +414,13 @@ const Pet = {
 
   // ---- Carnet de vie et accessoires ----
 
+  // Durée de vie lisible, à partir d'un nombre d'heures (pour les souvenirs du carnet)
+  ageFromHours(hours) {
+    const h = Math.floor(hours);
+    if (h >= 24) return t('{d} j {h} h', { d: Math.floor(h / 24), h: h % 24 });
+    return h > 0 ? t('{h} h', { h }) : t('{m} min', { m: Math.max(1, Math.round(hours * 60)) });
+  },
+
   favoriteFood(s) {
     const entries = Object.entries(s.stats.foods);
     if (!entries.length) return null;
@@ -431,8 +438,8 @@ const Pet = {
   learnTricks(s) {
     if (s.dead || Pet.isEgg(s)) return [];
     s.tricks = s.tricks || [];
-    const fresh = TRICKS.filter((t) => !s.tricks.includes(t.id) && t.earned(s));
-    for (const t of fresh) s.tricks.push(t.id);
+    const fresh = TRICKS.filter((tr) => !s.tricks.includes(tr.id) && tr.earned(s));
+    for (const tr of fresh) s.tricks.push(tr.id);
     return fresh;
   },
 
@@ -440,11 +447,11 @@ const Pet = {
   doTrick(s, id) {
     if (s.dead || s.sleeping || s.paused || Pet.isEgg(s)) return { ok: false };
     if (s.energy < 10) return { ok: false, msg: Pet.g(s, 'Trop fatigué pour faire des tours…', 'Trop fatiguée pour faire des tours…') };
-    const t = TRICKS.find((x) => x.id === id);
-    if (!t || !s.tricks.includes(id)) return { ok: false };
+    const trick = TRICKS.find((x) => x.id === id);
+    if (!trick || !s.tricks.includes(id)) return { ok: false };
     s.fun = clamp(s.fun + 4);
     s.energy = clamp(s.energy - 2);
-    return { ok: true, anim: t.anim, dur: t.dur, msg: t.say };
+    return { ok: true, anim: trick.anim, dur: trick.dur, msg: trick.say };
   },
 
   // Débloque les accessoires mérités ; renvoie ceux qui viennent d'être gagnés

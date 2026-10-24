@@ -251,3 +251,19 @@ code { padding: 2px 6px; font-size: 14px; background: #fff; border: 1px solid rg
   .top { gap: 12px; }
   .window-body { height: 240px; }
 }
+
+/* ---------- Choix de la langue ---------- */
+.langs { display: flex; gap: 4px; }
+.langs a {
+  padding: 3px 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border: 2px solid transparent;
+  border-radius: 8px;
+}
+.langs a:hover { color: var(--pink-deep); }
+.langs a.on { color: var(--ink); border-color: var(--ink); background: #fff; }
+@media (max-width: 900px) { .langs { margin-left: auto; } .top .btn { margin-left: 0; } }
+@media (max-width: 520px) { .langs a { padding: 2px 4px; font-size: 12px; } .top .btn.small { display: none; } }

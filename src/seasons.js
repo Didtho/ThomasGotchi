@@ -22,7 +22,7 @@ const Seasons = (() => {
     if (md(d) === 1231 || between(d, 101, 102)) {
       const newYear = md(d) === 1231 ? year + 1 : year;
       return { id: 'nouvelan', key: `nouvelan-${newYear}`, decor: 'fireworks',
-        greeting: `Bonne année ${newYear} ! 🎆`, greetToday: md(d) !== 1231 };
+        greeting: t('Bonne année {year} ! 🎆', { year: newYear }), greetToday: md(d) !== 1231 };
     }
     if (between(d, 1201, 1226)) {
       return { id: 'noel', key: `noel-${year}`, decor: 'snow',
@@ -53,8 +53,9 @@ const Seasons = (() => {
     const h = new Date(s.hatchAt);
     const months = (d.getFullYear() - h.getFullYear()) * 12 + d.getMonth() - h.getMonth();
     if (months < 1 || d.getDate() !== h.getDate()) return null;
-    const label = months % 12 === 0 ? `${months / 12} an${months >= 24 ? 's' : ''}` : `${months} mois`;
-    return { id: 'anniversaire', key: `anniv-${months}`, decor: 'cake', greeting: `Joyeux anniversaire ! J'ai ${label} 🎂`, greetToday: true };
+    const years = months / 12;
+    const label = months % 12 === 0 ? t(years > 1 ? '{n} ans' : '{n} an', { n: years }) : t('{n} mois', { n: months });
+    return { id: 'anniversaire', key: `anniv-${months}`, decor: 'cake', greeting: t("Joyeux anniversaire ! J'ai {age} 🎂", { age: label }), greetToday: true };
   }
 
   return { current, birthday, easter };

@@ -32,14 +32,14 @@ const Games = {
 function buildTricks() {
   const box = $('trick-list');
   box.innerHTML = '';
-  for (const t of Pet.TRICKS) {
+  for (const tr of Pet.TRICKS) {
     const b = document.createElement('button');
-    const known = (state.tricks || []).includes(t.id);
-    b.textContent = t.icon + ' ' + t.name;
+    const known = (state.tricks || []).includes(tr.id);
+    b.textContent = tr.icon + ' ' + t(tr.name);
     b.disabled = !known;
-    b.title = known ? 'Faire ce tour' : 'À apprendre : ' + t.hint;
+    b.title = known ? t('Faire ce tour') : t('À apprendre : {hint}', { hint: t(tr.hint) });
     b.addEventListener('click', () => {
-      const r = Pet.doTrick(state, t.id);
+      const r = Pet.doTrick(state, tr.id);
       closeModal();
       if (r.msg) say(r.msg, 2500);
       if (r.ok) { play(r.anim, r.dur); save(); }
@@ -101,7 +101,7 @@ const Catch = (() => {
 
   function loop(now) {
     const left = Math.max(0, Math.ceil((endAt - now) / 1000));
-    $('catch-time').textContent = left + ' s';
+    $('catch-time').textContent = t('{s} s', { s: left });
     if (now > nextSpawn) {
       spawn();
       nextSpawn = now + 450 + Math.random() * 400;
@@ -141,8 +141,8 @@ const Catch = (() => {
     clear();
     const won = score >= 10;
     $('catch-msg').textContent = won
-      ? `Bravo, ${score} friandises ! ${state.name} est ${Pet.g(state, 'ravi', 'ravie')} 😋`
-      : `${score} friandise${score > 1 ? 's' : ''}… Essaie d'en attraper 10 !`;
+      ? Pet.g(state, t('Bravo, {score} friandises ! {name} est ravi 😋', { score, name: state.name }), t('Bravo, {score} friandises ! {name} est ravie 😋', { score, name: state.name }))
+      : t(score > 1 ? "{score} friandises… Essaie d'en attraper 10 !" : "{score} friandise… Essaie d'en attraper 10 !", { score });
     $('catch-again').classList.remove('hidden');
     state.hunger = Math.min(100, state.hunger + Math.min(20, score));
     rewardGame(won, Math.min(30, 5 + score * 2));
@@ -154,7 +154,7 @@ const Catch = (() => {
     clear();
     score = 0;
     $('catch-score').textContent = '0';
-    $('catch-msg').textContent = 'Bouge la souris pour attraper les friandises. Évite les 💩 !';
+    $('catch-msg').textContent = t('Bouge la souris pour attraper les friandises. Évite les 💩 !');
     $('catch-again').classList.add('hidden');
     catcher.textContent = SPECIES_EMOJI[state.species] || '🐱';
     openModal('modal-catch');
@@ -196,8 +196,8 @@ const Cups = (() => {
     build();
     busy = true;
     $('cups-again').classList.add('hidden');
-    $('cups-title').textContent = `Où est ${Pet.g(state, 'caché', 'cachée')} ${state.name} ?`;
-    $('cups-msg').textContent = `Regarde bien sous quel gobelet ${Pet.g(state, 'il', 'elle')} se cache…`;
+    $('cups-title').textContent = Pet.g(state, t('Où est caché {name} ?', state), t('Où est cachée {name} ?', state));
+    $('cups-msg').textContent = t(Pet.g(state, 'Regarde bien sous quel gobelet il se cache…', 'Regarde bien sous quel gobelet elle se cache…'));
     target = Math.floor(Math.random() * 3);
     cups.forEach((c, i) => { c.peek.textContent = i === target ? (SPECIES_EMOJI[state.species] || '🐱') : ''; });
     openModal('modal-cups');
@@ -215,7 +215,7 @@ const Cups = (() => {
       cups[b].el.style.left = SLOTS[cups[b].slot] + 'px';
       await wait(330);
     }
-    $('cups-msg').textContent = 'À toi ! Clique sur le bon gobelet.';
+    $('cups-msg').textContent = t('À toi ! Clique sur le bon gobelet.');
     busy = false;
   }
 
@@ -228,7 +228,9 @@ const Cups = (() => {
       await wait(500);
       cups[target].el.classList.add('up');
     }
-    $('cups-msg').textContent = won ? `Trouvé ! ${state.name} est ${Pet.g(state, 'tout content', 'toute contente')} 🎉` : `Raté ! ${Pet.g(state, 'Il', 'Elle')} était là…`;
+    $('cups-msg').textContent = won
+      ? Pet.g(state, t('Trouvé ! {name} est tout content 🎉', state), t('Trouvé ! {name} est toute contente 🎉', state))
+      : t(Pet.g(state, 'Raté ! Il était là…', 'Raté ! Elle était là…'));
     $('cups-again').classList.remove('hidden');
     if (!won) Sound.play('sad');
     rewardGame(won, won ? 15 : 5);
@@ -243,12 +245,12 @@ const Cups = (() => {
 
 function openJournal() {
   const s = state;
-  $('journal-title').textContent = `Carnet de ${s.name}`;
+  $('journal-title').textContent = t('Carnet de {name}', s);
   const fav = Pet.favoriteFood(s);
   const rows = [
     ['Âge', Pet.ageText(s)],
     ['Fichiers mangés', s.meals],
-    ['Plat préféré', fav || '—'],
+    ['Plat préféré', fav ? t(fav) : '—'],
     ['Câlins reçus', s.stats.hugs],
     ['Crottes ramassées', s.stats.poopsCleaned],
     ['Mini-jeux gagnés', s.stats.gamesWon],
@@ -260,9 +262,9 @@ function openJournal() {
     const row = document.createElement('div');
     row.className = 'journal-row';
     const a = document.createElement('span');
-    a.textContent = label;
+    a.textContent = t(label);
     const b = document.createElement('b');
-    b.textContent = value;
+    b.textContent = typeof value === 'string' ? t(value) : value;
     row.append(a, b);
     body.appendChild(row);
   };
@@ -270,16 +272,16 @@ function openJournal() {
 
   // Prochain accessoire à gagner
   const next = Pet.ACCESSORIES.find((a) => !s.unlocked.includes(a.id));
-  if (next) addRow('Prochain cadeau', `${next.icon} ${next.hint}`);
+  if (next) addRow('Prochain cadeau', next.icon + ' ' + t(next.hint));
 
   if (friends.length) {
     const sub = document.createElement('div');
     sub.className = 'journal-sub';
-    sub.textContent = 'Amis';
+    sub.textContent = t('Amis');
     body.appendChild(sub);
     for (const f of friends) {
       const hearts = f.level === 'meilleurs amis' ? '💞' : f.level === 'copains' ? '💗' : '🤍';
-      addRow(`${hearts} ${f.name || 'Œuf'}`, f.level);
+      addRow(hearts + ' ' + (f.name || t('Œuf')), f.level);
     }
   }
 
@@ -287,9 +289,9 @@ function openJournal() {
     const sub = document.createElement('div');
     sub.className = 'journal-sub';
     const best = s.memorials.reduce((m, x) => (x.hours > m.hours ? x : m));
-    sub.textContent = `Souvenirs (record : ${best.name}, ${best.age})`;
+    sub.textContent = t('Souvenirs (record : {name}, {age})', { name: best.name, age: Pet.ageFromHours(best.hours) });
     body.appendChild(sub);
-    for (const m of s.memorials.slice(-4).reverse()) addRow(`${SPECIES_EMOJI[m.species] || ''} ${m.name}`, m.age);
+    for (const m of s.memorials.slice(-4).reverse()) addRow((SPECIES_EMOJI[m.species] || '') + ' ' + m.name, Pet.ageFromHours(m.hours));
   }
   openModal('modal-journal');
 }

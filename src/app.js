@@ -1,6 +1,10 @@
 // Boucle principale : affichage, interactions souris, glisser-déposer, panneaux.
 
 const $ = (id) => document.getElementById(id);
+
+// Langue de l'interface (voir i18n.js) ; le réglage peut valoir 'auto'
+I18N.lang = desk.lang.lang;
+let langSetting = desk.lang.setting;
 const canvas = $('scene');
 const ctx = canvas.getContext('2d');
 const bubble = $('bubble');
@@ -50,7 +54,7 @@ function say(text, ms = 3800) {
   if (!text) return;
   // « Ne pas déranger » : il ne parle que si on est en train de s'occuper de lui
   if (dnd && panel.classList.contains('hidden') && !modalIsOpen()) return;
-  bubble.textContent = text;
+  bubble.textContent = t(text);
   bubble.classList.remove('hidden');
   bubbleUntil = performance.now() + ms;
 }
@@ -311,15 +315,15 @@ function reactToWeather(prev, w) {
   if (!w || !state || state.dead || state.sleeping || Pet.isEgg(state)) return;
   if (prev && prev.condition === w.condition && Math.abs(prev.temp - w.temp) < 8) return;
   const msg = {
-    rain: `Il pleut à ${w.city}… heureusement j'ai mon parapluie ☔`,
-    storm: `Orage à ${w.city} ! J'ai un peu peur… ⛈️`,
-    snow: `Il neige à ${w.city} ! ❄️`,
-    fog: `Quel brouillard à ${w.city} ! 🌫️`,
-    clouds: `Ciel gris à ${w.city}, ${w.temp}°C ☁️`,
-    clear: w.isDay ? `Grand soleil à ${w.city}, ${w.temp}°C ☀️` : `Belle nuit étoilée à ${w.city} ✨`,
+    rain: t('Il pleut à {city}… heureusement j\'ai mon parapluie ☔', w),
+    storm: t('Orage à {city} ! J\'ai un peu peur… ⛈️', w),
+    snow: t('Il neige à {city} ! ❄️', w),
+    fog: t('Quel brouillard à {city} ! 🌫️', w),
+    clouds: t('Ciel gris à {city}, {temp}°C ☁️', w),
+    clear: w.isDay ? t('Grand soleil à {city}, {temp}°C ☀️', w) : t('Belle nuit étoilée à {city} ✨', w),
   }[w.condition];
-  if (w.temp >= 30) say(`Il fait ${w.temp}°C à ${w.city}, quelle chaleur ! 🥵`, 5000);
-  else if (w.temp <= 0) say(`Brrr, ${w.temp}°C à ${w.city} ! Heureusement j'ai mon écharpe 🧣`, 5000);
+  if (w.temp >= 30) say(t('Il fait {temp}°C à {city}, quelle chaleur ! 🥵', w), 5000);
+  else if (w.temp <= 0) say(t('Brrr, {temp}°C à {city} ! Heureusement j\'ai mon écharpe 🧣', w), 5000);
   else if (msg) say(msg, 5000);
 }
 
@@ -368,7 +372,7 @@ function setPause(on) {
 }
 
 function updatePauseButton() {
-  $('set-pause').textContent = state && state.paused ? '▶ Reprendre la vie' : '🏖️ Pause vacances';
+  $('set-pause').textContent = t(state && state.paused ? '▶ Reprendre la vie' : '🏖️ Pause vacances');
 }
 
 // ---------- Pelote de laine ----------
@@ -444,7 +448,7 @@ function openTreat(spot) {
     if (prize) {
       state.unlocked.push(prize.id);
       state.accessory = prize.id;
-      say(`Un cadeau ! C'est… ${prize.icon} ${prize.name} ! Merci !`, 6000);
+      say(t('Un cadeau ! C\'est… {icon} {name} ! Merci !', { icon: prize.icon, name: t(prize.name) }), 6000);
     } else {
       say('Un cadeau ! J\'adore, merci ! 🎁💕', 5000);
     }
@@ -452,7 +456,7 @@ function openTreat(spot) {
     state.fun = Math.min(100, state.fun + 8);
     state.hunger = Math.min(100, state.hunger + 5);
     const left = state.treatSpots.filter((t) => t.kind === 'egg').length;
-    say(left ? `Un œuf en chocolat ! Encore ${left} à trouver 🥚` : 'Tous les œufs trouvés ! Bravo 🐣🍫', 4000);
+    say(left ? t('Un œuf en chocolat ! Encore {left} à trouver 🥚', { left }) : 'Tous les œufs trouvés ! Bravo 🐣🍫', 4000);
     play(left ? 'jump' : 'love', 1200);
   }
   save();
@@ -493,7 +497,7 @@ function dayRhythm() {
     state.nightSleep = false;
     play('stretch', 1500);
     say('Bonjour ! ☀️ Bien dormi !', 4000);
-    speak(`Bonjour${owner()} !`);
+    speak(t('Bonjour{owner} !', { owner: owner() }));
     save();
   }
 }
@@ -508,8 +512,8 @@ function logic() {
 
   if (before === 'egg' && after !== 'egg') {
     play('hatch', 2000);
-    say(`Coucou ! Je suis ${state.name} ! 💕`, 5000);
-    speak(`Bonjour${owner()}, je suis ${state.name} !`);
+    say(t('Coucou ! Je suis {name} ! 💕', state), 5000);
+    speak(t('Bonjour{owner}, je suis {name} !', { owner: owner(), name: state.name }));
   } else if (before !== after && !state.dead) {
     play('heal', 2000);
     say(after === 'adult' ? Pet.g(state, 'Je suis devenu grand ! ⭐', 'Je suis devenue grande ! ⭐') : 'J\'ai grandi ! 🌱', 5000);
@@ -539,7 +543,7 @@ function logic() {
   }
   if (!dnd && Pet.isSick(state) && now - lastNotifAt > 3 * 3600 * 1000 && 'Notification' in window) {
     lastNotifAt = now;
-    new Notification('ThomasGotchi', { body: `${state.name} est malade ! Viens vite t'occuper ${Pet.g(state, 'de lui', 'd\'elle')}.` });
+    new Notification('ThomasGotchi', { body: Pet.g(state, t('{name} est malade ! Viens vite t\'occuper de lui.', state), t('{name} est malade ! Viens vite t\'occuper d\'elle.', state)) });
   }
 
   if (!panel.classList.contains('hidden')) updatePanel();
@@ -671,7 +675,7 @@ function clickPet() {
   if (state.sleeping) { say('Zzz… chuuut…'); return; }
   const r = Pet.pet(state);
   if (r.ok) play('love', 1400);
-  if (r.ok && Math.random() < 0.12) speak(`Je t'aime${owner()} !`);
+  if (r.ok && Math.random() < 0.12) speak(t('Je t\'aime{owner} !', { owner: owner() }));
 }
 
 // ---------- Crottes sur le bureau ----------
@@ -760,21 +764,21 @@ const owner = () => (state && state.owner ? ' ' + state.owner : '');
 // La voix vient du système (voir main.js) : elle marche même sans voix dans le navigateur intégré
 function speak(text) {
   if (!state || state.voice === false || dnd) return;
-  desk.speak(text);
+  desk.speak(t(text));
 }
 
 // ---------- Accessoires ----------
 
 function checkUnlocks() {
-  for (const t of Pet.learnTricks(state)) {
+  for (const tr of Pet.learnTricks(state)) {
     Sound.play('win');
-    say(`J'ai appris un tour : ${t.icon} ${t.name} ! (bouton 🎾)`, 5500);
+    say(t('J\'ai appris un tour : {icon} {name} ! (bouton 🎾)', { icon: tr.icon, name: t(tr.name) }), 5500);
     save();
   }
   for (const a of Pet.checkUnlocks(state)) {
     if (!state.accessory) state.accessory = a.id;
     Sound.play('win');
-    say(`Cadeau ! ${a.icon} ${a.name} débloqué !`, 5000);
+    say(t('Cadeau ! {icon} {name} débloqué !', { icon: a.icon, name: t(a.name) }), 5000);
     save();
   }
 }
@@ -783,14 +787,17 @@ function buildAccessories(container) {
   container.innerHTML = '';
   const owned = Pet.ACCESSORIES.filter((a) => state.unlocked.includes(a.id));
   if (!owned.length) {
-    container.innerHTML = `<span class="hint">Prends bien soin ${Pet.g(state, 'de lui', 'd\'elle')} pour gagner des accessoires !</span>`;
+    const hint = document.createElement('span');
+    hint.className = 'hint';
+    hint.textContent = Pet.g(state, t('Prends bien soin de lui pour gagner des accessoires !'), t('Prends bien soin d\'elle pour gagner des accessoires !'));
+    container.appendChild(hint);
     return;
   }
   for (const a of [{ id: '', icon: '∅', name: 'Aucun' }, ...owned]) {
     const b = document.createElement('button');
     b.dataset.value = a.id;
     b.textContent = a.icon;
-    b.title = a.name;
+    b.title = t(a.name);
     container.appendChild(b);
   }
   bindChoices(container, state.accessory || '', (v) => { state.accessory = v || null; save(); });
@@ -804,7 +811,7 @@ function buildSwatches(container, current, onPick) {
     const b = document.createElement('button');
     const coat = Pet.COATS[key];
     b.style.background = (coat && coat.swatch) || hex;
-    b.title = coat ? coat.name : key;
+    b.title = coat ? t(coat.name) : key;
     b.classList.toggle('on', key === current);
     b.addEventListener('click', () => {
       container.querySelectorAll('button').forEach((x) => x.classList.remove('on'));
@@ -933,7 +940,7 @@ $('new-ok').addEventListener('click', () => {
   applyStyle(state.style);
   closeModal();
   save();
-  say(`Prends soin de cet œuf… ${Pet.g(state, 'il', 'elle')} va bientôt éclore !`, 5000);
+  say(Pet.g(state, 'Prends soin de cet œuf… il va bientôt éclore !', 'Prends soin de cet œuf… elle va bientôt éclore !'), 5000);
 });
 $('new-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('new-ok').click(); });
 
@@ -945,6 +952,7 @@ async function openSettings() {
   bindChoices(card.querySelector('[data-group=species]'), state.species || 'chat', (v) => { state.species = v; save(); });
   bindChoices(card.querySelector('[data-group=gender]'), state.gender || 'm', (v) => { state.gender = v; save(); });
   bindChoices(card.querySelector('[data-group=pace]'), state.pace || 'normal', (v) => { state.pace = v; save(); });
+  bindChoices(card.querySelector('[data-group=lang]'), langSetting, (v) => { langSetting = v; desk.setLang(v); });
   updatePauseButton();
   buildAccessories(card.querySelector('[data-group=accessory]'));
   buildSwatches(card.querySelector('[data-group=color]'), state.color, (v) => { state.color = v; save(); });
@@ -969,7 +977,7 @@ $('set-owner').addEventListener('input', () => { state.owner = $('set-owner').va
 $('set-city').addEventListener('change', () => desk.setCity($('set-city').value));
 $('set-voice').addEventListener('change', (e) => {
   state.voice = e.target.checked;
-  if (state.voice) speak(`Bonjour${owner()} !`);
+  if (state.voice) speak(t('Bonjour{owner} !', { owner: owner() }));
   save();
 });
 $('set-sound').addEventListener('change', (e) => {
@@ -985,17 +993,20 @@ $('set-adopt').addEventListener('click', () => {
   desk.adopt();
 });
 $('set-release').addEventListener('click', () => {
-  if (!confirm(`Laisser partir ${state.name} ? ${Pet.g(state, 'Il', 'Elle')} s'en ira pour toujours.`)) return;
+  if (!confirm(Pet.g(state, t('Laisser partir {name} ? Il s\'en ira pour toujours.', state), t('Laisser partir {name} ? Elle s\'en ira pour toujours.', state)))) return;
   desk.poopClearAll();
   desk.release();
 });
 
 $('set-reset').addEventListener('click', () => {
-  if (confirm(`Recommencer avec un nouvel œuf ? ${state.name} disparaîtra pour toujours.`)) openNew();
+  if (confirm(t('Recommencer avec un nouvel œuf ? {name} disparaîtra pour toujours.', state))) openNew();
 });
 
 function showDead() {
-  $('dead-text').textContent = `${state.name} est ${Pet.g(state, 'parti', 'partie')} au paradis des pixels après ${Pet.ageText(state)} de vie. Il ne faut pas oublier de ${Pet.g(state, 'le nourrir, de le faire boire et de le laver', 'la nourrir, de la faire boire et de la laver')}…`;
+  const p = { name: state.name, age: Pet.ageText(state) };
+  $('dead-text').textContent = Pet.g(state,
+    t('{name} est parti au paradis des pixels après {age} de vie. Il ne faut pas oublier de le nourrir, de le faire boire et de le laver…', p),
+    t('{name} est partie au paradis des pixels après {age} de vie. Il ne faut pas oublier de la nourrir, de la faire boire et de la laver…', p));
   openModal('modal-dead');
 }
 $('dead-ok').addEventListener('click', openNew);
@@ -1008,7 +1019,7 @@ desk.onMenu((action) => {
 
 $('set-pause').addEventListener('click', () => setPause(!state.paused));
 $('set-export').addEventListener('click', async () => {
-  if (await desk.exportPet(state)) say(`${state.name} est sauvegardé${Pet.g(state, '', 'e')} dans un fichier 💾`);
+  if (await desk.exportPet(state)) say(Pet.g(state, t('{name} est sauvegardé dans un fichier 💾', state), t('{name} est sauvegardée dans un fichier 💾', state)));
 });
 
 desk.onFurniture((f) => { furn = f; });
@@ -1033,6 +1044,14 @@ desk.onYarn((info) => { yarnInfo = info; });
 
 // Un autre animal passe tout près : câlin, jeu du chat (l'un fuit, l'autre poursuit) ou sauts ensemble
 desk.onFriends((list) => { friends = list || []; });
+
+// Changement de langue (depuis n'importe quel animal) : on retraduit tout de suite
+desk.onLang((l) => {
+  I18N.lang = l;
+  translatePage();
+  if (state && !panel.classList.contains('hidden')) updatePanel();
+  if (state && modalIsOpen() && !$('modal-settings').classList.contains('hidden')) updatePauseButton();
+});
 desk.onWeather((w) => {
   const prev = weather;
   weather = w;
@@ -1044,8 +1063,8 @@ desk.onUserEvent((ev) => {
   if (!state || state.dead || state.sleeping || state.paused || Pet.isEgg(state) || modalIsOpen()) return;
   if (ev.type === 'back') {
     play('jump', 800);
-    say(`Te revoilà${owner()} ! Tu m'as manqué 💕`, 4500);
-    speak(`Te revoilà${owner()} !`);
+    say(t('Te revoilà{owner} ! Tu m\'as manqué 💕', { owner: owner() }), 4500);
+    speak(t('Te revoilà{owner} !', { owner: owner() }));
   } else if (ev.type === 'typing') {
     play('stretch', 1500);
     say('Tu tapes beaucoup… 🥱 Une petite pause ?', 4500);
@@ -1057,16 +1076,16 @@ desk.onMeet(({ name, side, game, role, levelUp }) => {
   walking = null;
   facing = side;
   state.fun = Math.min(100, state.fun + 5);
-  const other = name || 'toi';
+  const other = name || t('toi');
   if (levelUp && levelUp !== 'connaissances') {
     play('love', 1600);
-    say(`${other} et moi, on est ${levelUp} ! 💞`, 4500);
+    say(t('{other} et moi, on est {level} ! 💞', { other, level: t(levelUp) }), 4500);
     return;
   }
   if (game === 'groom') {
     // Toilette : il lèche la tête de son ami
     play('love', 2200);
-    say(role === 'flee' ? 'Slurp slurp ! 👅' : `Merci pour la toilette, ${other} 😽`, 2500);
+    say(role === 'flee' ? 'Slurp slurp ! 👅' : t('Merci pour la toilette, {other} 😽', { other }), 2500);
     return;
   }
   if (game === 'tussle') {
@@ -1078,7 +1097,7 @@ desk.onMeet(({ name, side, game, role, levelUp }) => {
   if (game === 'chase') {
     if (role === 'flee') {
       startWalk(-side, 55, 5);
-      say(`Attrape-moi, ${other} ! 😹`, 2200);
+      say(t('Attrape-moi, {other} ! 😹', { other }), 2200);
     } else {
       setTimeout(() => { if (canWander()) startWalk(side, 60, 5); }, 450);
       say('Je vais t\'attraper !', 2200);
@@ -1086,10 +1105,10 @@ desk.onMeet(({ name, side, game, role, levelUp }) => {
   } else if (game === 'jump') {
     play('jump', 800);
     setTimeout(() => { if (!anim) play('jump', 800); }, 900);
-    say(role === 'flee' ? 'Hop hop !' : `On saute, ${other} ?`, 1800);
+    say(role === 'flee' ? 'Hop hop !' : t('On saute, {other} ?', { other }), 1800);
   } else {
     play('love', 1600);
-    say(`Coucou ${other} ! 💕`);
+    say(t('Coucou {other} ! 💕', { other }));
   }
 });
 
@@ -1106,6 +1125,8 @@ desk.onPoopCleaned((id) => {
 window.addEventListener('beforeunload', save);
 
 // ---------- Démarrage ----------
+
+translatePage();
 
 (async function start() {
   const saved = await desk.load();

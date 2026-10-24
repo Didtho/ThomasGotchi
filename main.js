@@ -6,6 +6,28 @@ const fs = require('fs');
 const W = 240;
 const H = 300;
 const MAX_PETS = 5;
+
+// ---- Langue : automatique (celle de l'ordinateur) ou choisie dans les réglages ----
+const LOCALES = {
+  en: require('./src/locales/en.js'),
+  es: require('./src/locales/es.js'),
+  it: require('./src/locales/it.js'),
+};
+let langSetting = 'auto';
+
+function currentLang() {
+  if (langSetting !== 'auto') return langSetting;
+  const l = (app.getLocale() || 'fr').slice(0, 2);
+  return ['fr', 'en', 'es', 'it'].includes(l) ? l : 'en';
+}
+
+// Même principe que src/i18n.js : le texte français sert de clé
+function tr(text, params) {
+  const dict = LOCALES[currentLang()];
+  let s = (dict && dict[text]) || text;
+  if (params) s = s.replace(/\{(\w+)\}/g, (m, k) => (params[k] !== undefined ? params[k] : m));
+  return s;
+}
 const isMac = process.platform === 'darwin';
 
 let tray = null;
@@ -178,32 +200,32 @@ function buildTrayMenu() {
   const login = app.getLoginItemSettings().openAtLogin;
   const list = [...pets.values()];
   const settings = list.length === 1
-    ? { label: 'Réglages…', click: () => openSettings(list[0]) }
-    : { label: 'Réglages', submenu: list.map((p) => ({ label: p.name || 'Œuf', click: () => openSettings(p) })) };
+    ? { label: tr('Réglages…'), click: () => openSettings(list[0]) }
+    : { label: tr('Réglages'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => openSettings(p) })) };
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: `ThomasGotchi v${app.getVersion()}`, enabled: false },
     { type: 'separator' },
-    { label: anyVisible() ? 'Cacher' : 'Afficher', click: toggleVisible },
+    { label: tr(anyVisible() ? 'Cacher' : 'Afficher'), click: toggleVisible },
     {
-      label: 'Ramener au coin de l\'écran',
+      label: tr('Ramener au coin de l\'écran'),
       click: () => list.forEach((p, i) => { const d = defaultPosition(i); placeWindow(p, d.x, d.y); if (alive(p)) p.win.show(); }),
     },
     settings,
-    { label: 'Adopter un autre animal', enabled: list.length < MAX_PETS, click: adoptPet },
-    { label: yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶', click: toggleYarn },
-    { label: 'Gamelle 🥣', type: 'checkbox', checked: !!furniture, click: () => (furniture ? removeFurniture() : spawnFurniture()) },
+    { label: tr('Adopter un autre animal'), enabled: list.length < MAX_PETS, click: adoptPet },
+    { label: tr(yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶'), click: toggleYarn },
+    { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture, click: () => (furniture ? removeFurniture() : spawnFurniture()) },
     { type: 'separator' },
-    { label: '🔕 Ne pas déranger', type: 'checkbox', checked: dnd, click: (item) => setDnd(item.checked) },
-    { label: '🏖️ Pause vacances (tous)', type: 'checkbox', checked: allPaused, click: (item) => setAllPaused(item.checked) },
-    { label: 'Importer un animal…', enabled: list.length < MAX_PETS, click: importPet },
+    { label: tr('🔕 Ne pas déranger'), type: 'checkbox', checked: dnd, click: (item) => setDnd(item.checked) },
+    { label: tr('🏖️ Pause vacances (tous)'), type: 'checkbox', checked: allPaused, click: (item) => setAllPaused(item.checked) },
+    { label: tr('Importer un animal…'), enabled: list.length < MAX_PETS, click: importPet },
     updateMenuItem(),
     { type: 'separator' },
     {
-      label: 'Lancer au démarrage', type: 'checkbox', checked: login,
+      label: tr('Lancer au démarrage'), type: 'checkbox', checked: login,
       click: (item) => { app.setLoginItemSettings({ openAtLogin: item.checked }); },
     },
     { type: 'separator' },
-    { label: 'Quitter', click: () => app.quit() },
+    { label: tr('Quitter'), click: () => app.quit() },
   ]));
 }
 
@@ -674,9 +696,9 @@ ipcMain.handle('export-pet', async (e, state) => {
   const p = petOf(e.sender);
   if (!p || !state) return false;
   const res = await dialog.showSaveDialog(p.win, {
-    title: 'Exporter ' + state.name,
+    title: tr('Exporter {name}', { name: state.name }),
     defaultPath: path.join(app.getPath('documents'), `${state.name}.thomasgotchi`),
-    filters: [{ name: 'Animal ThomasGotchi', extensions: ['thomasgotchi'] }],
+    filters: [{ name: tr('Animal ThomasGotchi'), extensions: ['thomasgotchi'] }],
   });
   if (res.canceled || !res.filePath) return false;
   // Les crottes et surprises restent sur ce bureau-ci
@@ -687,8 +709,8 @@ ipcMain.handle('export-pet', async (e, state) => {
 
 async function importPet() {
   const res = await dialog.showOpenDialog({
-    title: 'Importer un animal',
-    filters: [{ name: 'Animal ThomasGotchi', extensions: ['thomasgotchi', 'json'] }],
+    title: tr('Importer un animal'),
+    filters: [{ name: tr('Animal ThomasGotchi'), extensions: ['thomasgotchi', 'json'] }],
     properties: ['openFile'],
   });
   if (res.canceled || !res.filePaths.length) return;
@@ -697,8 +719,8 @@ async function importPet() {
     const data = JSON.parse(fs.readFileSync(res.filePaths[0], 'utf8'));
     if (data.format === 'thomasgotchi' && data.pet && data.pet.version === 1 && typeof data.pet.name === 'string') pet = data.pet;
   } catch { /* fichier illisible */ }
-  if (!pet) return dialog.showMessageBox({ type: 'warning', message: 'Ce fichier n\'est pas un animal ThomasGotchi.' });
-  if (pets.size >= MAX_PETS) return dialog.showMessageBox({ type: 'info', message: `Il y a déjà ${MAX_PETS} animaux : laisses-en partir un avant d'en importer un autre.` });
+  if (!pet) return dialog.showMessageBox({ type: 'warning', message: tr('Ce fichier n\'est pas un animal ThomasGotchi.') });
+  if (pets.size >= MAX_PETS) return dialog.showMessageBox({ type: 'info', message: tr('Il y a déjà {n} animaux : laisses-en partir un avant d\'en importer un autre.', { n: MAX_PETS }) });
   // Le temps écoulé depuis l'export ne compte pas : il reprend sa vie là où elle s'était arrêtée
   pet.lastTick = Date.now();
   const id = Date.now().toString(36);
@@ -718,8 +740,16 @@ function sendToPets(channel, value) {
 }
 
 function saveSettings() {
-  try { writeJson('settings.json', { dnd, city }); } catch { /* sans gravité */ }
+  try { writeJson('settings.json', { dnd, city, lang: langSetting }); } catch { /* sans gravité */ }
 }
+
+ipcMain.on('get-lang', (e) => { e.returnValue = { setting: langSetting, lang: currentLang() }; });
+ipcMain.on('set-lang', (_e, value) => {
+  langSetting = ['auto', 'fr', 'en', 'es', 'it'].includes(value) ? value : 'auto';
+  saveSettings();
+  sendToPets('lang', currentLang());
+  buildTrayMenu();
+});
 
 function setDnd(on) {
   dnd = on;
@@ -807,21 +837,24 @@ ipcMain.on('speak', (_e, text) => {
   if (typeof text !== 'string' || !text.trim() || speaking) return;
   text = text.slice(0, 120);
   if (isMac) {
-    speaking = spawn('say', ['-v', 'Amelie', '-r', '190', text]);
+    const macVoice = { fr: 'Amelie', en: 'Samantha', es: 'Monica', it: 'Alice' }[currentLang()];
+    speaking = spawn('say', ['-v', macVoice, '-r', '190', text]);
     speaking.on('error', () => { speaking = null; });
   } else {
     // Le texte passe par une variable d'environnement (jamais dans la commande elle-même)
     const script = [
       'Add-Type -AssemblyName System.Speech',
       '$s = New-Object System.Speech.Synthesis.SpeechSynthesizer',
-      '$fr = $s.GetInstalledVoices() | Where-Object { $_.Enabled -and $_.VoiceInfo.Culture.Name -like "fr*" } | Select-Object -First 1',
-      'if ($fr) { $s.SelectVoice($fr.VoiceInfo.Name) }',
+      // Une voix de la langue choisie ; s'il n'y en a pas, il reste muet plutôt que de parler avec un accent étranger
+      '$v = $s.GetInstalledVoices() | Where-Object { $_.Enabled -and $_.VoiceInfo.Culture.Name -like ($env:TG_LANG + "*") } | Select-Object -First 1',
+      'if (-not $v) { exit }',
+      '$s.SelectVoice($v.VoiceInfo.Name)',
       '$t = [Security.SecurityElement]::Escape($env:TG_TEXT)',
       // Voix plus aiguë et un peu plus rapide : un petit animal
-      '$s.SpeakSsml("<speak version=\'1.0\' xmlns=\'http://www.w3.org/2001/10/synthesis\' xml:lang=\'fr-FR\'><prosody pitch=\'+45%\' rate=\'+10%\'>$t</prosody></speak>")',
+      '$s.SpeakSsml("<speak version=\'1.0\' xmlns=\'http://www.w3.org/2001/10/synthesis\' xml:lang=\'" + $v.VoiceInfo.Culture.Name + "\'><prosody pitch=\'+45%\' rate=\'+10%\'>$t</prosody></speak>")',
     ].join('; ');
     speaking = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
-      env: { ...process.env, TG_TEXT: text },
+      env: { ...process.env, TG_TEXT: text, TG_LANG: currentLang() },
       windowsHide: true,
     });
     speaking.on('error', () => { speaking = null; });
@@ -915,13 +948,13 @@ function notify(body) {
 // Ligne du menu de l'icône selon l'état de la mise à jour
 function updateMenuItem() {
   if (updateState && updateState.status === 'ready') {
-    return { label: `🔄 Redémarrer pour installer la v${updateState.version}`, click: () => require('electron-updater').autoUpdater.quitAndInstall() };
+    return { label: tr('🔄 Redémarrer pour installer la v{v}', { v: updateState.version }), click: () => require('electron-updater').autoUpdater.quitAndInstall() };
   }
   if (updateState && updateState.status === 'downloading') {
-    return { label: `⬇ Téléchargement de la v${updateState.version}…`, enabled: false };
+    return { label: tr('⬇ Téléchargement de la v{v}…', { v: updateState.version }), enabled: false };
   }
-  if (updateUrl) return { label: '⬇ Nouvelle version disponible', click: () => shell.openExternal(updateUrl) };
-  return { label: 'Rechercher une mise à jour', enabled: app.isPackaged, click: () => checkForUpdates(true) };
+  if (updateUrl) return { label: tr('⬇ Nouvelle version disponible'), click: () => shell.openExternal(updateUrl) };
+  return { label: tr('Rechercher une mise à jour'), enabled: app.isPackaged, click: () => checkForUpdates(true) };
 }
 
 function setupAutoUpdater() {
@@ -934,7 +967,7 @@ function setupAutoUpdater() {
   autoUpdater.on('update-downloaded', (info) => {
     updateState = { status: 'ready', version: info.version };
     buildTrayMenu();
-    notify(`La version ${info.version} est prête : elle s'installera à la prochaine ouverture (ou via le menu de l'icône).`);
+    notify(tr('La version {v} est prête : elle s\'installera à la prochaine ouverture (ou via le menu de l\'icône).', { v: info.version }));
   });
   autoUpdater.on('error', () => {
     if (updateState && updateState.status === 'downloading') updateState = null;
@@ -950,15 +983,15 @@ async function checkForUpdates(manual = false) {
       const res = await net.fetch('https://api.github.com/repos/Didtho/ThomasGotchi/releases/latest');
       const tag = ((await res.json()).tag_name || '').replace(/^v/, '');
       if (tag && newer(tag, app.getVersion())) { updateUrl = RELEASES; buildTrayMenu(); }
-      else if (manual) notify(`Tu as déjà la dernière version (v${app.getVersion()}).`);
+      else if (manual) notify(tr('Tu as déjà la dernière version (v{v}).', { v: app.getVersion() }));
     } else {
       const { autoUpdater } = require('electron-updater');
       const result = await autoUpdater.checkForUpdates();
       const latest = result && result.updateInfo && result.updateInfo.version;
-      if (manual && (!latest || !newer(latest, app.getVersion()))) notify(`Tu as déjà la dernière version (v${app.getVersion()}).`);
+      if (manual && (!latest || !newer(latest, app.getVersion()))) notify(tr('Tu as déjà la dernière version (v{v}).', { v: app.getVersion() }));
     }
   } catch {
-    if (manual) notify('Impossible de vérifier les mises à jour (pas de connexion ?).');
+    if (manual) notify(tr('Impossible de vérifier les mises à jour (pas de connexion ?).'));
   }
 }
 
@@ -991,6 +1024,8 @@ app.whenReady().then(() => {
   const settings = readJson('settings.json') || {};
   dnd = !!settings.dnd;
   if (typeof settings.city === 'string') city = settings.city;
+  if (typeof settings.lang === 'string') langSetting = settings.lang;
+  buildTrayMenu();
   fetchWeather();
   setInterval(fetchWeather, 30 * 60000);
   setupAutoUpdater();
