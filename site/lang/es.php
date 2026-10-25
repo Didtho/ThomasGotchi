@@ -135,4 +135,5 @@ return [
     'Faire un don avec PayPal' => 'Donar con PayPal',
     'Merci à celles et ceux qui l\'ont déjà fait !' => '¡Gracias a quienes ya lo han hecho!',
     'Soutenir' => 'Apoyar',
+    'Soutenir le projet' => 'Apoyar el proyecto',
 ];

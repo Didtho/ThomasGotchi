@@ -141,6 +141,17 @@ $jsonLd = [
         <a href="<?= $h($langUrl($code)) ?>" data-lang="<?= $code ?>" title="<?= $h($label) ?>"<?= $code === TG_CURRENT ? ' class="on"' : '' ?>><?= strtoupper($code) ?></a>
       <?php endforeach; ?>
     </div>
+    <!-- Petite pièce dessinée (même trait que les animaux) qui mène à « Soutenir » -->
+    <a class="coin" href="#soutenir" title="<?= $h(tt('Soutenir le projet')) ?>" aria-label="<?= $h(tt('Soutenir le projet')) ?>">
+      <svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true">
+        <ellipse cx="24" cy="44" rx="13" ry="2.5" fill="rgba(0,0,0,.15)"/>
+        <circle cx="24" cy="22" r="19" fill="#f2b632" stroke="#3b2a3a" stroke-width="2.5"/>
+        <circle cx="24" cy="22" r="14" fill="#ffd84a" stroke="#d99a1e" stroke-width="2"/>
+        <path d="M29.5 15.5a8 8 0 1 0 0 13" fill="none" stroke="#3b2a3a" stroke-width="3" stroke-linecap="round"/>
+        <path d="M16.5 20h10M16.5 24.5h9" stroke="#3b2a3a" stroke-width="2.6" stroke-linecap="round"/>
+        <ellipse cx="16.5" cy="11.5" rx="4" ry="2.2" fill="#fff" opacity=".75" transform="rotate(-30 16.5 11.5)"/>
+      </svg>
+    </a>
     <a class="btn small" href="#telecharger"><?= $h(tt('Télécharger')) ?></a>
   </header>
 

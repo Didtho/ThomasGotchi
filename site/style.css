@@ -329,6 +329,15 @@ code { padding: 2px 6px; font-size: 14px; background: #fff; border: 1px solid rg
 }
 .bottom p { margin: 0; }
 
+/* Petite pièce du haut de page, vers « Soutenir » : elle se balance au survol */
+.coin { display: inline-flex; flex: none; line-height: 0; transition: transform .2s; }
+.coin:hover, .coin:focus-visible { transform: rotate(-12deg) scale(1.12); animation: coin-wobble .6s ease-in-out; }
+@keyframes coin-wobble {
+  0%, 100% { transform: rotate(0) scale(1.12); }
+  30% { transform: rotate(-14deg) scale(1.12); }
+  60% { transform: rotate(10deg) scale(1.12); }
+}
+
 /* Soutenir le projet (don PayPal) */
 .soutien-card {
   max-width: 720px;
