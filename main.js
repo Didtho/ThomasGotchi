@@ -326,7 +326,9 @@ function copyDiag() {
     `ThomasGotchi ${app.getVersion()} · ${process.platform} ${os.release()} · Electron ${process.versions.electron}`,
     ...screen.getAllDisplays().map((d) => `écran ${JSON.stringify(d.bounds)} zone ${JSON.stringify(d.workArea)} x${d.scaleFactor}`),
     ...[...pets.values()].filter(alive).map((p) => `animal ${p.name || p.id} : ${JSON.stringify(p.win.getBounds())} ignore=${p.ignoring} visible=${p.win.isVisible()}`),
-    `fenêtres repérées : ${windowRects.size}`,
+    `fenêtres repérées : ${windowRects.size} (positions seulement ; « praticable » = l'animal peut monter dessus)`,
+    ...[...windowRects.values()].map((r) => `  fenêtre ${Math.round(r.x1)},${Math.round(r.y1)} → ${Math.round(r.x2)},${Math.round(r.y2)}`
+      + (platforms.some((pl) => pl.h === r.h) ? ' praticable' : r.y1 <= 150 ? ' trop près du haut' : ' bord caché')),
   ];
   clipboard.writeText([...head, '', ...diagLines].join('\n'));
   notify(tr('Diagnostic copié : colle-le dans un message pour l\'envoyer.'));
