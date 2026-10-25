@@ -106,6 +106,16 @@ const TRAITS = {
   raton: { icon: '🧼', name: ['Maniaque', 'Maniaque'], desc: 'Se lave souvent les pattes : reste propre plus longtemps.', rates: { clean: 0.6 } },
 };
 
+// Petits ennuis qui arrivent au hasard (environ une fois tous les trois jours d'éveil) : il faut s'en occuper.
+// cure : l'action qui les guérit. Ils font baisser la santé, mais jamais en dessous de AILMENT_FLOOR à eux seuls.
+const AILMENTS = {
+  rhume: { cure: 'heal', start: 'Atchoum ! Je crois que j\'ai attrapé un rhume… 🤧', symptom: 'Atchoum ! 🤧 Un petit médicament ?', cured: 'Fini le rhume, merci ! 💚' },
+  puces: { cure: 'wash', start: 'Ça gratte… j\'ai des puces ! Un bain ? 🐜', symptom: 'Ça gratte, ça gratte ! Un bain, vite ! 🐜', cured: 'Plus de puces, quel soulagement ! ✨' },
+  ventre: { cure: 'heal', start: 'Oh là là, j\'ai mal au ventre… 🤢', symptom: 'Mon ventre… un médicament ? 🤢', cured: 'Mon ventre va mieux, merci ! 💚' },
+};
+const AILMENT_RATE = 1 / 72; // probabilité par heure d'éveil
+const AILMENT_FLOOR = 30;
+
 // Modèles prêts à adopter (un clic remplit le prénom, le pelage et le genre)
 const PRESETS = [
   { name: 'Simba', species: 'chat', color: 'simba', gender: 'm', icon: '🧡' },
@@ -290,6 +300,13 @@ const Pet = {
     if (!s.sleeping) s.fun = clamp(s.fun - RATES.fun * (m.fun || 1) * dtH * k);
     s.clean = clamp(s.clean - (RATES.clean * (m.clean || 1) + RATES.cleanPerPoop * s.poops) * dtH * k);
 
+    // Petits ennuis au hasard (rhume, puces, mal de ventre) : ils durent jusqu'à ce qu'on le soigne
+    if (!s.ailment && !s.sleeping && Math.random() < AILMENT_RATE * dtH) {
+      s.ailment = pick(Object.keys(AILMENTS));
+      events.push('ailment');
+    }
+    if (s.ailment && s.health > AILMENT_FLOOR) s.health = Math.max(AILMENT_FLOOR, s.health - 1.5 * dtH * k);
+
     // La nuit, il dort jusqu'au matin même une fois reposé (voir app.js)
     if (s.sleeping && s.energy >= 100 && !s.nightSleep) { s.sleeping = false; events.push('wake'); }
     if (!s.sleeping && s.energy <= 0) { s.sleeping = true; events.push('collapse'); }
@@ -307,7 +324,7 @@ const Pet = {
 
     const empty = [s.hunger, s.thirst, s.clean].filter((v) => v <= 0).length + (s.fun <= 0 ? 0.5 : 0);
     if (empty > 0) s.health = clamp(s.health - RATES.healthLoss * empty * dtH * k);
-    else if (s.hunger > 40 && s.thirst > 40 && s.clean > 30) s.health = clamp(s.health + RATES.healthGain * dtH);
+    else if (!s.ailment && s.hunger > 40 && s.thirst > 40 && s.clean > 30) s.health = clamp(s.health + RATES.healthGain * dtH); // pas tant qu'il n'est pas soigné
 
     // Moyenne glissante de la qualité des soins (sur environ une journée) : décide de l'évolution adulte
     const avg = (s.hunger + s.thirst + s.energy + s.fun + s.clean + s.health) / 6;
@@ -322,7 +339,7 @@ const Pet = {
   },
 
   isSick(s) {
-    return !s.dead && s.health < 45;
+    return !s.dead && (s.health < 45 || !!s.ailment);
   },
 
   mood(s) {
@@ -338,6 +355,7 @@ const Pet = {
   // Ce que le petit être réclame, pour la bulle de dialogue
   need(s) {
     if (s.dead || s.sleeping || s.paused) return null;
+    if (s.ailment && AILMENTS[s.ailment]) return AILMENTS[s.ailment].symptom;
     if (Pet.isSick(s)) return 'Je ne me sens pas bien… 🤒';
     if (s.thirst < 20) return 'J\'ai soif ! 💧';
     if (s.hunger < 20) return 'J\'ai faim ! Donne-moi un fichier 📄';
@@ -402,6 +420,7 @@ const Pet = {
     if (s.dead || Pet.isEgg(s)) return { ok: false };
     if (s.sleeping) return { ok: false, msg: 'Zzz…' };
     if (s.energy < 15) return { ok: false, msg: Pet.g(s, 'Trop fatigué pour jouer…', 'Trop fatiguée pour jouer…') };
+    if (Pet.isSick(s)) return { ok: false, msg: 'Je ne me sens pas assez bien pour jouer… 🤒' };
     s.fun = clamp(s.fun + 20);
     s.energy = clamp(s.energy - 8);
     s.hunger = clamp(s.hunger - 3);
@@ -416,15 +435,31 @@ const Pet = {
     s.stats.poopsCleaned += s.poops;
     s.poops = 0;
     s.clean = 100;
+    if (s.ailment && AILMENTS[s.ailment].cure === 'wash') return { ok: true, msg: Pet.cure(s), anim: 'wash' };
     return { ok: true, msg: hadPoop ? 'Tout propre, et le sol aussi ! ✨' : 'Plouf ! Tout propre ✨', anim: 'wash' };
   },
 
   heal(s) {
     if (s.dead || Pet.isEgg(s)) return { ok: false };
+    if (s.ailment && AILMENTS[s.ailment].cure === 'wash') return { ok: false, msg: 'Le médicament n\'y fera rien : c\'est un bain qu\'il me faut ! 🛁' };
     if (!Pet.isSick(s) && s.health > 80) return { ok: false, msg: 'Je ne suis pas malade !' };
     s.health = clamp(s.health + 35);
     s.fun = clamp(s.fun - 5);
+    if (s.ailment) return { ok: true, msg: Pet.cure(s), anim: 'heal' };
     return { ok: true, msg: 'Beurk, le médicament… mais ça va mieux !', anim: 'heal' };
+  },
+
+  // Guérit son petit ennui ; renvoie le message de remerciement
+  cure(s) {
+    const a = AILMENTS[s.ailment];
+    s.ailment = null;
+    s.health = clamp(Math.max(s.health, 60));
+    return a ? a.cured : '';
+  },
+
+  // Message du début d'un petit ennui (événement 'ailment')
+  ailmentStart(s) {
+    return s.ailment && AILMENTS[s.ailment] ? AILMENTS[s.ailment].start : '';
   },
 
   // Une crotte ramassée à la main sur l'écran

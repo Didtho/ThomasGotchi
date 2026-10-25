@@ -541,6 +541,17 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.6.0",
+   "date": "2026-10-25",
+   "items": [
+    "Réglages rangés en onglets (Animal, Style, Toi, Options) : fenêtre deux fois moins haute",
+    "Fêtes selon le pays du système : dates des fêtes des mères, des pères et des grands-parents propres à chaque pays ; Chandeleur dans les pays francophones",
+    "Nouvelles fêtes selon le pays : Thanksgiving (États-Unis, Canada), 4 Juillet, fête du Canada, fêtes nationales (France, Belgique, Suisse, Italie), Saint-Patrick, Pancake Day, Bonfire Night, Rois mages, Befana, Ferragosto, Inocentes",
+    "Petits ennuis au hasard (environ tous les trois jours) : rhume et mal de ventre à soigner avec le médicament, puces à faire partir avec un bain ; chacun se voit (nez rouge, puces, écœurement)",
+    "Malade, il refuse de jouer et se déplace moins, doucement"
+   ]
+  },
+  {
    "version": "2.5.0",
    "date": "2026-10-25",
    "items": [

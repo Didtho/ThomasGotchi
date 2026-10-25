@@ -28,23 +28,89 @@ const Seasons = (() => {
     return md(day);
   }
 
-  // Fêtes de la famille (dates françaises) : mamies, mamans, papas, papis
-  function familyDay(d) {
-    const year = d.getFullYear();
-    const today = md(d);
-    if (today === sunday(year, 3, 1)) return { id: 'grandsmeres', greeting: 'Bonne fête à toutes les mamies ! 💐' };
-    // Fête des mères : dernier dimanche de mai, ou premier de juin s'il tombe le jour de la Pentecôte
-    const pentecost = new Date(easter(year));
-    pentecost.setDate(pentecost.getDate() + 49);
-    const mothers = sunday(year, 5, -1) === md(pentecost) ? sunday(year, 6, 1) : sunday(year, 5, -1);
-    if (today === mothers) return { id: 'meres', greeting: 'Bonne fête à toutes les mamans ! 💐' };
-    if (today === sunday(year, 6, 3)) return { id: 'peres', greeting: 'Bonne fête à tous les papas ! 👔' };
-    if (today === sunday(year, 10, 1)) return { id: 'grandsperes', greeting: 'Bonne fête à tous les papis ! 🎩' };
-    return null;
+  // n-ième jour donné de la semaine d'un mois (weekday : 0 = dimanche … 6 = samedi), sous la forme 1124
+  function nthWeekday(year, month, weekday, n) {
+    const day = new Date(year, month - 1, 1);
+    day.setDate(1 + ((7 + weekday - day.getDay()) % 7) + (n - 1) * 7);
+    return md(day);
   }
 
-  // Fête du moment (une seule à la fois), ou null
-  function current(d = new Date()) {
+  // Fêtes propres à certains pays (fêtes nationales, Thanksgiving, Saint-Patrick…)
+  function nationalDay(d, country) {
+    const year = d.getFullYear();
+    const today = md(d);
+    const fromEaster = (n) => { const x = easter(year); x.setDate(x.getDate() + n); return md(x); };
+    const DAYS = [
+      // [pays, date, id, décor, vœux, cadeau]
+      ['US', nthWeekday(year, 11, 4, 4), 'thanksgiving', 'leaves', 'Joyeux Thanksgiving ! 🦃'],
+      ['CA', nthWeekday(year, 10, 1, 2), 'thanksgiving', 'leaves', 'Joyeux Thanksgiving ! 🦃'],
+      ['US', 704, 'independance', 'fireworks', 'Joyeuse fête de l\'Indépendance ! 🎆'],
+      ['CA', 701, 'canada', 'fireworks', 'Bonne fête du Canada ! 🍁'],
+      ['FR', 714, 'nationale', 'fireworks', 'Bonne fête nationale ! 🎆'],
+      ['BE', 721, 'nationale', 'fireworks', 'Bonne fête nationale ! 🎆'],
+      ['CH', 801, 'nationale', 'fireworks', 'Bonne fête nationale ! 🎆'],
+      ['IT', 602, 'nationale', 'fireworks', 'Bonne fête nationale ! 🎆'],
+      ['IT', 815, 'ferragosto', 'confetti', 'Bon Ferragosto ! ☀️'],
+      ['US', 317, 'stpatrick', 'shamrock', 'Joyeuse Saint-Patrick ! ☘️'],
+      ['IE', 317, 'stpatrick', 'shamrock', 'Joyeuse Saint-Patrick ! ☘️'],
+      ['GB', 317, 'stpatrick', 'shamrock', 'Joyeuse Saint-Patrick ! ☘️'],
+      ['GB', fromEaster(-47), 'pancake', 'crepe', 'C\'est Pancake Day ! Qui veut des crêpes ? 🥞'],
+      ['IE', fromEaster(-47), 'pancake', 'crepe', 'C\'est Pancake Day ! Qui veut des crêpes ? 🥞'],
+      ['GB', 1105, 'bonfire', 'fireworks', 'C\'est Bonfire Night ! 🎆'],
+      ['ES', 106, 'rois', 'confetti', 'Les Rois mages sont passés ! 👑', true],
+      ['IT', 106, 'befana', 'confetti', 'La Befana est passée ! 🧹', true],
+      ['ES', 1228, 'inocentes', 'fish', 'Hihi… pourquoi tu rigoles ? J\'ai quelque chose dans le dos ? 🐟'],
+    ];
+    const found = DAYS.find(([c, day]) => c === country && day === today);
+    if (!found) return null;
+    const [, , id, decor, greeting, gift] = found;
+    return { id, key: `${id}-${year}`, decor, greeting, greetToday: true, gift: !!gift };
+  }
+
+  // Pays francophones (Chandeleur)
+  const FRANCOPHONE = ['FR', 'BE', 'CH', 'LU', 'MC', 'CA'];
+
+  // Fêtes de la famille : mamies, mamans, papas, papis. Leurs dates changent d'un pays à l'autre
+  // (code du pays réglé dans le système : 'FR', 'US', 'GB', 'ES', 'IT'…)
+  function familyDay(d, country) {
+    const year = d.getFullYear();
+    const today = md(d);
+    const fromEaster = (n) => { const x = easter(year); x.setDate(x.getDate() + n); return md(x); };
+    const GREET = {
+      meres: 'Bonne fête à toutes les mamans ! 💐', peres: 'Bonne fête à tous les papas ! 👔',
+      grandsmeres: 'Bonne fête à toutes les mamies ! 💐', grandsperes: 'Bonne fête à tous les papis ! 🎩',
+      grandsparents: 'Bonne fête à tous les papis et mamies ! 💐',
+    };
+    const days = [];
+    // Mamans
+    if (country === 'FR' || country === 'MC') {
+      // dernier dimanche de mai, ou premier de juin s'il tombe le jour de la Pentecôte
+      days.push(['meres', sunday(year, 5, -1) === fromEaster(49) ? sunday(year, 6, 1) : sunday(year, 5, -1)]);
+    } else if (['GB', 'IE'].includes(country)) days.push(['meres', fromEaster(-21)]); // « Mothering Sunday »
+    else if (['ES', 'PT'].includes(country)) days.push(['meres', sunday(year, 5, 1)]);
+    else days.push(['meres', sunday(year, 5, 2)]);
+    // Papas
+    if (['ES', 'IT', 'PT'].includes(country)) days.push(['peres', 319]); // Saint-Joseph
+    else if (country === 'DE') days.push(['peres', fromEaster(39)]); // Ascension
+    else if (country === 'BE') days.push(['peres', sunday(year, 6, 2)]);
+    else days.push(['peres', sunday(year, 6, 3)]);
+    // Grands-parents
+    if (country === 'FR') {
+      days.push(['grandsmeres', sunday(year, 3, 1)], ['grandsperes', sunday(year, 10, 1)]);
+    } else if (country === 'IT') {
+      days.push(['grandsparents', 1002]);
+    } else if (['US', 'CA'].includes(country)) {
+      const labor = new Date(year, 8, 1);
+      labor.setDate(1 + ((8 - labor.getDay()) % 7)); // premier lundi de septembre
+      labor.setDate(labor.getDate() + 6); // le dimanche qui suit
+      days.push(['grandsparents', md(labor)]);
+    }
+    const found = days.find(([, day]) => day === today);
+    return found ? { id: found[0], greeting: GREET[found[0]] } : null;
+  }
+
+  // Fête du moment (une seule à la fois), ou null. country : code du pays (certaines fêtes en dépendent)
+  function current(d = new Date(), country = 'FR') {
     const year = d.getFullYear();
     if (md(d) === 1231 || between(d, 101, 102)) {
       const newYear = md(d) === 1231 ? year + 1 : year;
@@ -74,12 +140,14 @@ const Seasons = (() => {
       return { id: 'paques', key: `paques-${year}`, decor: 'spring', greeting: 'Joyeuses Pâques ! Trouve les œufs cachés 🥚',
         greetToday: true, eggs: true };
     }
-    const family = familyDay(d);
+    const national = nationalDay(d, country);
+    if (national) return national;
+    const family = familyDay(d, country);
     if (family) return { ...family, key: `${family.id}-${year}`, decor: 'hearts', greetToday: true };
-    if (md(d) === 202) {
+    if (md(d) === 202 && FRANCOPHONE.includes(country)) {
       return { id: 'chandeleur', key: `chandeleur-${year}`, decor: 'crepe', greeting: 'C\'est la Chandeleur ! Qui veut des crêpes ? 🥞', greetToday: true };
     }
-    if (md(d) === 401) {
+    if (md(d) === 401 && country !== 'ES') { // en Espagne, les blagues se font le 28 décembre
       return { id: 'poisson', key: `poisson-${year}`, decor: 'fish', greeting: 'Hihi… pourquoi tu rigoles ? J\'ai quelque chose dans le dos ? 🐟', greetToday: true };
     }
     if (md(d) === 621) {

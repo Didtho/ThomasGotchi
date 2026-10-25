@@ -184,6 +184,10 @@ body.fete-chat { --pink: #ffc48a; --pink-deep: #d9792b; }
 body.fete-chandeleur { --pink: #f6cf7d; --pink-deep: #b97a1c; }
 body.fete-poisson { --pink: #9fdcff; --pink-deep: #2a86c4; }
 body.fete-musique { --pink: #cdb8ff; --pink-deep: #7a4fd0; }
+body.fete-thanksgiving { --pink: #ffb36b; --pink-deep: #b8551e; }
+body.fete-stpatrick { --pink: #9fe3bd; --pink-deep: #2f8f52; }
+body.fete-pancake { --pink: #f6cf7d; --pink-deep: #b97a1c; }
+body.fete-inocentes { --pink: #9fdcff; --pink-deep: #2a86c4; }
 .animal figcaption { font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 18px; }
 .animal figcaption small { display: block; margin-top: 2px; font-family: "Nunito", sans-serif; font-weight: 600; font-size: 12px; line-height: 1.25; color: var(--ink-soft); }
 .section-hint { margin: -8px 0 18px; text-align: center; font-size: 15px; color: var(--ink-soft); }

@@ -11,7 +11,9 @@
   // Aperçu d'une autre date : ?date=2026-12-25T19:00 (pour voir le site d'une fête sans attendre)
   const asked = new Date(new URLSearchParams(location.search).get('date') || NaN);
   const today = isNaN(asked) ? new Date() : asked;
-  const fete = typeof Seasons !== 'undefined' ? Seasons.current(today) : null;
+  // Pays du visiteur d'après son navigateur (« fr-FR » → FR), sinon celui de la langue de la page
+  const country = ((navigator.language || '').split('-')[1] || { fr: 'FR', en: 'US', es: 'ES', it: 'IT' }[I18N.lang] || 'FR').toUpperCase();
+  const fete = typeof Seasons !== 'undefined' ? Seasons.current(today, country) : null;
   const FETE_ACCESSORY = { halloween: 'sorciere', noel: 'noel', nouvelan: 'fete', magie: 'magicien', paques: 'fleur' };
   // Partagé avec la démo jouable (demo.js) : son compagnon porte aussi l'accessoire de la fête
   window.TG_FETE = fete ? { accessory: FETE_ACCESSORY[fete.id] || null, magic: !!fete.magic } : {};
@@ -137,7 +139,39 @@
       ctx.fillText('🐾', rand(i) * W, rand(i, 2) * H);
     } },
   };
-  for (const id of ['valentin', 'grandsmeres', 'meres', 'peres', 'grandsperes']) FETE_LAYERS[id] = FETE_LAYERS.hearts;
+  // Thanksgiving : feuilles d'automne qui tombent en tournoyant
+  FETE_LAYERS.thanksgiving = { n: 14, draw(ctx, i, t, W, H) {
+    const [x, y] = falling(i, t, W, H, 35);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(t * 1.5 + i);
+    ctx.fillStyle = ['#e8743a', '#c9452f', '#e8b13a'][i % 3];
+    ctx.beginPath(); ctx.ellipse(0, 0, 9, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  } };
+  // Saint-Patrick : trèfles qui tombent
+  FETE_LAYERS.stpatrick = { n: 12, draw(ctx, i, t, W, H) {
+    const [x, y] = falling(i, t, W, H, 30);
+    for (let j = 0; j < 3; j++) {
+      const a = -Math.PI / 2 + j * (Math.PI * 2 / 3) + t * 0.5 + i;
+      heart(ctx, x + Math.cos(a) * 5, y + Math.sin(a) * 5, 6, '#3fa560');
+    }
+  } };
+  // Fêtes nationales : petits feux d'artifice qui éclatent à tour de rôle
+  FETE_LAYERS.fireworks = { n: 5, draw(ctx, i, t, W, H) {
+    const cycle = 2.6, phase = ((t + i * 0.9) % cycle) / cycle;
+    const seed = Math.floor((t + i * 0.9) / cycle) * 7 + i;
+    const cx = rand(seed) * W, cy = 60 + rand(seed, 2) * H * 0.45;
+    ctx.globalAlpha = Math.max(0, 1 - phase);
+    ctx.fillStyle = COLORS[seed % COLORS.length];
+    for (let k = 0; k < 12; k++) {
+      const a = k * Math.PI / 6, r = phase * 45;
+      ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+  } };
+  for (const id of ['valentin', 'grandsmeres', 'meres', 'peres', 'grandsperes', 'grandsparents']) FETE_LAYERS[id] = FETE_LAYERS.hearts;
+  for (const id of ['independance', 'canada', 'nationale', 'bonfire']) FETE_LAYERS[id] = FETE_LAYERS.fireworks;
+  for (const id of ['rois', 'befana', 'ferragosto']) FETE_LAYERS[id] = FETE_LAYERS.nouvelan;
+  FETE_LAYERS.pancake = FETE_LAYERS.chandeleur;
+  FETE_LAYERS.inocentes = FETE_LAYERS.poisson;
   if (fete && FETE_LAYERS[fete.id] && !matchMedia('(prefers-reduced-motion: reduce)').matches) startFeteLayer(FETE_LAYERS[fete.id]);
 
   function startFeteLayer(kind) {
