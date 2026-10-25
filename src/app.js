@@ -181,6 +181,7 @@ function buildView(now) {
     walking: !!walking,
     running: !!walking && walking.speed > 3,
     hop: !!Pet.trait(state).hop, // lapin : il sautille en marchant
+    ailment: state.ailment || null, // petit ennui en cours : il se voit (nez rouge, puces…)
     flame: !!Pet.trait(state).flame && anim === 'love', // dragon : petite flamme pendant un câlin
     nightcap: state.sleeping && bedTime(),
     accessory: state.accessory,
@@ -245,6 +246,7 @@ const WANDER_TRICKS = [
 ];
 
 function startWalk(dir, steps, speed = 2) {
+  if (state && Pet.isSick(state)) { steps = Math.ceil(steps / 2); speed = 1; } // malade : quelques pas, doucement
   walking = { dir, steps, speed };
   facing = dir;
 }
@@ -288,14 +290,16 @@ function wander(now) {
     if (state.hunger < 55 && furn.bowl.food >= 10) return goToFurniture('bowl', 'food', now);
     if (state.thirst < 55 && furn.bowl.water >= 10) return goToFurniture('bowl', 'water', now);
   }
-  if (yarnInfo && canWander() && state.energy > 15 && now > nextWalkAt) {
+  const sick = Pet.isSick(state); // malade : pas de pelote, ni saut, ni tour, et bien moins de balades
+  if (yarnInfo && !sick && canWander() && state.energy > 15 && now > nextWalkAt) {
     chaseYarn(now);
     return;
   }
   if (now < nextWalkAt) return;
   const trait = Pet.trait(state);
-  nextWalkAt = now + (3000 + Math.random() * 7000) * (trait.calm || 1); // les calmes se baladent moins souvent
+  nextWalkAt = now + (3000 + Math.random() * 7000) * (trait.calm || 1) * (sick ? 3 : 1); // les calmes se baladent moins souvent
   if (!canWander() || Math.random() > 0.85) return;
+  if (sick) { if (Math.random() < 0.5) startWalk(Math.random() < 0.5 ? -1 : 1, 20 + Math.floor(Math.random() * 40)); return; }
 
   // Curieux : la souris bouge près du sol à côté de lui, il va voir
   const cursorNear = cursor && Math.abs(cursor.x - 120) < 450 && Math.abs(cursor.y - (stageEl.offsetTop + 270)) < 250;
@@ -622,12 +626,13 @@ function logic() {
     if (ev === 'collapse') say(Pet.g(state, 'Trop fatigué… je m\'endors…', 'Trop fatiguée… je m\'endors…'));
     if (ev === 'pee') { addPoop(Math.random() < 0.5 ? -1 : 1, 'pee'); Sound.play('pee'); say('Oups… pipi 💦'); }
     if (ev === 'poop') { addPoop(); Sound.play('poop'); say('Oups… 💩'); }
+    if (ev === 'ailment') { Sound.play('alert'); say(Pet.ailmentStart(state), 6000); save(); } // petit ennui au hasard
     if (ev === 'dead') { Sound.play('sad'); save(); showDead(); }
   }
 
   dayRhythm();
   if (unlockTick % 60 === 1) {
-    festivity = Seasons.birthday(state) || ownerBirthday() || Seasons.current();
+    festivity = Seasons.birthday(state) || ownerBirthday() || Seasons.current(new Date(), desk.country || 'FR');
     desk.setDecor(festivity && !state.dead ? festivity.decor : null);
   }
   celebrate();
@@ -1121,6 +1126,7 @@ async function openSettings() {
   $('set-login').checked = await desk.getLogin();
   $('set-sound').checked = state.sound !== false;
   $('set-voice').checked = state.voice !== false;
+  showSettingsTab('animal');
   $('set-owner').value = state.owner || '';
   fillBirthday();
   $('set-city').value = await desk.getCity();
@@ -1137,6 +1143,13 @@ $('set-name').addEventListener('input', () => {
 });
 $('set-login').addEventListener('change', (e) => desk.setLogin(e.target.checked));
 $('set-owner').addEventListener('input', () => { state.owner = $('set-owner').value.trim(); save(); });
+
+// Onglets des réglages (Animal, Toi, Options)
+function showSettingsTab(name) {
+  for (const b of document.querySelectorAll('#modal-settings .tabs button')) b.classList.toggle('on', b.dataset.tab === name);
+  for (const p of document.querySelectorAll('#modal-settings .tab-page')) p.classList.toggle('on', p.dataset.page === name);
+}
+for (const b of document.querySelectorAll('#modal-settings .tabs button')) b.addEventListener('click', () => showSettingsTab(b.dataset.tab));
 
 // Anniversaire du maître : jour et mois (les mois s'affichent dans la langue de l'interface)
 function fillBirthday() {

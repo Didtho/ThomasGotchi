@@ -23,6 +23,7 @@ function canPlay() {
 const Games = {
   open() {
     if (!state || state.dead || Pet.isEgg(state)) return;
+    if (Pet.isSick(state)) { say('Je ne me sens pas assez bien pour jouer… 🤒'); return; } // il faut d'abord le soigner
     buildTricks();
     openModal('modal-games');
   },

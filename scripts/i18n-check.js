@@ -41,6 +41,17 @@ for (const f of jsFiles) {
   for (const m of src.matchAll(/(?:msgs|say):\s*\[([^\]]*)\]|(?:say|pick)\(\[([^\]]*)\]/g)) {
     each(m[1] || m[2], rx(STR), [1, 2]);
   }
+  if (f === 'src/seasons.js') {
+    // Vœux des fêtes de la famille
+    const start = src.indexOf('const GREET = {');
+    each(src.slice(start, src.indexOf('};', start)), rx(String.raw`\w+:\s*` + STR), [1, 2], true);
+    // Fêtes propres à certains pays : seules les phrases (avec des espaces) sont des vœux à traduire
+    const days = src.indexOf('const DAYS = [');
+    for (const m of src.slice(days, src.indexOf('];', days)).matchAll(rx(STR))) {
+      const s = m[1] !== undefined ? m[1] : m[2];
+      if (/\s/.test(s)) add(s, true);
+    }
+  }
   if (f === 'main.js') {
     // Besoins affichés dans l'infobulle de l'icône
     const start = src.indexOf('const ALERTS = {');
@@ -50,6 +61,9 @@ for (const f of jsFiles) {
     // Besoins renvoyés par Pet.need
     const need = src.slice(src.indexOf('  need(s) {'), src.indexOf('  // ---- Actions ----'));
     each(need, rx(String.raw`return\s+` + STR), [1, 2]);
+    // Petits ennuis : début, symptôme, guérison
+    const ail = src.indexOf('const AILMENTS = {');
+    each(src.slice(ail, src.indexOf('};', ail)), rx(String.raw`(?:start|symptom|cured):\s*` + STR), [1, 2], true);
     // Caractères des espèces : noms (masculin, féminin) et descriptions
     const traits = src.slice(src.indexOf('const TRAITS = {'), src.indexOf('// Modèles prêts à adopter'));
     each(traits, rx(String.raw`name:\s*\[\s*` + STR + String.raw`\s*,\s*` + STR), [1, 2, 3, 4], true);

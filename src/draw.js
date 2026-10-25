@@ -843,6 +843,44 @@ function drawCreature(ctx, v) {
     ctx.stroke();
   }
 
+  // Petits ennuis : chacun se voit (voir AILMENTS dans pet.js)
+  if (v.ailment === 'rhume' && v.mood !== 'dead') {
+    // Nez rouge, et un éternuement toutes les quatre secondes environ
+    ellipse(ctx, cx, headCy + headRy * 0.16, headRx * 0.11, headRy * 0.08, '#e8455d');
+    const k = (v.t % 4) / 0.6;
+    if (k < 1) {
+      ctx.globalAlpha = 1 - k;
+      for (const [ox, oy, rr] of [[0, 0, 5], [7, -3, 4], [12, 2, 3.5]]) {
+        ellipse(ctx, cx + headRx * 0.35 + ox + k * 18, headCy + headRy * 0.2 + oy, rr, rr, '#fff', 'rgba(59,42,58,.5)', 1);
+      }
+      ctx.globalAlpha = 1;
+    }
+  } else if (v.ailment === 'puces' && v.mood !== 'dead') {
+    // Minuscules puces qui sautillent sur lui
+    ctx.fillStyle = '#2b1d33';
+    for (let i = 0; i < 5; i++) {
+      const hop = Math.abs(Math.sin(v.t * 6 + i * 1.7)) * 6;
+      const px = cx + Math.sin(i * 2.3 + Math.floor(v.t * 0.7 + i)) * headRx * 0.8;
+      const py = (i % 2 ? headCy : headCy + headRy * 1.3) + Math.cos(i * 1.9) * headRy * 0.4 - hop;
+      ctx.beginPath();
+      ctx.arc(px, py, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (v.ailment === 'ventre' && v.mood !== 'dead') {
+    // Lignes ondulées d'écœurement au-dessus de la tête
+    ctx.strokeStyle = 'rgba(110,160,60,.9)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    for (let i = -1; i <= 1; i++) {
+      const y = headCy - headRy * 1.15 - Math.abs(i) * 4 + Math.sin(v.t * 3 + i) * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + i * 14 - 6, y);
+      ctx.quadraticCurveTo(cx + i * 14 - 3, y - 4, cx + i * 14, y);
+      ctx.quadraticCurveTo(cx + i * 14 + 3, y + 4, cx + i * 14 + 6, y);
+      ctx.stroke();
+    }
+  }
+
   if (v.dirty && v.mood !== 'dead') {
     // Petites lignes d'odeur au-dessus de la tête
     ctx.strokeStyle = 'rgba(110,140,60,.85)';
@@ -1154,6 +1192,30 @@ function drawDecorFront(ctx, v) {
       const k = (t * 0.25 + i / 6) % 1;
       ctx.globalAlpha = Math.sin(k * Math.PI);
       heart(ctx, 25 + ((i * 71) % 190) + Math.sin(t * 2 + i) * 6, 290 - k * 230, 9, '#ff6f91');
+    }
+    ctx.globalAlpha = 1;
+  } else if (v.decor === 'leaves') {
+    // Thanksgiving : feuilles d'automne qui tombent en tournoyant
+    for (let i = 0; i < 6; i++) {
+      const k = (t * 0.18 + i / 6) % 1;
+      ctx.save();
+      ctx.translate(20 + ((i * 67) % 200) + Math.sin(t * 1.5 + i) * 14, -10 + k * 300);
+      ctx.rotate(t * 1.5 + i);
+      ctx.globalAlpha = Math.sin(k * Math.PI);
+      ellipse(ctx, 0, 0, 8, 4.5, ['#e8743a', '#c9452f', '#e8b13a'][i % 3]);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  } else if (v.decor === 'shamrock') {
+    // Saint-Patrick : petits trèfles verts qui tombent
+    for (let i = 0; i < 6; i++) {
+      const k = (t * 0.2 + i / 6) % 1;
+      const x = 20 + ((i * 71) % 200) + Math.sin(t * 1.3 + i) * 10, y = -10 + k * 300;
+      ctx.globalAlpha = Math.sin(k * Math.PI);
+      for (let j = 0; j < 3; j++) {
+        const a = -Math.PI / 2 + j * (Math.PI * 2 / 3) + t * 0.5 + i;
+        heart(ctx, x + Math.cos(a) * 4, y + Math.sin(a) * 4, 5, '#3fa560');
+      }
     }
     ctx.globalAlpha = 1;
   } else if (v.decor === 'crepe') {

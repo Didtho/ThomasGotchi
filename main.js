@@ -1321,6 +1321,12 @@ function saveSettings() {
 }
 
 ipcMain.on('get-lang', (e) => { e.returnValue = { setting: langSetting, lang: currentLang() }; });
+
+// Pays réglé dans le système (certaines fêtes en dépendent) ; à défaut, celui de la langue
+ipcMain.on('get-country', (e) => {
+  const code = (app.getLocaleCountryCode && app.getLocaleCountryCode()) || (app.getLocale().split('-')[1] || '');
+  e.returnValue = code.toUpperCase() || { fr: 'FR', en: 'US', es: 'ES', it: 'IT' }[currentLang()] || 'FR';
+});
 ipcMain.on('set-lang', (_e, value) => {
   langSetting = ['auto', 'fr', 'en', 'es', 'it'].includes(value) ? value : 'auto';
   saveSettings();

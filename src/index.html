@@ -67,70 +67,91 @@
 
     <div id="modal-settings" class="card hit hidden">
       <h2>Réglages</h2>
-      <label>Prénom
-        <input id="set-name" maxlength="14">
-      </label>
-      <label>Ville pour la météo (vide = pas de météo)
-        <input id="set-city" maxlength="60" placeholder="Ex : Lyon">
-      </label>
-      <label>Ton prénom (il te le dira à voix haute)
-        <input id="set-owner" maxlength="16" placeholder="Ex : Léa">
-      </label>
-      <label>Ton anniversaire (il te le souhaitera)
-        <span class="bday">
-          <select id="set-bday-day"><option value="">—</option></select>
-          <select id="set-bday-month"><option value="">—</option></select>
-        </span>
-      </label>
-      <div class="label">Animal</div>
-      <div class="choices wrap species" data-group="species"></div>
-      <div class="hint trait-hint"></div>
-      <div class="label">Genre</div>
-      <div class="choices" data-group="gender">
-        <button data-value="m">♂ Il</button>
-        <button data-value="f">♀ Elle</button>
+      <!-- Trois onglets superposés : la carte garde la hauteur du plus grand, sans changer de taille -->
+      <div class="tabs">
+        <button data-tab="animal" class="on"><i>🐾</i>Animal</button>
+        <button data-tab="style"><i>🎨</i>Style</button>
+        <button data-tab="toi"><i>🙂</i>Toi</button>
+        <button data-tab="options"><i>⚙️</i>Options</button>
       </div>
-      <div class="label">Langue</div>
-      <div class="choices wrap" data-group="lang">
-        <button data-value="auto">Auto</button>
-        <button data-value="fr">Français</button>
-        <button data-value="en">English</button>
-        <button data-value="es">Español</button>
-        <button data-value="it">Italiano</button>
-      </div>
-      <div class="label">Rythme de vie</div>
-      <div class="choices" data-group="pace">
-        <button data-value="zen" title="Les jauges baissent 2 fois moins vite">🐢 Zen</button>
-        <button data-value="normal">🙂 Normal</button>
-        <button data-value="exigeant" title="Les jauges baissent 2 fois plus vite">🔥 Exigeant</button>
-      </div>
-      <div class="label">Style</div>
-      <div class="choices" data-group="style">
-        <button data-value="cute">Mignon</button>
-        <button data-value="pixel">Pixel rétro</button>
-      </div>
-      <div class="label">Couleur</div>
-      <div class="swatches" data-group="color"></div>
-      <div class="label">Accessoire</div>
-      <div class="choices wrap" data-group="accessory"></div>
-      <div class="checks">
-        <label class="check"><input type="checkbox" id="set-sound"> Sons</label>
-        <label class="check"><input type="checkbox" id="set-voice"> Voix</label>
-        <label class="check"><input type="checkbox" id="set-login"> Lancer au démarrage</label>
+      <div class="tab-pages">
+        <div class="tab-page on" data-page="animal">
+          <label>Prénom
+            <input id="set-name" maxlength="14">
+          </label>
+          <div class="label">Animal</div>
+          <div class="choices wrap species" data-group="species"></div>
+          <div class="hint trait-hint"></div>
+          <div class="label">Genre</div>
+          <div class="choices" data-group="gender">
+            <button data-value="m">♂ Il</button>
+            <button data-value="f">♀ Elle</button>
+          </div>
+        </div>
+        <div class="tab-page" data-page="style">
+          <div class="label">Dessin</div>
+          <div class="choices" data-group="style">
+            <button data-value="cute">Mignon</button>
+            <button data-value="pixel">Pixel rétro</button>
+          </div>
+          <div class="label">Couleur</div>
+          <div class="swatches" data-group="color"></div>
+          <div class="label">Accessoire</div>
+          <div class="choices wrap" data-group="accessory"></div>
+        </div>
+        <div class="tab-page" data-page="toi">
+          <label>Ton prénom (il te le dira à voix haute)
+            <input id="set-owner" maxlength="16" placeholder="Ex : Léa">
+          </label>
+          <label>Ton anniversaire (il te le souhaitera)
+            <span class="bday">
+              <select id="set-bday-day"><option value="">—</option></select>
+              <select id="set-bday-month"><option value="">—</option></select>
+            </span>
+          </label>
+          <label>Ville pour la météo (vide = pas de météo)
+            <input id="set-city" maxlength="60" placeholder="Ex : Lyon">
+          </label>
+          <div class="label">Langue</div>
+          <div class="choices wrap" data-group="lang">
+            <button data-value="auto">Auto</button>
+            <button data-value="fr">Français</button>
+            <button data-value="en">English</button>
+            <button data-value="es">Español</button>
+            <button data-value="it">Italiano</button>
+          </div>
+        </div>
+        <div class="tab-page" data-page="options">
+          <div class="label">Rythme de vie</div>
+          <div class="choices" data-group="pace">
+            <button data-value="zen" title="Les jauges baissent 2 fois moins vite">🐢 Zen</button>
+            <button data-value="normal">🙂 Normal</button>
+            <button data-value="exigeant" title="Les jauges baissent 2 fois plus vite">🔥 Exigeant</button>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="set-sound"> Sons</label>
+            <label class="check"><input type="checkbox" id="set-voice"> Voix</label>
+            <label class="check"><input type="checkbox" id="set-login"> Lancer au démarrage</label>
+          </div>
+          <div class="row row2">
+            <button id="set-journal">📖 Carnet</button>
+            <button id="set-adopt">+ Ami</button>
+          </div>
+          <div class="row row2">
+            <button id="set-pause">🏖️ Pause vacances</button>
+            <button id="set-export">💾 Exporter</button>
+          </div>
+          <div class="row row2">
+            <button id="set-reset" class="danger" title="Recommencer avec un nouvel œuf (l'animal actuel rejoint les souvenirs du carnet)">🥚 Recommencer</button>
+            <button id="set-release" class="danger">Partir</button>
+          </div>
+          <div class="row row2">
+            <button id="set-quit">Quitter ThomasGotchi</button>
+          </div>
+        </div>
       </div>
       <div class="row">
-        <button id="set-reset" class="danger" title="Recommencer avec un nouvel œuf (l'animal actuel rejoint les souvenirs du carnet)">🥚 Recommencer</button>
-        <button id="set-quit">Quitter</button>
         <button id="set-close" class="primary">OK</button>
-      </div>
-      <div class="row row2">
-        <button id="set-journal">📖 Carnet</button>
-        <button id="set-adopt">+ Ami</button>
-        <button id="set-release" class="danger">Partir</button>
-      </div>
-      <div class="row row2">
-        <button id="set-pause">🏖️ Pause vacances</button>
-        <button id="set-export">💾 Exporter</button>
       </div>
       <p id="set-version" class="version"></p>
     </div>
