@@ -1,6 +1,6 @@
 {
   "name": "thomasgotchi",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "Un petit être virtuel façon Tamagotchi qui vit sur le bureau (Windows et Mac)",
   "main": "main.js",
   "author": "ThomasGotchi",
@@ -18,10 +18,7 @@
     "productName": "ThomasGotchi",
     "files": [
       "main.js",
-      "preload.js",
-      "preload-poop.js",
-      "preload-yarn.js",
-      "preload-furniture.js",
+      "preload*.js",
       "src/**",
       "assets/**"
     ],
