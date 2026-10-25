@@ -39,10 +39,17 @@ contextBridge.exposeInMainWorld('desk', {
     accept: (code) => ipcRenderer.invoke('online-accept', code),
     remove: (code) => ipcRenderer.invoke('online-remove', code),
     open: (on) => ipcRenderer.invoke('online-open', on),
-    visit: (code) => ipcRenderer.invoke('online-visit', code),
+    visit: (code, walk) => ipcRenderer.invoke('online-visit', code, walk), // walk : promenade à deux
     gift: (code, kind, msg) => ipcRenderer.invoke('online-gift', code, kind, msg), // 'cadeau' ou 'carte' (+ numéro du message)
   },
-  guestAte: (amount) => ipcRenderer.send('guest-ate', amount), // invité : ce qu'il vient de manger chez l'hôte
+  // Pense-bête : rappels communs à tous les animaux ; onReminder quand c'est l'heure
+  reminders: {
+    get: () => ipcRenderer.invoke('reminders-get'),
+    add: (r) => ipcRenderer.invoke('reminders-add', r),
+    remove: (id) => ipcRenderer.invoke('reminders-remove', id),
+  },
+  onReminder: (cb) => ipcRenderer.on('reminder', (_e, r) => cb(r)),
+  guestAte:(amount) => ipcRenderer.send('guest-ate', amount), // invité : ce qu'il vient de manger chez l'hôte
   onOnline: (cb) => ipcRenderer.on('online', (_e, data) => cb(data)),
   onVisit: (cb) => ipcRenderer.on('visit', (_e, ev) => cb(ev)),
   onHiddenTop: (cb) => ipcRenderer.on('hidden-top', (_e, px) => cb(px)),

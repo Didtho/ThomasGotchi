@@ -22,10 +22,12 @@ $features = [
     ['🍽️', 'Il mange tes fichiers', 'Glisse une image, un PDF ou une vidéo sur lui : il se régale. Rassure-toi, tes fichiers ne sont jamais effacés.'],
     ['💖', 'Prends soin de lui', 'Faim, soif, sommeil, propreté, câlins… Ses besoins se lisent sur son visage. Sans soins, il tombe malade.'],
     ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.'],
-    ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, pelote de laine… des tours qu\'il apprend petit à petit, et des trophées à gagner.'],
+    ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, jeu des paires, pelote de laine… des tours qu\'il apprend petit à petit, et des trophées à gagner.'],
     ['🎃', 'Fêtes et météo', 'Halloween, Noël et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.'],
-    ['💞', 'Plusieurs compagnons', 'Jusqu\'à 5 animaux qui deviennent amis et jouent ensemble… et qui peuvent même rendre visite aux animaux de tes proches, sur leur ordinateur !'],
+    ['💞', 'Plusieurs compagnons', 'Jusqu\'à 5 animaux qui deviennent amis et jouent ensemble… et qui peuvent même rendre visite aux animaux de tes proches, sur leur ordinateur, ou partir en promenade avec eux !'],
     ['🗣️', 'Il te parle', 'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.'],
+    ['🧺', 'Son petit coin', 'Un panier où il fait la sieste et dort la nuit, une gamelle où il se sert tout seul, et une plante à arroser qui fleurit si tu t\'en occupes.'],
+    ['📝', 'Pense-bête', 'Note « appeler maman à 18 h » : à l\'heure dite, il vient te le rappeler. Et chaque semaine, son carnet fait le bilan de vos moments ensemble.'],
     ['🎁', 'Gratuit, sans pub', 'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).'],
 ];
 
@@ -49,7 +51,7 @@ $moments = [
 
 $faq = [
     ['Est-ce vraiment gratuit ?', 'Oui, entièrement : pas d\'abonnement, pas de publicité, pas de compte à créer.'],
-    ['Comment mon animal peut-il rendre visite à un ami ?', 'Dans ses réglages, onglet « Amis », tu trouves ton code ami. Donne-le à un proche : il le tape chez lui, et tu acceptes sa demande. Quand vos deux applications sont ouvertes, vos animaux se rendent visite une ou deux fois par jour, ou quand tu cliques sur 🚪 : le tien quitte ton écran, apparaît chez ton ami, joue avec ses animaux puis revient. Ton ami peut même lui donner un fichier à manger : il rentre rassasié ! Tu peux aussi envoyer à tes amis un cadeau 🎁 ou une carte postale 💌 avec un petit message, même quand leur ordinateur est éteint.'],
+    ['Comment mon animal peut-il rendre visite à un ami ?', 'Dans ses réglages, onglet « Amis », tu trouves ton code ami. Donne-le à un proche : il le tape chez lui, et tu acceptes sa demande. Quand vos deux applications sont ouvertes, vos animaux se rendent visite une ou deux fois par jour, ou quand tu cliques sur 🚪 : le tien quitte ton écran, apparaît chez ton ami, joue avec ses animaux puis revient. Ton ami peut même lui donner un fichier à manger : il rentre rassasié ! Tu peux aussi envoyer à tes amis un cadeau 🎁 ou une carte postale 💌 avec un petit message, même quand leur ordinateur est éteint. Avec 🐾, c\'est une promenade : l\'animal de ton ami raccompagne le tien, et ils arrivent ensemble chez toi.'],
     ['Peut-on agrandir l\'animal ?', 'Oui : dans ses réglages, onglet « Options », choisis la taille « Normale », « Grande » ou « Très grande ». Pratique sur les grands écrans !'],
     ['Les fichiers que je lui donne à manger sont-ils supprimés ?', 'Non, jamais. Il regarde seulement leur nom et leur taille pour savoir ce qu\'il mange. Le fichier reste exactement là où il était.'],
     ['Que devient-il quand l\'ordinateur est éteint ?', 'Le temps continue de passer : pense à t\'occuper de lui ! Pour partir en vacances, active la « pause vacances » : il ne vieillit pas et n\'a ni faim ni soif.'],

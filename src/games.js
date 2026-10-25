@@ -66,6 +66,8 @@ document.querySelectorAll('[data-game]').forEach((b) => b.addEventListener('clic
     desk.yarnToggle();
   } else if (game === 'cups') {
     if (canPlay()) Cups.start(); else closeModal();
+  } else if (game === 'memory') {
+    if (canPlay()) Memory.start(); else closeModal();
   }
 }));
 
@@ -82,6 +84,7 @@ const Catch = (() => {
   let endAt = 0;
   let nextSpawn = 0;
   let raf = 0;
+  let last = 0;
 
   area.addEventListener('mousemove', (e) => {
     const r = area.getBoundingClientRect();
@@ -97,7 +100,8 @@ const Catch = (() => {
     const x = 14 + Math.random() * (area.clientWidth - 28);
     el.style.left = x + 'px';
     area.appendChild(el);
-    items.push({ el, x, y: -20, speed: 1.6 + Math.random() * 1.8 + score * 0.04, bad });
+    // Vitesse en pixels par seconde (et non par image : même rythme sur un écran à 60 Hz ou à 144 Hz)
+    items.push({ el, x, y: -20, speed: 60 + Math.random() * 50 + Math.min(score, 15) * 2, bad });
   }
 
   function loop(now) {
@@ -105,13 +109,16 @@ const Catch = (() => {
     $('catch-time').textContent = t('{s} s', { s: left });
     if (now > nextSpawn) {
       spawn();
-      nextSpawn = now + 450 + Math.random() * 400;
+      nextSpawn = now + 650 + Math.random() * 450;
     }
+    const dt = Math.min(0.05, (now - (last || now)) / 1000);
+    last = now;
     const floor = area.clientHeight - 34;
     for (const it of items) {
-      it.y += it.speed;
+      const before = it.y;
+      it.y += it.speed * dt;
       it.el.style.top = it.y + 'px';
-      if (!it.done && it.y >= floor - 6 && it.y <= floor + 12 && Math.abs(it.x - catcherX) < 24) {
+      if (!it.done && it.y >= floor - 6 && before <= floor + 12 && Math.abs(it.x - catcherX) < 24) {
         it.done = true;
         it.el.remove();
         if (it.bad) {
@@ -161,6 +168,7 @@ const Catch = (() => {
     openModal('modal-catch');
     endAt = performance.now() + DURATION * 1000;
     nextSpawn = 0;
+    last = 0;
     raf = requestAnimationFrame(loop);
   }
 
@@ -242,6 +250,84 @@ const Cups = (() => {
   return { start };
 })();
 
+// ---------- Le jeu des paires ----------
+
+const Memory = (() => {
+  const grid = $('memory-grid');
+  const FACES = ['🐟', '🍪', '🍓', '🧀', '🍩', '🦴', '🥕', '🍌'];
+  const GOOD = 12; // gagné en 12 coups ou moins (6 paires)
+  let cards = [];
+  let open = [];
+  let moves = 0;
+  let found = 0;
+  let busy = false;
+
+  function start() {
+    // 6 friandises tirées au hasard, chacune en double, puis mélangées
+    const faces = FACES.slice().sort(() => Math.random() - 0.5).slice(0, 6);
+    const deck = faces.concat(faces).sort(() => Math.random() - 0.5);
+    grid.innerHTML = '';
+    open = [];
+    moves = 0;
+    found = 0;
+    busy = false;
+    $('memory-moves').textContent = '0';
+    $('memory-msg').textContent = t('Retrouve les paires de friandises !');
+    $('memory-again').classList.add('hidden');
+    cards = deck.map((face) => {
+      const el = document.createElement('div');
+      el.className = 'mcard';
+      el.textContent = face;
+      const card = { el, face };
+      el.addEventListener('click', () => flip(card));
+      grid.appendChild(el);
+      return card;
+    });
+    openModal('modal-memory');
+  }
+
+  function flip(card) {
+    if (busy || card.found || open.includes(card)) return;
+    card.el.classList.add('open');
+    Sound.play('flip');
+    open.push(card);
+    if (open.length < 2) return;
+    moves++;
+    $('memory-moves').textContent = moves;
+    const [a, b] = open;
+    if (a.face === b.face) {
+      a.found = b.found = true;
+      a.el.classList.add('found');
+      b.el.classList.add('found');
+      open = [];
+      found++;
+      Sound.play('sparkle');
+      if (found === 6) finish();
+    } else {
+      busy = true;
+      setTimeout(() => {
+        a.el.classList.remove('open');
+        b.el.classList.remove('open');
+        open = [];
+        busy = false;
+      }, 800);
+    }
+  }
+
+  function finish() {
+    const won = moves <= GOOD;
+    $('memory-msg').textContent = won
+      ? Pet.g(state, t('Bravo, en {n} coups ! {name} est épaté 🎉', { n: moves, name: state.name }), t('Bravo, en {n} coups ! {name} est épatée 🎉', { n: moves, name: state.name }))
+      : t('Toutes trouvées en {n} coups ! Essaie en 12 coups ou moins.', { n: moves });
+    $('memory-again').classList.remove('hidden');
+    rewardGame(won, won ? 20 : 10);
+  }
+
+  $('memory-again').addEventListener('click', () => { if (canPlay()) start(); });
+
+  return { start };
+})();
+
 // ---------- Carnet de vie ----------
 
 function openJournal() {
@@ -282,6 +368,30 @@ function openJournal() {
     body.appendChild(sub);
   };
 
+  // Bilan : la semaine en cours, et la semaine dernière à côté pour comparer
+  const week = Pet.weekNow(s);
+  if (week) {
+    const last = s.lastWeek && s.lastWeek.start === Pet.weekStart() - 7 * 86400000 ? s.lastWeek : null;
+    addSub(t('Cette semaine') + (last ? ' (' + t('semaine dernière') + ')' : ''));
+    const hours = (m) => (m >= 60 ? t('{h} h {m}', { h: Math.floor(m / 60), m: String(m % 60).padStart(2, '0') }) : t('{m} min', { m }));
+    const lines = [
+      ['⏱️ Temps ensemble', 'minutes', hours],
+      ['🍽️ Repas', 'meals'],
+      ['🤗 Câlins', 'hugs'],
+      ['🎲 Jeux gagnés', 'gamesWon'],
+      ['🧹 Crottes ramassées', 'poopsCleaned'],
+      ['🚪 Visites', 'visits'],
+      ['🏡 Visiteurs reçus', 'guests'],
+      ['📸 Photos', 'photos'],
+      ['💊 Soins', 'cures'],
+    ];
+    for (const [label, key, fmt = String] of lines) {
+      // Les lignes vides des deux semaines sont omises (pas de « Photos : 0 » si on n'en prend jamais)
+      if (!week[key] && !(last && last[key]) && key !== 'minutes') continue;
+      addRow(label, fmt(week[key] || 0) + (last ? ` (${fmt(last[key] || 0)})` : ''));
+    }
+  }
+
   // Trophées : ceux gagnés en couleur, les autres grisés (l'astuce s'affiche au survol)
   const won = s.trophies || [];
   addSub(t('Trophées ({n} / {total})', { n: won.length, total: Pet.TROPHIES.length }));
@@ -308,7 +418,10 @@ function openJournal() {
     img.addEventListener('click', () => desk.openPhoto(ph.file));
     album.appendChild(img);
   }
-  if (!(s.photos || []).length) album.textContent = t('Pas encore de photo : « Prendre une photo 📸 » dans le menu de l\'icône.');
+  if (!(s.photos || []).length) {
+    album.textContent = t('Pas encore de photo : « Prendre une photo 📸 » dans le menu de l\'icône.');
+    album.style.display = 'block'; // le texte prend toute la largeur (sinon une seule colonne de la grille)
+  }
   body.appendChild(album);
 
   if (friends.length) {

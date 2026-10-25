@@ -325,7 +325,7 @@ function objectWindows() {
   const list = [...poopWindows.values()].map((poop) => poop.win);
   if (decor) list.push(decor.win);
   if (yarn) list.push(yarn.win);
-  if (furniture) list.push(...Object.values(furniture).map((f) => f.win));
+  list.push(...Object.values(furniture).map((f) => f.win));
   return list.filter((w) => w && !w.isDestroyed());
 }
 
@@ -470,9 +470,12 @@ function buildTrayMenu() {
     settings,
     food,
     photo,
+    { label: tr('📝 Pense-bête…'), click: () => sendMenu(list.find((p) => !p.away) || list[0], 'notes') },
     { label: tr('Adopter un autre animal'), enabled: list.length < MAX_PETS, click: adoptPet },
     { label: tr(yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶'), click: toggleYarn },
-    { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture, click: () => (furniture ? removeFurniture() : spawnFurniture()) },
+    { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture.bowl, click: () => toggleFurniture('bowl') },
+    { label: tr('Panier pour dormir 🧺'), type: 'checkbox', checked: !!furniture.basket, click: () => toggleFurniture('basket') },
+    { label: tr('Plante à arroser 🪴'), type: 'checkbox', checked: !!furniture.plant, click: () => toggleFurniture('plant') },
     { type: 'separator' },
     { label: tr('🔕 Ne pas déranger'), type: 'checkbox', checked: dnd, click: (item) => setDnd(item.checked) },
     {
@@ -1260,10 +1263,12 @@ ipcMain.handle('owl', (e) => new Promise((resolve) => {
   }, 16);
 }));
 
-// ---- Gamelle : partagée par tous les animaux, posée en bas de l'écran ----
+// ---- Meubles : gamelle, panier, plante — partagés par tous les animaux, posés en bas de l'écran ----
 
-const FURN = { bowl: { w: 84, h: 50 } };
-let furniture = null; // { bowl: { win, x, food, water } }
+const FURN = { bowl: { w: 84, h: 50 }, basket: { w: 100, h: 46 }, plant: { w: 56, h: 84 } };
+// { bowl: { win, x, food, water }, basket: { win, x }, plant: { win, x, water, growth, at } }
+let furniture = {};
+const furnData = (f) => { const { win, ...data } = f; return data; }; // ce qu'on garde et envoie (sans la fenêtre)
 
 function furnitureArea() {
   const first = [...pets.values()].find(alive);
@@ -1271,12 +1276,9 @@ function furnitureArea() {
 }
 
 function saveFurniture() {
-  const f = furniture;
-  try {
-    writeJson('furniture.json', f
-      ? { on: true, bowl: { x: f.bowl.x, food: f.bowl.food, water: f.bowl.water } }
-      : { on: false });
-  } catch { /* sans gravité */ }
+  const data = { on: !!furniture.bowl }; // « on » : ancien format (gamelle seule)
+  for (const k of Object.keys(FURN)) data[k] = furniture[k] ? furnData(furniture[k]) : null;
+  try { writeJson('furniture.json', data); } catch { /* sans gravité */ }
 }
 
 function createFurnitureWindow(kind, x) {
@@ -1297,51 +1299,75 @@ function createFurnitureWindow(kind, x) {
   return win;
 }
 
-function spawnFurniture(saved) {
-  if (furniture) return;
+// Posé à côté du premier animal (la gamelle à gauche, le panier à droite, la plante un peu plus loin à gauche)
+function spawnFurniture(kind, saved) {
+  if (furniture[kind]) return;
   const first = [...pets.values()].find(alive);
   const px = first ? first.win.getBounds().x + W / 2 : furnitureArea().x + 300;
-  const s = saved && saved.bowl ? saved : { bowl: { x: px - 170, food: 100, water: 100 } };
-  furniture = { bowl: { ...s.bowl, win: createFurnitureWindow('bowl', s.bowl.x) } };
+  const fresh = {
+    bowl: { x: px - 170, food: 100, water: 100 },
+    basket: { x: px + 190 },
+    plant: { x: px - 280, water: 100, growth: 0, at: Date.now() },
+  }[kind];
+  const s = saved && Number.isFinite(saved.x) ? { ...fresh, ...saved } : fresh;
+  furniture[kind] = { ...s, win: createFurnitureWindow(kind, s.x) };
+  if (kind === 'plant') plantTick(); // le temps passé application fermée compte aussi
   saveFurniture();
   buildTrayMenu();
 }
 
-function removeFurniture() {
-  if (!furniture) return;
-  if (!furniture.bowl.win.isDestroyed()) furniture.bowl.win.destroy();
-  furniture = null;
+function removeFurniture(kind) {
+  const f = furniture[kind];
+  if (!f) return;
+  if (!f.win.isDestroyed()) f.win.destroy();
+  delete furniture[kind];
   saveFurniture();
-  for (const p of pets.values()) if (alive(p)) p.win.webContents.send('furniture', null);
+  if (!Object.keys(furniture).length) for (const p of pets.values()) if (alive(p)) p.win.webContents.send('furniture', null);
   buildTrayMenu();
+}
+
+const toggleFurniture = (kind) => (furniture[kind] ? removeFurniture(kind) : spawnFurniture(kind));
+
+// Plante : l'eau baisse en 3 jours ; bien arrosée, elle pousse d'un cran par jour (graine, pousse, tige, bouton, fleur).
+// Sans eau, elle penche un peu mais ne meurt jamais.
+function plantTick() {
+  const p = furniture.plant;
+  if (!p) return;
+  const now = Date.now();
+  const hours = Math.max(0, (now - (p.at || now)) / 3600000);
+  p.at = now;
+  if (p.water > 15) p.growth = Math.min(4, (p.growth || 0) + hours / 24);
+  p.water = Math.max(0, p.water - hours * 100 / 72);
+  sendFurnitureState();
+  saveFurniture();
 }
 
 function sendFurnitureState() {
-  if (!furniture) return;
-  const { bowl } = furniture;
-  if (!bowl.win.isDestroyed()) bowl.win.webContents.send('furn-state', { food: bowl.food, water: bowl.water });
+  for (const f of Object.values(furniture)) if (!f.win.isDestroyed()) f.win.webContents.send('furn-state', furnData(f));
 }
 
-// Les animaux savent où est la gamelle (position par rapport à leur fenêtre)
+// Les animaux savent où sont les meubles (position par rapport à leur fenêtre, en pixels de la page)
 function sendFurnitureToPets() {
-  if (!furniture) return;
+  if (!Object.keys(furniture).length) return;
   for (const p of pets.values()) {
     if (!alive(p)) continue;
     const bx = p.win.getBounds().x;
-    p.win.webContents.send('furniture', {
-      bowl: { x: furniture.bowl.x - bx, food: furniture.bowl.food, water: furniture.bowl.water },
-    });
+    const data = {};
+    for (const [k, f] of Object.entries(furniture)) data[k] = { ...furnData(f), x: (f.x - bx) / petScale };
+    p.win.webContents.send('furniture', data);
   }
 }
 
 function furnitureOf(sender) {
-  if (!furniture) return null;
-  return !furniture.bowl.win.isDestroyed() && furniture.bowl.win.webContents === sender ? 'bowl' : null;
+  return Object.keys(furniture).find((k) => !furniture[k].win.isDestroyed() && furniture[k].win.webContents === sender) || null;
 }
 
+// Clic : remplir la gamelle, arroser la plante
 ipcMain.on('furn-click', (e) => {
   const k = furnitureOf(e.sender);
   if (k === 'bowl') Object.assign(furniture.bowl, { food: 100, water: 100 });
+  else if (k === 'plant') furniture.plant.water = 100;
+  else return;
   sendFurnitureState();
   saveFurniture();
 });
@@ -1354,8 +1380,8 @@ ipcMain.on('furn-drag-start', (e) => {
   const ox = screen.getCursorScreenPoint().x - item.win.getBounds().x;
   clearInterval(furnDrag);
   furnDrag = setInterval(() => {
-    if (!furniture || item.win.isDestroyed()) return clearInterval(furnDrag);
-    // Elle glisse le long du bas de l'écran (et peut changer d'écran)
+    if (!furniture[k] || item.win.isDestroyed()) return clearInterval(furnDrag);
+    // Il glisse le long du bas de l'écran (et peut changer d'écran)
     const cx = screen.getCursorScreenPoint().x;
     const wa = screen.getAllDisplays().map((d) => d.workArea).find((a) => cx >= a.x && cx < a.x + a.width) || furnitureArea();
     const { w, h } = FURN[k];
@@ -1368,7 +1394,7 @@ ipcMain.on('furn-drag-end', () => { clearInterval(furnDrag); saveFurniture(); })
 
 // Un animal se sert : renvoie la quantité obtenue (0 si le bol est vide)
 ipcMain.handle('bowl-use', (_e, what) => {
-  if (!furniture) return 0;
+  if (!furniture.bowl) return 0;
   const key = what === 'water' ? 'water' : 'food';
   const amount = Math.min(25, furniture.bowl[key]);
   furniture.bowl[key] -= amount;
@@ -1584,8 +1610,14 @@ async function syncOnline() {
   if (r.error) return;
   onlineData = r;
   sendToPets('online', publicOnline());
-  for (const v of r.incoming || []) receiveGuest(v);
-  for (const v of r.back || []) comeHome(v);
+  // Même côté pour tous ceux qui arrivent : après une promenade, les deux amis entrent ensemble
+  const side = Math.random() < 0.5 ? -1 : 1;
+  for (const v of r.back || []) comeHome(v, side);
+  for (const v of r.incoming || []) {
+    // Promenade (retour) : l'animal de l'ami attend que le nôtre rentre, pour arriver avec lui
+    if (v.walk === 2 && [...pets.values()].some((p) => p.away && p.away.code === v.code)) continue;
+    receiveGuest(v, side);
+  }
   // Cadeau ou carte postale d'un ami : remis à l'un des animaux présents, qui le pose sur le bureau
   for (const gift of r.gifts || []) {
     const p = [...pets.values()].find((x) => alive(x) && !x.away && x.lastState && !x.lastState.dead);
@@ -1617,20 +1649,23 @@ function maybeVisit() {
   const friends = (onlineData.friends || []).filter((f) => f.status === 'ok' && f.online);
   const ready = [...pets.values()].filter(canVisit);
   if (!friends.length || !ready.length) return;
-  startVisit(ready[Math.floor(Math.random() * ready.length)], friends[Math.floor(Math.random() * friends.length)].code);
+  // Une fois sur trois, c'est une promenade : l'animal de l'ami le raccompagnera ensuite
+  startVisit(ready[Math.floor(Math.random() * ready.length)], friends[Math.floor(Math.random() * friends.length)].code, Math.random() < 0.33 ? 1 : 0);
 }
 
-async function startVisit(p, code) {
+// walk : 0 visite simple, 1 promenade (aller), 2 promenade (il raccompagne le visiteur : with = prénom du visiteur)
+// dir : sens de la sortie (sinon le bord de l'écran le plus proche)
+async function startVisit(p, code, walk = 0, dir = 0, withName = '') {
   if (!online) return { error: 'reseau' };
   const blocked = visitBlocker(p);
   if (blocked) return { error: blocked };
-  const r = await api({ action: 'visit-start', secret: online.secret, code, ...petCard(p) });
+  const r = await api({ action: 'visit-start', secret: online.secret, code, walk, ...petCard(p) });
   if (r.error) return r;
-  visitsToday.count++;
-  p.away = { id: r.id, owner: r.owner };
-  diag(`[${p.name || p.id}] part en visite chez ${r.owner}`);
-  p.win.webContents.send('visit', { type: 'leave', owner: r.owner });
-  setTimeout(() => slideOut(p, () => { if (alive(p)) p.win.hide(); updateTrayAlert(); }), 2500);
+  if (walk !== 2) visitsToday.count++;
+  p.away = { id: r.id, owner: r.owner, code };
+  diag(`[${p.name || p.id}] part ${walk ? 'en promenade' : 'en visite'} chez ${r.owner}`);
+  p.win.webContents.send('visit', { type: 'leave', owner: r.owner, walk, with: withName });
+  setTimeout(() => slideOut(p, () => { if (alive(p)) p.win.hide(); updateTrayAlert(); }, dir), 2500);
   return r;
 }
 
@@ -1642,9 +1677,11 @@ function edgeOf(p) {
 }
 
 // Il marche jusqu'à sortir de l'écran (la fenêtre glisse ; la page n'anime que ses pattes)
-function slideOut(p, done) {
+function slideOut(p, done, forceDir = 0) {
   if (!alive(p)) return done && done();
-  const { wa, dir } = edgeOf(p);
+  const edge = edgeOf(p);
+  const wa = edge.wa;
+  const dir = forceDir || edge.dir;
   p.sliding = true;
   p.platform = null;
   p.win.webContents.send('visit', { type: 'walk', dir });
@@ -1686,14 +1723,14 @@ function slideIn(p, side, wa, done) {
 }
 
 // Retour de visite : il revient par le bord de l'écran, tout content
-function comeHome(v) {
+function comeHome(v, side = Math.random() < 0.5 ? -1 : 1) {
   const p = [...pets.values()].find((x) => x.away && x.away.id === v.id);
   api({ action: 'visit-home', secret: online.secret, id: v.id });
   if (!alive(p)) return;
   const owner = p.away.owner;
   p.away = null;
   const wa = screen.getDisplayMatching(p.win.getBounds()).workArea;
-  slideIn(p, Math.random() < 0.5 ? -1 : 1, wa, () => {
+  slideIn(p, side, wa, () => {
     p.win.webContents.send('visit', { type: 'home', owner: v.owner || owner, played: v.played, ate: v.ate || 0 });
     diag(`[${p.name || p.id}] rentre de chez ${v.owner || owner}`);
   });
@@ -1701,7 +1738,7 @@ function comeHome(v) {
 }
 
 // Un animal d'un ami arrive en visite : une fenêtre d'animal « invité », sans sauvegarde ni réglages
-function receiveGuest(v) {
+function receiveGuest(v, side = Math.random() < 0.5 ? -1 : 1) {
   if (guests.has(v.id)) return;
   if (dnd || allHidden() || guests.size >= 3) { // jusqu'à 3 visiteurs en même temps
     api({ action: 'visit-end', secret: online.secret, id: v.id, played: '' }); // pas le moment : il rentre aussitôt
@@ -1709,7 +1746,6 @@ function receiveGuest(v) {
   }
   const first = [...pets.values()].find(alive);
   const wa = first ? screen.getDisplayMatching(first.win.getBounds()).workArea : screen.getPrimaryDisplay().workArea;
-  const side = Math.random() < 0.5 ? -1 : 1;
   const win = new BrowserWindow({
     width: W, height: H, x: side < 0 ? wa.x - W : wa.x + wa.width, y: wa.y + wa.height - H,
     transparent: true, frame: false, resizable: false, movable: true, maximizable: false, minimizable: false,
@@ -1740,10 +1776,16 @@ function guestLeave(g) {
   if (!alive(g)) return;
   clearTimeout(g.leaveTimer);
   g.win.webContents.send('visit', { type: 'bye' });
+  const dir = edgeOf(g).dir;
+  // Promenade : un de nos animaux raccompagne le visiteur chez lui (ils sortent ensemble, du même côté)
+  if (g.visit.walk === 1 && g.visit.code && online && online.open && !dnd) {
+    const host = [...pets.values()].find(canVisit);
+    if (host) startVisit(host, g.visit.code, 2, dir, g.name);
+  }
   setTimeout(() => slideOut(g, () => {
     api({ action: 'visit-end', secret: online.secret, id: g.visit.id, played: [...g.played][0] || '', ate: Math.round(g.ate || 0) });
     if (alive(g)) g.win.destroy();
-  }), 2500);
+  }, dir), 2500);
 }
 
 // Le visiteur a mangé un fichier chez nous : il en profitera en rentrant chez lui
@@ -1755,7 +1797,7 @@ ipcMain.on('guest-ate', (e, amount) => {
 // La page d'un invité apprend qui elle est (sa page est la même que celle d'un animal de la maison)
 ipcMain.on('get-guest', (e) => {
   const g = [...guests.values()].find((x) => alive(x) && x.win.webContents === e.sender);
-  e.returnValue = g ? { owner: g.visit.owner, pet: g.visit.pet } : null;
+  e.returnValue = g ? { owner: g.visit.owner, pet: g.visit.pet, walk: g.visit.walk || 0 } : null;
 });
 
 // Onglet « Amis » des réglages
@@ -1800,10 +1842,11 @@ ipcMain.handle('online-gift', async (e, code, kind, msg) => {
 });
 
 // « Envoyer en visite » : cet animal part chez l'ami choisi
-ipcMain.handle('online-visit', async (e, code) => {
+// (walk : promenade, l'animal de l'ami le raccompagnera)
+ipcMain.handle('online-visit', async (e, code, walk) => {
   const p = petOf(e.sender);
   if (!p || p.guest) return { error: 'occupe' };
-  return startVisit(p, String(code || ''));
+  return startVisit(p, String(code || ''), walk ? 1 : 0);
 });
 
 // ---- Voix : on utilise la synthèse vocale du système (Windows : voix française installée ; Mac : say) ----
@@ -2006,6 +2049,56 @@ app.on('second-instance', () => {
   keepOnTop();
 });
 
+// ---------- Pense-bête ----------
+// Rappels notés par l'utilisateur (reminders.json), communs à tous les animaux : { id, text, at (ms), daily }.
+// À l'heure dite, un animal vient le dire dans une bulle ; s'ils sont tous cachés ou partis, une notification.
+// Un rappel manqué pendant que l'application était fermée est donné au démarrage (s'il date de moins de 12 h).
+let reminders = [];
+
+function saveReminders() {
+  try { writeJson('reminders.json', reminders); } catch { /* sans gravité */ }
+}
+
+function checkReminders() {
+  const now = Date.now();
+  let changed = false;
+  for (const r of reminders.slice()) {
+    if (r.at > now) continue;
+    if (now - r.at < 12 * 3600000) fireReminder(r, now - r.at > 2 * 60000);
+    if (r.daily) { while (r.at <= now) r.at += 86400000; } else reminders = reminders.filter((x) => x !== r);
+    changed = true;
+  }
+  if (changed) saveReminders();
+}
+
+function fireReminder(r, late) {
+  // (pas un œuf : il ne pourrait rien dire)
+  const p = [...pets.values()].find((x) => alive(x) && !x.away && !x.guest && x.lastState && !x.lastState.dead && !(Date.now() < x.lastState.hatchAt));
+  diag(`pense-bête${late ? ' (en retard)' : ''} : ${p && !allHidden() ? p.name || p.id : 'notification'}`);
+  if (p && !allHidden()) {
+    p.win.showInactive();
+    p.win.webContents.send('reminder', { text: r.text, late });
+  } else {
+    notify('📝 ' + r.text);
+  }
+}
+
+ipcMain.handle('reminders-get', () => reminders);
+ipcMain.handle('reminders-add', (_e, r) => {
+  const text = String((r && r.text) || '').trim().slice(0, 80);
+  const at = Number(r && r.at);
+  if (!text || !at) return reminders;
+  reminders.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), text, at, daily: !!r.daily });
+  reminders.sort((a, b) => a.at - b.at);
+  saveReminders();
+  return reminders;
+});
+ipcMain.handle('reminders-remove', (_e, id) => {
+  reminders = reminders.filter((r) => r.id !== id);
+  saveReminders();
+  return reminders;
+});
+
 app.setAppUserModelId('com.thomasgotchi.app'); // nom affiché dans les notifications Windows
 
 app.whenReady().then(() => {
@@ -2025,8 +2118,11 @@ app.whenReady().then(() => {
   setInterval(yarnTick, 33);
   setInterval(sendFurnitureToPets, 500);
   startWindowWatcher();
-  const furn = readJson('furniture.json');
-  if (furn && furn.on) spawnFurniture(furn);
+  const furn = readJson('furniture.json') || {};
+  if (furn.on && furn.bowl) spawnFurniture('bowl', furn.bowl);
+  if (furn.basket) spawnFurniture('basket', furn.basket);
+  if (furn.plant) spawnFurniture('plant', furn.plant);
+  setInterval(plantTick, 60000);
   const settings = readJson('settings.json') || {};
   dnd = !!settings.dnd;
   autoHideSetting = settings.autoHide !== false;
@@ -2043,6 +2139,9 @@ app.whenReady().then(() => {
   // Visites entre ordinateurs : seulement si l'onglet « Amis » a déjà été ouvert une fois (inscription faite)
   const account = readJson('online.json');
   if (account && account.code && account.secret) online = { open: true, ...account };
+  reminders = Array.isArray(readJson('reminders.json')) ? readJson('reminders.json') : [];
+  setTimeout(checkReminders, 8000); // laisse aux animaux le temps de se réveiller
+  setInterval(checkReminders, 15000);
   setTimeout(syncOnline, 5000);
   setInterval(syncOnline, Number(process.env.TG_SYNC) || 30000); // TG_SYNC : plus court pour les tests
 });

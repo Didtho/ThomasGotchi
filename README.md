@@ -19,9 +19,12 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
 - **Petits ennuis** au hasard (environ tous les trois jours) : rhume 🤧 et mal de ventre 🤢 à soigner avec le médicament,
   puces 🐜 à faire partir avec un bain. Malade, il se voit (nez rouge, puces…), refuse de jouer et bouge moins.
 - 🔴 **Pastille sur l'icône** quand un animal a faim, soif, est malade ou sale (le détail s'affiche au survol de l'icône).
-- 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets.
+- 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets, jeu des paires.
 - 🎓 **Tours** appris petit à petit (dire bonjour, roulade, danse, toupie, saut périlleux).
-- 📖 **Carnet** : âge, plat préféré, câlins, souvenirs des anciens compagnons.
+- 📖 **Carnet** : âge, plat préféré, câlins, souvenirs des anciens compagnons, et le **bilan de la semaine** (temps passé
+  ensemble, repas, câlins, jeux, visites…) comparé à la semaine d'avant.
+- 📝 **Pense-bête** (menu de l'icône) : « appeler maman à 18 h », demain, un autre jour ou tous les jours ; à l'heure
+  dite, l'animal vient le rappeler dans une bulle (une notification s'il est caché).
 - 🎁 **Accessoires** à gagner : nœud papillon, lunettes, fleur, couronne, chapeau de sorcière, bonnet de Noël,
   chapeau de fête (et le chapeau de magicien, en édition unique pour la soirée magique de décembre 2026).
 - 📸 **Photo souvenir** (menu de l'icône) : une jolie image de l'animal, enregistrée dans Images › ThomasGotchi
@@ -36,12 +39,16 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   deux côtés, quand les deux applications sont ouvertes, votre animal part vraiment en visite : il quitte votre écran,
   apparaît chez votre ami (« Coucou, c'est Simba de Didier ! »), joue avec ses animaux, puis revient. Une ou deux
   visites par jour, ou à la demande. Votre ami peut lui donner un fichier à manger : il rentre rassasié
-  (« J'ai bien mangé chez Lucas ! 😋 »). Jusqu'à 3 visiteurs en même temps. On peut aussi envoyer à un ami un
+  (« J'ai bien mangé chez Lucas ! 😋 »). Avec 🐾, c'est une **promenade à deux** : l'animal de l'ami raccompagne le
+  vôtre et ils arrivent ensemble chez vous. Jusqu'à 3 visiteurs en même temps. On peut aussi envoyer à un ami un
   🎁 **cadeau** ou une 💌 **carte postale** (message choisi dans une liste : « Je pense à toi ! », « Joyeux
   anniversaire ! 🎂 »…), qui arrive même si son ordinateur est éteint. Seuls passent le prénom du maître et
   l'apparence de l'animal : pas de messages libres.
 - 🔍 **Taille** (onglet « Options » des réglages) : normale, grande ou très grande, pour les grands écrans.
 - 🧶 **Pelote de laine** et 🥣 **gamelle** (menu de l'icône) : il court après la pelote, va manger et boire tout seul.
+- 🧺 **Panier** : il va s'y coucher le soir et y faire la sieste quand il est fatigué. 🪴 **Plante** : un clic pour
+  l'arroser ; bien arrosée, elle pousse un peu chaque jour jusqu'à fleurir (elle penche si on l'oublie, sans jamais
+  mourir), et l'animal vient la renifler.
 - 🗣️ **Voix** : il dit ton prénom avec la voix de l'ordinateur, et te souhaite ton **anniversaire** (gâteau, chanson
   et cadeau) si tu indiques ta date dans les réglages.
 - Il remarque quand tu tapes longtemps (« une petite pause ? ») et fait la fête quand tu reviens.

@@ -181,6 +181,7 @@
         <button data-game="ball">🎾 Lancer la balle</button>
         <button data-game="catch">🍪 Attrape les friandises</button>
         <button data-game="cups">🥤 Le jeu des gobelets</button>
+        <button data-game="memory">🃏 Le jeu des paires</button>
         <button data-game="yarn">🧶 Sortir / ranger la pelote de laine</button>
       </div>
       <div class="label">Ses tours</div>
@@ -200,6 +201,32 @@
       <div id="cups-area"></div>
       <p id="cups-msg" class="hint">Regarde bien sous quel gobelet il se cache…</p>
       <div class="row"><button id="cups-again" class="primary hidden">Rejouer</button><button class="close-modal">Fermer</button></div>
+    </div>
+
+    <div id="modal-memory" class="card hit hidden">
+      <h2>Les paires <span id="memory-moves" class="score">0</span></h2>
+      <div id="memory-grid"></div>
+      <p id="memory-msg" class="hint">Retrouve les paires de friandises !</p>
+      <div class="row"><button id="memory-again" class="primary hidden">Rejouer</button><button class="close-modal">Fermer</button></div>
+    </div>
+
+    <div id="modal-notes" class="card hit hidden">
+      <h2>📝 Pense-bête</h2>
+      <div id="notes-list"></div>
+      <div class="label">Nouveau rappel</div>
+      <input id="note-text" maxlength="80" placeholder="Ex : Appeler maman">
+      <div class="note-when">
+        <select id="note-day">
+          <option value="today">Aujourd'hui</option>
+          <option value="tomorrow">Demain</option>
+          <option value="date">Autre jour…</option>
+          <option value="daily">Tous les jours</option>
+        </select>
+        <input id="note-time" type="time" value="18:00">
+      </div>
+      <input id="note-date" type="date" class="hidden">
+      <p id="note-msg" class="hint"></p>
+      <div class="row"><button id="note-add" class="primary">Ajouter</button><button class="close-modal">Fermer</button></div>
     </div>
 
     <div id="modal-journal" class="card hit hidden">

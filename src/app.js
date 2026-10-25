@@ -76,8 +76,10 @@ function save() {
   if (state && !desk.guest) desk.save(state); // un invité ne sauvegarde rien chez l'hôte
 }
 
+let reminderUntil = 0; // un rappel du pense-bête reste affiché : les autres bulles attendent
+
 function say(text, ms = 3800) {
-  if (!text) return;
+  if (!text || performance.now() < reminderUntil) return;
   // « Ne pas déranger » : il ne parle que si on est en train de s'occuper de lui
   if (dnd && panel.classList.contains('hidden') && !modalIsOpen()) return;
   bubble.textContent = t(text);
@@ -256,7 +258,9 @@ desk.onVisit((ev) => {
     walking = null;
     panel.classList.add('hidden');
     closeModal();
-    say(t('Je vais rendre visite à {owner} ! 👋', { owner: ev.owner }), 2500);
+    say(ev.walk === 2 ? t('Je raccompagne {name} chez {owner} ! 🐾', { name: ev.with, owner: ev.owner })
+      : ev.walk ? t('On part en promenade chez {owner} ! 🐾', { owner: ev.owner })
+        : t('Je vais rendre visite à {owner} ! 👋', { owner: ev.owner }), 2500);
   } else if (ev.type === 'gift' && !desk.guest) {
     // Cadeau ou carte postale envoyé par un ami : posé sur le bureau, à ouvrir d'un clic
     const from = { owner: ev.owner || '?', pet: ev.pet || '?' };
@@ -281,7 +285,8 @@ desk.onVisit((ev) => {
     save();
   } else if (ev.type === 'arrive' && desk.guest) {
     play('jump', 800);
-    say(t('Coucou, c\'est {name} de {owner} ! 👋', { name: state.name, owner: desk.guest.owner }), 5000);
+    say(desk.guest.walk === 2 ? t('On s\'est promenés ensemble ! Coucou, c\'est {name} de {owner} 🐾', { name: state.name, owner: desk.guest.owner })
+      : t('Coucou, c\'est {name} de {owner} ! 👋', { name: state.name, owner: desk.guest.owner }), 5000);
   } else if (ev.type === 'bye' && desk.guest) {
     say('Au revoir, à bientôt ! 👋', 2500);
   }
@@ -304,8 +309,9 @@ function startWalk(dir, steps, speed = 2) {
 function wander(now) {
   if (walking) {
     // En chassant la pelote : arrivé tout près, il bondit dessus
-    // Arrivé à la gamelle
-    if (walking.target === 'bowl' && furn && Math.abs(furn.bowl.x - 120) < 25 && canWander(walking.anim)) {
+    // Arrivé à la gamelle, au panier ou à la plante
+    const goal = walking.target && furn && furn[walking.target];
+    if (goal && Math.abs(goal.x - 120) < 25 && canWander(walking.anim)) {
       const w = walking;
       walking = null;
       arriveFurniture(w.target, w.what);
@@ -336,7 +342,7 @@ function wander(now) {
     return;
   }
   // Faim ou soif : il va se servir à la gamelle
-  if (furn && canWander() && now > nextWalkAt) {
+  if (furn && furn.bowl && canWander() && now > nextWalkAt) {
     if (state.hunger < 55 && furn.bowl.food >= 10) return goToFurniture('bowl', 'food', now);
     if (state.thirst < 55 && furn.bowl.water >= 10) return goToFurniture('bowl', 'water', now);
   }
@@ -355,6 +361,8 @@ function wander(now) {
   const cursorNear = cursor && Math.abs(cursor.x - 120) < 450 && Math.abs(cursor.y - (stageEl.offsetTop + 270)) < 250;
   const roll = Math.random();
   // Il va rendre visite à son meilleur ami
+  // De temps en temps, il va voir la plante (plus souvent quand elle a soif)
+  if (furn && furn.plant && roll < (furn.plant.water < 15 ? 0.2 : 0.07)) { goToFurniture('plant', null, now); return; }
   const buddy = friends.filter((f) => Math.abs(f.x) > 130 && Math.abs(f.x) < 1600).sort((a, b) => b.points - a.points)[0];
   if (buddy && roll < 0.2 + buddy.points / 400) {
     startWalk(buddy.x > 0 ? 1 : -1, Math.ceil((Math.abs(buddy.x) - 90) / 3), 3);
@@ -450,6 +458,15 @@ function goToFurniture(kind, what, now) {
 }
 
 function arriveFurniture(kind, what) {
+  facing = 0;
+  if (kind === 'basket') return lieDown(what === 'night');
+  if (kind === 'plant') {
+    // Il renifle la plante ; il remarque quand elle a soif, ou quand elle a fleuri
+    const p = furn.plant;
+    play('look', 2000);
+    say(p.water < 15 ? 'La plante a soif ! Tu peux l\'arroser ? 💧' : p.growth >= 4 ? 'Mmm, ça sent bon ! 🌸' : 'Elle pousse bien ! 🌱', 3500);
+    return;
+  }
   desk.bowlUse(what).then((amount) => {
     if (!amount) return say('La gamelle est vide ! 🥺');
     if (what === 'water') {
@@ -463,6 +480,35 @@ function arriveFurniture(kind, what) {
     }
     save();
   });
+}
+
+// ---------- Panier : il y dort la nuit et y fait la sieste quand il est fatigué ----------
+
+let basketTries = 0; // nombre d'allers vers le panier sans y arriver (au-delà, il dort où il est)
+
+// Faut-il d'abord aller jusqu'au panier ? (il en prend le chemin si oui)
+function walkToBasket(what) {
+  if (!furn || !furn.basket || basketTries >= 4 || Math.abs(furn.basket.x - 120) < 20) return false;
+  if (walking && walking.target === 'basket') return true; // déjà en route
+  if (!canWander()) return false;
+  basketTries++;
+  goToFurniture('basket', what, performance.now());
+  return true;
+}
+
+function lieDown(night) {
+  basketTries = 0;
+  if (state.sleeping) return;
+  if (night) {
+    state.bedNight = nightKey();
+    state.nightSleep = true;
+    say('Il est tard… bonne nuit 🌙', 4000);
+  } else {
+    say('Une petite sieste dans mon panier… 😴', 3000);
+  }
+  state.sleeping = true;
+  walking = null;
+  save();
 }
 
 // ---------- Pause vacances ----------
@@ -634,6 +680,7 @@ function nightKey() {
 
 function dayRhythm() {
   if (state.dead || Pet.isEgg(state)) return;
+  if (state.sleeping) basketTries = 0;
   if (bedTime()) {
     // Déjà endormi au moment du coucher : il passe la nuit entière à dormir
     if (state.sleeping && state.bedNight !== nightKey()) {
@@ -641,12 +688,7 @@ function dayRhythm() {
       state.nightSleep = true;
       save();
     } else if (!state.sleeping && !anim && !modalIsOpen() && !dragging && state.bedNight !== nightKey()) {
-      state.bedNight = nightKey();
-      state.sleeping = true;
-      state.nightSleep = true;
-      walking = null;
-      say('Il est tard… bonne nuit 🌙', 4000);
-      save();
+      if (!walkToBasket('night')) lieDown(true); // avec un panier, il va d'abord s'y coucher
     }
   } else if (state.sleeping && state.nightSleep) {
     state.sleeping = false;
@@ -655,6 +697,8 @@ function dayRhythm() {
     say('Bonjour ! ☀️ Bien dormi !', 4000);
     speak(t('Bonjour{owner} !', { owner: owner() }));
     save();
+  } else if (!state.sleeping && state.energy < 25 && furn && furn.basket && !Pet.isSick(state)) {
+    walkToBasket('nap'); // fatigué en journée : une sieste dans son panier
   }
 }
 
@@ -694,6 +738,13 @@ function logic() {
     desk.setDecor(festivity && !state.dead ? festivity.decor : null);
   }
   celebrate();
+
+  // Bilan de la semaine : une minute de plus passée ensemble ; le lundi, le bilan de la semaine passée est prêt
+  if (unlockTick % 60 === 30 && !desk.guest && !state.dead && !state.paused && !Pet.isEgg(state) && Pet.weekTick(state)) {
+    const w = state.lastWeek;
+    if (w.minutes >= 30) say('Le bilan de la semaine est dans mon carnet ! 📒', 6000);
+    save();
+  }
 
   // Pastille sur l'icône de la barre des tâches quand il a besoin de quelque chose (voir main.js)
   const alert = Pet.isEgg(state) || state.dead || state.paused ? null
@@ -1252,6 +1303,7 @@ function renderFriends(data) {
     else if (f.status === 'sent') { const s = document.createElement('em'); s.textContent = t('en attente'); row.appendChild(s); }
     else {
       if (f.online) button('🚪', 'Envoyer en visite', () => sendVisit(f));
+      if (f.online) button('🐾', 'Promenade à deux (son animal le raccompagnera)', () => sendVisit(f, true));
       button('🎁', 'Envoyer un cadeau', () => sendGift(f, 'cadeau'));
       button('💌', 'Envoyer une carte postale', () => toggleCardChoices(row, f));
     }
@@ -1296,10 +1348,10 @@ async function sendGift(f, kind, msg = 0) {
 }
 
 // « Envoyer en visite » : les réglages se ferment d'abord (sa fenêtre doit retrouver sa taille pour qu'il parte)
-async function sendVisit(f) {
+async function sendVisit(f, walk = false) {
   closeModal();
   await new Promise((r) => setTimeout(r, 400));
-  const r = await desk.online.visit(f.code);
+  const r = await desk.online.visit(f.code, walk);
   if (!r || !r.error) return;
   const name = f.owner || f.code;
   const why = {
@@ -1441,8 +1493,97 @@ function showDead() {
 }
 $('dead-ok').addEventListener('click', openNew);
 
+// ---------- Pense-bête (rappels gardés par main.js, communs à tous les animaux) ----------
+async function openNotes() {
+  if (desk.guest || !state || state.dead) return;
+  $('note-text').value = '';
+  $('note-msg').textContent = '';
+  $('note-day').value = 'today';
+  $('note-date').classList.add('hidden');
+  renderNotes(await desk.reminders.get());
+  await openModal('modal-notes');
+  $('note-text').focus();
+}
+
+// Jour du rappel en clair : « aujourd'hui à 18:00 », « demain à 9:30 », « tous les jours à 8:00 », « 3 nov. 14:00 »
+function noteWhen(r) {
+  const d = new Date(r.at);
+  const time = d.toLocaleTimeString(I18N.lang, { hour: '2-digit', minute: '2-digit' });
+  if (r.daily) return t('tous les jours à {time}', { time });
+  const day = (x) => Math.floor((x.getTime() - x.getTimezoneOffset() * 60000) / 86400000);
+  const diff = day(d) - day(new Date());
+  if (diff === 0) return t('aujourd\'hui à {time}', { time });
+  if (diff === 1) return t('demain à {time}', { time });
+  return d.toLocaleDateString(I18N.lang, { day: 'numeric', month: 'short' }) + ' ' + time;
+}
+
+function renderNotes(list) {
+  const box = $('notes-list');
+  box.textContent = '';
+  for (const r of list) {
+    const row = document.createElement('div');
+    row.className = 'note';
+    const text = document.createElement('span');
+    text.textContent = r.text;
+    const when = document.createElement('em');
+    when.textContent = noteWhen(r);
+    const del = document.createElement('button');
+    del.textContent = '✕';
+    del.title = t('Effacer ce rappel');
+    del.addEventListener('click', async () => { renderNotes(await desk.reminders.remove(r.id)); openModal('modal-notes'); });
+    row.append(text, when, del);
+    box.appendChild(row);
+  }
+  if (!list.length) box.textContent = t('Aucun rappel pour le moment.');
+}
+
+$('note-day').addEventListener('change', () => {
+  const pick = $('note-day').value === 'date';
+  $('note-date').classList.toggle('hidden', !pick);
+  if (pick && !$('note-date').value) {
+    const d = new Date(Date.now() + 2 * 86400000);
+    $('note-date').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  openModal('modal-notes'); // la carte change de hauteur
+});
+
+$('note-add').addEventListener('click', async () => {
+  const text = $('note-text').value.trim();
+  const [h, m] = ($('note-time').value || '').split(':').map(Number);
+  if (!text) { $('note-msg').textContent = t('Écris d\'abord ce qu\'il faut te rappeler.'); return; }
+  if (!Number.isFinite(h) || !Number.isFinite(m)) { $('note-msg').textContent = t('Choisis une heure.'); return; }
+  const kind = $('note-day').value;
+  const at = new Date();
+  if (kind === 'date' && $('note-date').value) {
+    const [y, mo, d] = $('note-date').value.split('-').map(Number);
+    at.setFullYear(y, mo - 1, d);
+  } else if (kind === 'tomorrow') {
+    at.setDate(at.getDate() + 1);
+  }
+  at.setHours(h, m, 0, 0);
+  // « Tous les jours » : la première fois aujourd'hui, ou demain si l'heure est déjà passée
+  if (kind === 'daily' && at.getTime() <= Date.now()) at.setDate(at.getDate() + 1);
+  if (at.getTime() <= Date.now()) { $('note-msg').textContent = t('Cette heure est déjà passée.'); return; }
+  renderNotes(await desk.reminders.add({ text, at: at.getTime(), daily: kind === 'daily' }));
+  $('note-text').value = '';
+  $('note-msg').textContent = t('C\'est noté ! {name} te le rappellera 📝', state);
+  openModal('modal-notes');
+});
+
+// C'est l'heure d'un rappel : il saute et le dit, même en « ne pas déranger » (c'est toi qui l'as demandé)
+desk.onReminder((r) => {
+  if (!state || state.dead) return;
+  closeModal();
+  if (!state.sleeping) play('jump', 800);
+  Sound.play('alert');
+  bubble.textContent = r.late ? t('Tu avais noté : « {text} » 📝', r) : t('C\'est l\'heure : « {text} » ⏰', r);
+  bubble.classList.remove('hidden');
+  bubbleUntil = reminderUntil = performance.now() + 15000;
+});
+
 desk.onMenu((action) => {
   if (action === 'settings') openSettings();
+  if (action === 'notes') openNotes();
   if (action === 'photo') takePhoto();
   if (action === 'pause') setPause(true);
   if (action === 'resume') setPause(false);

@@ -54,6 +54,8 @@ $db->exec('CREATE TABLE IF NOT EXISTS tg_visits (
 
 // Ajouté après coup : ce que le visiteur a mangé chez l'ami (il en profite à son retour)
 $db->exec('ALTER TABLE tg_visits ADD COLUMN IF NOT EXISTS ate SMALLINT NOT NULL DEFAULT 0');
+// Promenade à deux : 1 = aller (l'ami raccompagnera le visiteur), 2 = retour (l'animal de l'ami vient avec lui)
+$db->exec('ALTER TABLE tg_visits ADD COLUMN IF NOT EXISTS walk TINYINT NOT NULL DEFAULT 0');
 // Cadeaux et cartes postales entre amis (arrivent même si l'ami n'est pas connecté) ; msg : numéro du message choisi
 $db->exec('CREATE TABLE IF NOT EXISTS tg_gifts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -160,8 +162,9 @@ switch ((string) ($in['action'] ?? '')) {
             $q->execute([$me['id']]);
             return $q->fetchAll(PDO::FETCH_ASSOC);
         })();
-        $incoming = array_map(fn($v) => ['id' => (int) $v['id'], 'owner' => $v['owner'], 'pet' => json_decode((string) $v['pet'], true)],
-            $visits("SELECT * FROM tg_visits WHERE host = ? AND state = 'going'"));
+        $incoming = array_map(fn($v) => ['id' => (int) $v['id'], 'owner' => $v['owner'], 'pet' => json_decode((string) $v['pet'], true),
+            'walk' => (int) $v['walk'], 'code' => $v['guestCode']],
+            $visits("SELECT v.*, p.code AS guestCode FROM tg_visits v JOIN tg_players p ON p.id = v.guest WHERE v.host = ? AND v.state = 'going'"));
         $back = array_map(fn($v) => ['id' => (int) $v['id'], 'played' => $v['played'], 'ate' => (int) $v['ate'], 'owner' => $v['hostOwner']],
             $visits("SELECT v.id, v.played, v.ate, p.owner AS hostOwner FROM tg_visits v JOIN tg_players p ON p.id = v.host WHERE v.guest = ? AND v.state = 'back'"));
         // Cadeaux et cartes reçus : remis une seule fois
@@ -254,8 +257,8 @@ switch ((string) ($in['action'] ?? '')) {
         if ($st->fetchColumn() >= MAX_GUESTS) {
             out(['error' => 'occupe']);
         }
-        $db->prepare("INSERT INTO tg_visits (guest, host, pet, owner, state, updated) VALUES (?, ?, ?, ?, 'going', NOW())")
-            ->execute([$me['id'], $other['id'], cleanPet($in['pet'] ?? []), clean((string) ($in['owner'] ?? ''), 16)]);
+        $db->prepare("INSERT INTO tg_visits (guest, host, pet, owner, walk, state, updated) VALUES (?, ?, ?, ?, ?, 'going', NOW())")
+            ->execute([$me['id'], $other['id'], cleanPet($in['pet'] ?? []), clean((string) ($in['owner'] ?? ''), 16), max(0, min(2, (int) ($in['walk'] ?? 0)))]);
         out(['id' => (int) $db->lastInsertId(), 'owner' => $other['owner']]);
 
     // Chez l'ami : le visiteur est arrivé, puis repart (avec le prénom de l'animal avec qui il a joué)

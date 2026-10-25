@@ -285,6 +285,23 @@ button.danger { background: #ffe0e0 !important; }
 .cup .peek { position: absolute; left: 50%; bottom: -2px; transform: translateX(-50%); font-size: 26px; opacity: 0; transition: opacity .2s; }
 .cup.up { transform: translateY(-34px); }
 .cup.up .peek { opacity: 1; transform: translate(-50%, 34px); }
+/* Pense-bête */
+.note-when { display: flex; gap: 5px; margin: 2px 0 4px; }
+.note-when select, .note-when input, #note-date { flex: 1; min-width: 0; font: inherit; font-size: 12px; padding: 2px 4px; border: 1.5px solid #3b2a3a; border-radius: 8px; background: #fff; }
+#note-date { display: block; width: 100%; margin-bottom: 4px; }
+#note-date.hidden { display: none; }
+#notes-list { font-size: 12px; margin: 2px 0 4px; }
+.note { display: flex; align-items: center; gap: 4px; padding: 3px 0; border-bottom: 1px dashed rgba(59,42,58,.2); }
+.note span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.note em { font-style: normal; font-size: 11px; opacity: .7; white-space: nowrap; }
+.note button { flex: none; font: inherit; padding: 1px 5px; background: #fff3f7; border: 1.5px solid #3b2a3a; border-radius: 8px; cursor: pointer; }
+/* Jeu des paires : 4 × 3 cartes qui se retournent */
+#memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 4px 0; }
+.mcard { height: 42px; font-size: 22px; line-height: 38px; text-align: center; border: 1.5px solid #3b2a3a; border-radius: 8px; cursor: pointer;
+  background: repeating-linear-gradient(45deg, #ff9fc6 0 6px, #ffb8d4 6px 12px); color: transparent; transition: transform .2s; user-select: none; }
+.mcard.open, .mcard.found { background: #fff; color: inherit; transform: rotateY(0); }
+.mcard.found { opacity: .55; cursor: default; }
+.theme-pixel .mcard { border-radius: 0; border-width: 2px; }
 .journal-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed rgba(59,42,58,.2); font-size: 11.5px; }
 .journal-row b { font-weight: 600; }
 /* Carnet : étagère des trophées et album photo */
