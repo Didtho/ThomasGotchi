@@ -1,91 +1,102 @@
 # ThomasGotchi
 
 Un petit animal façon Tamagotchi qui vit sur le bureau (Windows et Mac), toujours au-dessus des fenêtres.
-Il se promène, passe d'un écran à l'autre, grandit, et il faut s'en occuper pour qu'il ne meure pas.
+Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour qu'il ne meure pas.
+
+**Site, démo jouable et téléchargement : https://thomasgotchi.mirimix.fr/** — gratuit, sans publicité, sans compte.
 
 ## S'en occuper
 
 - **Survoler** l'animal : affiche ses jauges (faim, soif, énergie, bonheur, propreté, santé) et les boutons.
-- **Glisser un fichier** sur lui : il le mange. Le fichier n'est ni modifié ni supprimé, seuls son nom et sa taille comptent.
-  Images = friandise, PDF / documents = vrai repas, vidéos = festin, musique = dessert, programmes (.exe…) = mal au ventre !
+- **Le nourrir** : glisser un fichier sur lui. Le fichier n'est ni ouvert, ni modifié, ni supprimé : seuls son nom
+  et sa taille comptent. Images = friandise, PDF / documents = vrai repas, vidéos = festin, musique = dessert,
+  programmes (.exe…) = mal au ventre ! Aussi possible par le menu de l'icône : « Donner un fichier à manger… »
+  (et sur Mac, en déposant des fichiers sur l'icône de la barre des menus).
 - 🥤 boire · 🌙 dormir / réveiller · 🎾 jouer · 🛁 laver · 💊 soigner · ⚙️ réglages
 - **Clic** : un câlin. **Glisser** : le déplacer. **Clic droit** : réglages.
-- **Crottes et pipi** 💩💦 : il fait ses besoins sur le bureau (et lève la patte contre le bord de l'écran).
-  Cliquer dessus pour nettoyer, ou le bain pour tout nettoyer.
+- **Crottes et pipi** 💩💦 sur le bureau, avec leurs petites mouches : cliquer dessus pour nettoyer, ou le bain pour tout
+  nettoyer. Posées sur une fenêtre, elles tombent quand on la ferme.
+- **Petits ennuis** au hasard (environ tous les trois jours) : rhume 🤧 et mal de ventre 🤢 à soigner avec le médicament,
+  puces 🐜 à faire partir avec un bain. Malade, il se voit (nez rouge, puces…), refuse de jouer et bouge moins.
+- 🔴 **Pastille sur l'icône** quand un animal a faim, soif, est malade ou sale (le détail s'affiche au survol de l'icône).
 - 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets.
-- 📖 **Carnet** (dans les réglages) : âge, plat préféré, câlins, souvenirs des anciens compagnons.
-- 🎁 **Accessoires** à gagner : nœud papillon, lunettes, fleur, couronne, chapeau de sorcière, bonnet de Noël.
-- **Plusieurs animaux** (jusqu'à 5) : « Adopter un autre animal » dans le menu de l'icône. Quand ils se croisent,
-  ils se font un câlin, jouent à chat (l'un fuit, l'autre poursuit) ou sautent ensemble.
-- 🧶 **Pelote de laine** (menu de l'icône ou bouton jouer) : les animaux courent après et lui donnent des coups de patte ;
-  elle se déroule en roulant. Cliquer dessus pour la rembobiner.
-- 🎓 **Tours** appris petit à petit (dire bonjour, roulade, danse, toupie, saut périlleux) : bouton jouer, ou spontanément.
-- 💞 **Amitié** : vos animaux deviennent copains puis meilleurs amis, se rendent visite, se font la toilette et se chamaillent.
-- 🗣️ **Voix** : il dit ton prénom (réglages) avec la voix de l'ordinateur.
+- 🎓 **Tours** appris petit à petit (dire bonjour, roulade, danse, toupie, saut périlleux).
+- 📖 **Carnet** : âge, plat préféré, câlins, souvenirs des anciens compagnons.
+- 🎁 **Accessoires** à gagner : nœud papillon, lunettes, fleur, couronne, chapeau de sorcière, bonnet de Noël,
+  chapeau de fête (et le chapeau de magicien, en édition unique pour la soirée magique de décembre 2026).
+- 📸 **Photo souvenir** (menu de l'icône) : une jolie image de l'animal, enregistrée dans Images › ThomasGotchi.
+- **Plusieurs animaux** (jusqu'à 5) : ils deviennent copains puis meilleurs amis, jouent à chat, se rendent visite,
+  se font la toilette et se chamaillent.
+- 🧶 **Pelote de laine** et 🥣 **gamelle** (menu de l'icône) : il court après la pelote, va manger et boire tout seul.
+- 🗣️ **Voix** : il dit ton prénom avec la voix de l'ordinateur, et te souhaite ton **anniversaire** (gâteau, chanson
+  et cadeau) si tu indiques ta date dans les réglages.
 - Il remarque quand tu tapes longtemps (« une petite pause ? ») et fait la fête quand tu reviens.
-- 🌦️ **Météo réelle** (Lyon par défaut, ville modifiable dans les réglages) : pluie, neige, soleil, nuages, brouillard, orage ;
-  il sort son parapluie, son écharpe ou ses lunettes de soleil. Données : Open-Meteo.
-- 🥣 **Gamelle** (menu de l'icône) : il va y manger et boire tout seul. Clic pour la remplir, glisser pour la déplacer.
-- 🏖️ **Pause vacances** (réglages, ou menu de l'icône pour tous) : il ne vieillit pas et n'a ni faim ni soif pendant l'absence.
-- 🔕 **Ne pas déranger** (menu de l'icône) : plus de bruit, de bulles ni de promenades.
-- **Rythme de vie** (réglages) : zen, normal ou exigeant.
-- 💾 **Exporter** un animal dans un fichier (réglages) et l'**importer** sur un autre ordinateur (menu de l'icône).
-- L'icône près de l'horloge (barre des menus sur Mac) permet de le cacher, de le ramener, d'en adopter un autre ou de quitter.
+- 🌦️ **Météo réelle** (Lyon par défaut, ville modifiable) : il sort son parapluie, son écharpe ou ses lunettes de soleil.
+  Données : Open-Meteo.
+- 🏖️ **Pause vacances**, 🔕 **ne pas déranger**, **rythme de vie** (zen, normal, exigeant).
+- 💾 **Exporter** un animal dans un fichier et l'**importer** sur un autre ordinateur.
 
-**Fêtes** : décors et surprises aux bonnes dates — Halloween (citrouille, chauves-souris), Noël (neige, sapin,
-cadeau à ouvrir sur le bureau les 24 et 25), Nouvel An (feux d'artifice, chapeau de fête), Saint-Valentin (cœurs),
-Pâques (chasse aux œufs cachés sur l'écran), Journée du chat (8 août), et anniversaire de l'animal chaque mois.
+Il se promène, passe d'un écran à l'autre, **grimpe sur les fenêtres** (Windows et Mac) et tombe au bord ou quand on les
+ferme, suit la souris des yeux, s'endort le soir avec son bonnet de nuit. Si on le secoue, la tête lui tourne !
+Il grandit : œuf → bébé → enfant → adulte. Sans soins, il tient environ 2 à 3 jours ; le temps continue de passer
+quand l'application est fermée.
 
-Ses besoins se lisent sur son visage : langue pendante quand il a soif, bave quand il a faim, thermomètre quand il
-est malade, taches et odeurs quand il est sale.
+## Caractères
 
-Sans soins, il tient environ 2 à 3 jours. Le temps continue de passer quand l'application est fermée.
-Il se promène (et passe d'un écran à l'autre), grimpe sur les fenêtres (Windows) et tombe au bord ou quand on les ferme, court, saute, fait des roulades, suit la souris des yeux,
-s'endort le soir avec son bonnet de nuit et se réveille le matin. Si on le secoue, la tête lui tourne !
+Chaque espèce a son caractère : le chat est roi de la sieste, le lapin avance par petits bonds, le dragon crache une
+petite flamme pendant un câlin, le hibou est noctambule, le loup hurle à la lune le soir, la grenouille adore la pluie,
+le pingouin le froid, le singe grimpe partout… (affiché dans le panneau et au choix de l'animal).
 
-Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien soigné, l'adulte gagne une barrette étoile.
+## Fêtes
+
+Décors et surprises aux bonnes dates, **selon le pays** réglé dans l'ordinateur : Halloween, Noël (cadeau à ouvrir),
+Nouvel An, Saint-Valentin, Pâques (œufs cachés), Chandeleur, poisson d'avril, Fête de la musique, fêtes des mamies,
+des mamans, des papas et des papis (à leurs dates dans chaque pays), Thanksgiving, 4 Juillet, fête du Canada,
+fêtes nationales, Saint-Patrick, Pancake Day, Rois mages, Befana… et l'anniversaire de l'animal chaque mois.
+Soirée magique les 25 et 26 décembre 2026 au soir (chapeau, baguette, et un hibou qui apporte une lettre).
 
 ## Personnalisation
 
-- Langue : français, anglais, espagnol, italien (automatique selon l'ordinateur, ou au choix dans les réglages)
+Les réglages sont rangés en onglets : 🐾 Animal, 🎨 Style, 🙂 Toi, ⚙️ Options.
 
+- Langue : français, anglais, espagnol, italien (automatique selon l'ordinateur, ou au choix)
 - Animal (21) : chat, lapin, ourson, chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, petit dragon,
   loup, lion, tigre, cochon, mouton, souris, hibou, singe, raton laveur
-- Style : mignon ou pixel rétro
-- Pelage : rose, menthe, ciel, citron, lavande, noir, marron, orange, caramel, gris perle, vert, blanc, ardoise,
-  noir et blanc, roux tigré, gris tacheté (le panda et le pingouin gardent leurs couleurs naturelles)
-- Genre : il ou elle (les phrases s'accordent)
-- Modèles prêts à adopter, d'après les chats de la maison : **Simba** (roux crème et blanc),
-  **Snoop** (tigrée grise et pêche) et **Grisette** (noire et blanche à poils longs)
-
-## Traductions
-
-Le français sert de référence : chaque texte français est la clé de sa traduction dans
-`src/locales/en.js`, `es.js`, `it.js` (application) et `site/lang/*.php` (site).
+- Dessin : mignon ou pixel rétro ; 19 pelages ; genre il ou elle (les phrases s'accordent)
+- Modèles d'après les chats de la maison : **Simba** (roux), **Snoop** (tigrée grise) et **Grisette** (noire et blanche)
 
 ## Télécharger
 
-Dernière version : https://github.com/Didtho/ThomasGotchi/releases/latest
-(Windows : le fichier `.exe`, Mac : le fichier `.dmg`).
-Sur Windows, l'application s'installe dans Program Files et se met ensuite à jour toute seule
-(le numéro de version et l'état de la mise à jour sont affichés dans le menu de l'icône). Sur Mac, le menu de l'icône signale les nouvelles versions.
+Depuis le site https://thomasgotchi.mirimix.fr/ ou https://github.com/Didtho/ThomasGotchi/releases/latest
+(Windows : le fichier `.exe`, Mac : le fichier `.dmg`). Sur Windows, l'application se met ensuite à jour toute seule ;
+sur Mac, elle signale les nouvelles versions.
+
+L'application n'est pas signée par Apple : au premier lancement sur Mac, macOS refuse de l'ouvrir. Aller dans
+**Réglages Système → Confidentialité et sécurité** et cliquer sur **Ouvrir quand même**, ou taper dans le Terminal :
+`xattr -cr /Applications/ThomasGotchi.app` (à refaire après chaque nouvelle version téléchargée).
+
+Sauvegarde : `%APPDATA%\thomasgotchi\pet.json` (Windows) ou `~/Library/Application Support/thomasgotchi/pet.json` (Mac).
+En cas de souci, « Copier le diagnostic 🩺 » dans le menu de l'icône donne un petit journal à envoyer.
 
 ## Développement
 
 ```
 npm install
-npm start          # lancer l'application
-npm run dist       # installateur Windows -> dist/
-npm run dist:mac   # installateur Mac -> dist/ (à lancer sur un Mac)
-npm run icon       # régénère assets/icon.png à partir du dessin de l'animal
-node scripts/i18n-check.js              # phrases de l'application sans traduction
-php scripts/site-i18n-check.php en      # phrases du site sans traduction (en, es, it)
+npm start                          # lancer l'application
+npm run dist                       # installateur Windows -> dist/
+npm run dist:mac                   # installateur Mac -> dist/ (à lancer sur un Mac)
+npm run icon                       # régénère assets/icon.png à partir du dessin de l'animal
+npm run site-assets                # images, données et moteur de dessin du site (site/)
+node scripts/i18n-check.js         # phrases de l'application sans traduction
+php scripts/site-i18n-check.php en # phrases du site sans traduction (en, es, it)
 ```
 
-Publier une nouvelle version : changer "version" dans `package.json`, puis créer et pousser le tag correspondant
+Publier une nouvelle version : changer `version` dans `package.json`, puis créer et pousser le tag correspondant
 (`git tag v1.2.0 && git push origin v1.2.0`). GitHub fabrique alors les deux installateurs et les publie.
 
-L'application n'est pas signée : au premier lancement sur Mac, faire un **clic droit → Ouvrir**, puis confirmer avec le bouton **Ouvrir** de l'avertissement. Si macOS dit qu'elle est
-« endommagée », taper dans le Terminal : `xattr -cr /Applications/ThomasGotchi.app`.
+Traductions : le français sert de référence ; chaque texte français est la clé de sa traduction dans
+`src/locales/en.js`, `es.js`, `it.js` (application) et `site/lang/*.php` (site).
 
-Sauvegarde : `%APPDATA%\thomasgotchi\pet.json` (Windows) ou `~/Library/Application Support/thomasgotchi/pet.json` (Mac).
+---
+
+ThomasGotchi est une création [DidTech](https://www.didtech.fr/) · licence MIT.
