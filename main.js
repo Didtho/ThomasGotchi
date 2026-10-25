@@ -254,6 +254,11 @@ ipcMain.on('drag-start', (e) => {
   const p = petOf(e.sender);
   if (!p) return;
   clearInterval(p.dragTimer);
+  clearInterval(p.fallTimer);
+  clearInterval(p.climbTimer);
+  p.fallTimer = null;
+  p.climbTimer = null;
+  p.platform = null;
   const c = screen.getCursorScreenPoint();
   const [wx, wy] = p.win.getPosition();
   const ox = c.x - wx;
@@ -290,35 +295,166 @@ ipcMain.handle('drag-end', (e) => {
   fallToFloor(p);
 });
 
-// Gravité : un animal lâché en hauteur tombe jusqu'au bas de l'écran qui se trouve sous ses pattes
+// ---- Gravité et fenêtres ----
+// Sous Windows, un petit programme (src/windows-watcher.ps1) donne la position des fenêtres ouvertes :
+// les animaux peuvent marcher sur leur bord supérieur, tombent au bord ou quand la fenêtre disparaît,
+// et suivent la fenêtre si on la déplace. Sans ces informations (Mac), seul le bas de l'écran compte.
+
+const FEET = 290; // distance entre le haut de la fenêtre d'un animal et la ligne où posent ses pattes
+let platforms = []; // bords visibles : { h, x1, x2, y } en coordonnées d'écran (DIP)
+let windowRects = new Map(); // id de fenêtre -> { x1, y1, x2, y2 }
+let watcher = null;
+
+// Morceaux d'un segment [a, b] qui ne sont pas recouverts par [c, d]
+function subtractSpan(spans, c, d) {
+  const out = [];
+  for (const [a, b] of spans) {
+    if (d <= a || c >= b) { out.push([a, b]); continue; }
+    if (c > a) out.push([a, c]);
+    if (d < b) out.push([d, b]);
+  }
+  return out;
+}
+
+function updatePlatforms(raw) {
+  const rects = raw.map(([h, l, t, r, b]) => {
+    const d = isMac ? { x: l, y: t, width: r - l, height: b - t } : screen.screenToDipRect(null, { x: l, y: t, width: r - l, height: b - t });
+    return { h, x1: d.x, y1: d.y, x2: d.x + d.width, y2: d.y + d.height };
+  });
+  windowRects = new Map(rects.map((r) => [r.h, r]));
+  // Le bord du haut d'une fenêtre n'est utilisable que là où aucune fenêtre placée devant ne le cache
+  const list = [];
+  rects.forEach((w, i) => {
+    let spans = [[w.x1, w.x2]];
+    for (let j = 0; j < i; j++) {
+      const o = rects[j];
+      if (o.y1 <= w.y1 && o.y2 >= w.y1) spans = subtractSpan(spans, o.x1, o.x2);
+    }
+    for (const [a, b] of spans) if (b - a >= 60 && w.y1 > 20) list.push({ h: w.h, x1: a, x2: b, y: w.y1 });
+  });
+  platforms = list;
+  checkSupports();
+}
+
+function startWindowWatcher() {
+  if (process.platform !== 'win32') return;
+  try {
+    const script = fs.readFileSync(path.join(__dirname, 'src', 'windows-watcher.ps1'), 'utf8');
+    const encoded = Buffer.from(script, 'utf16le').toString('base64');
+    watcher = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded], {
+      env: { ...process.env, TG_PID: String(process.pid) },
+      windowsHide: true,
+    });
+    let buffer = '';
+    watcher.stdout.on('data', (chunk) => {
+      buffer += chunk.toString();
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop();
+      const last = lines.filter((l) => l.startsWith('[')).pop();
+      if (last) { try { updatePlatforms(JSON.parse(last)); } catch { /* ligne incomplète */ } }
+    });
+    watcher.on('exit', () => { watcher = null; platforms = []; });
+  } catch { watcher = null; }
+}
+
+const feetOf = (b) => ({ x: b.x + W / 2, y: b.y + FEET });
+
+function floorAt(feetX, b) {
+  const wa = screen.getAllDisplays().map((d) => d.workArea).find((a) => feetX >= a.x && feetX < a.x + a.width)
+    || screen.getDisplayMatching(b).workArea;
+  return wa.y + wa.height - H + FEET; // ligne des pattes quand la fenêtre touche le bas de l'écran
+}
+
+// Surface la plus proche sous les pattes : bord de fenêtre ou bas de l'écran
+function surfaceBelow(feetX, feetY, b) {
+  let best = { y: floorAt(feetX, b), h: null };
+  for (const pl of platforms) {
+    if (feetX >= pl.x1 && feetX <= pl.x2 && pl.y >= feetY - 2 && pl.y < best.y) best = { y: pl.y, h: pl.h };
+  }
+  return best;
+}
+
+function land(p, surface) {
+  const b = p.win.getBounds();
+  placeWindow(p, b.x, surface.y - FEET);
+  p.platform = surface.h;
+  p.platformX = surface.h && windowRects.get(surface.h) ? windowRects.get(surface.h).x1 : null;
+}
+
+// Gravité : il tombe jusqu'à la première surface sous ses pattes
 function fallToFloor(p) {
   if (!alive(p) || p.expandUp || p.expandDown) return saveWindowPosition(p);
   clearInterval(p.fallTimer);
-  const floorOf = (b) => {
-    const feetX = b.x + W / 2;
-    const wa = (screen.getAllDisplays().map((d) => d.workArea).find((a) => feetX >= a.x && feetX < a.x + a.width))
-      || screen.getDisplayMatching(b).workArea;
-    return wa.y + wa.height - b.height;
-  };
-  const start = p.win.getBounds();
-  if (start.y >= floorOf(start) - 2) return saveWindowPosition(p);
+  const b0 = p.win.getBounds();
+  const f0 = feetOf(b0);
+  const first = surfaceBelow(f0.x, f0.y, b0);
+  if (f0.y >= first.y - 2) { land(p, first); return saveWindowPosition(p); }
+  p.platform = null;
   p.win.webContents.send('falling');
   let vy = 0;
   p.fallTimer = setInterval(() => {
     if (!alive(p) || p.dragTimer) return clearInterval(p.fallTimer);
     const b = p.win.getBounds();
-    const floor = floorOf(b);
+    const f = feetOf(b);
+    const surface = surfaceBelow(f.x, f.y, b);
     vy = Math.min(vy + 1.4, 28);
-    const y = Math.min(floor, b.y + vy);
-    placeWindow(p, b.x, y);
-    if (y >= floor) {
+    if (f.y + vy >= surface.y) {
       clearInterval(p.fallTimer);
       p.fallTimer = null;
+      land(p, surface);
       p.win.webContents.send('landed');
       saveWindowPosition(p);
+    } else {
+      placeWindow(p, b.x, b.y + vy);
     }
   }, 16);
 }
+
+// Un animal posé sur une fenêtre la suit si elle bouge, et tombe si elle disparaît ou s'il n'y a plus de bord sous lui
+function checkSupports() {
+  for (const p of pets.values()) {
+    if (!alive(p) || !p.platform || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) continue;
+    const rect = windowRects.get(p.platform);
+    const b = p.win.getBounds();
+    if (rect && p.platformX !== null && rect.x1 !== p.platformX) {
+      placeWindow(p, b.x + (rect.x1 - p.platformX), b.y); // la fenêtre a bougé : il voyage avec elle
+      p.platformX = rect.x1;
+    }
+    const nb = p.win.getBounds();
+    const f = feetOf(nb);
+    const pl = platforms.find((x) => x.h === p.platform && f.x >= x.x1 && f.x <= x.x2);
+    if (!pl) { fallToFloor(p); continue; }
+    if (Math.abs(pl.y - f.y) > 1) placeWindow(p, nb.x, pl.y - FEET);
+  }
+}
+
+// Saut sur une fenêtre un peu au-dessus de lui (déclenché de temps en temps par l'animal)
+ipcMain.handle('climb', (e) => {
+  const p = petOf(e.sender);
+  if (!p || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) return false;
+  const b = p.win.getBounds();
+  const f = feetOf(b);
+  const target = platforms
+    .filter((pl) => f.x >= pl.x1 + 20 && f.x <= pl.x2 - 20 && pl.y < f.y - 60 && pl.y > f.y - 280)
+    .sort((a, c) => c.y - a.y)[0];
+  if (!target) return false;
+  // Petit bond : montée qui ralentit, juste au-dessus du bord, puis il se pose
+  const goal = target.y - FEET - 20;
+  let vy = -Math.sqrt(2 * 1.4 * (b.y - goal));
+  p.climbTimer = setInterval(() => {
+    if (!alive(p) || p.dragTimer) { clearInterval(p.climbTimer); p.climbTimer = null; return; }
+    const cb = p.win.getBounds();
+    vy += 1.4;
+    if (vy >= 0) {
+      clearInterval(p.climbTimer);
+      p.climbTimer = null;
+      fallToFloor(p); // il retombe sur le bord de la fenêtre
+      return;
+    }
+    placeWindow(p, cb.x, cb.y + vy);
+  }, 16);
+  return true;
+});
 
 ipcMain.handle('expand', (e, extra) => {
   const p = petOf(e.sender);
@@ -370,6 +506,14 @@ ipcMain.handle('move-by', (e, dx, dy) => {
   const ahead = feetX + Math.sign(dx) * 55;
   const room = screen.getAllDisplays().some(({ workArea: wa }) => ahead >= wa.x && ahead < wa.x + wa.width);
   if (!target || !room) return { blockedLeft: dx < 0, blockedRight: dx > 0 };
+
+  if (p.platform) {
+    // Sur une fenêtre : il avance à la même hauteur ; au-delà du bord, il tombe
+    placeWindow(p, b.x + dx, b.y);
+    const pl = platforms.find((x) => x.h === p.platform && feetX >= x.x1 && feetX <= x.x2);
+    if (!pl) fallToFloor(p);
+    return { blockedLeft: false, blockedRight: false };
+  }
 
   // S'il marchait en bas de l'écran, il reste posé en bas du nouvel écran (même si les hauteurs diffèrent)
   const current = screen.getDisplayMatching(b).workArea;
@@ -1124,6 +1268,7 @@ app.whenReady().then(() => {
   setInterval(watchUser, 5000);
   setInterval(yarnTick, 33);
   setInterval(sendFurnitureToPets, 500);
+  startWindowWatcher();
   const furn = readJson('furniture.json');
   if (furn && furn.on) spawnFurniture(furn);
   const settings = readJson('settings.json') || {};
@@ -1140,3 +1285,4 @@ app.whenReady().then(() => {
 
 app.on('before-quit', () => { for (const p of pets.values()) saveWindowPosition(p); });
 app.on('window-all-closed', () => app.quit());
+app.on('will-quit', () => { if (watcher) watcher.kill(); });

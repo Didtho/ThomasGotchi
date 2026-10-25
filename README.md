@@ -40,7 +40,7 @@ Ses besoins se lisent sur son visage : langue pendante quand il a soif, bave qua
 est malade, taches et odeurs quand il est sale.
 
 Sans soins, il tient environ 2 à 3 jours. Le temps continue de passer quand l'application est fermée.
-Il se promène (et passe d'un écran à l'autre), court, saute, fait des roulades, suit la souris des yeux,
+Il se promène (et passe d'un écran à l'autre), grimpe sur les fenêtres (Windows) et tombe au bord ou quand on les ferme, court, saute, fait des roulades, suit la souris des yeux,
 s'endort le soir avec son bonnet de nuit et se réveille le matin. Si on le secoue, la tête lui tourne !
 
 Il grandit : œuf → bébé (1er jour) → enfant (jours 2-3) → adulte. Bien soigné, l'adulte gagne une barrette étoile.

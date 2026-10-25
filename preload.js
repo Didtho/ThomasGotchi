@@ -45,5 +45,6 @@ contextBridge.exposeInMainWorld('desk', {
   setDecor: (kind) => ipcRenderer.send('decor', kind),
   onFalling: (cb) => ipcRenderer.on('falling', () => cb()),
   onLanded: (cb) => ipcRenderer.on('landed', () => cb()),
+  climb: () => ipcRenderer.invoke('climb'),
   onMeet: (cb) => ipcRenderer.on('meet', (_e, info) => cb(info)),
 });

@@ -27,8 +27,8 @@ return [
     'Faim, soif, sommeil, propreté, câlins… Ses besoins se lisent sur son visage. Sans soins, il tombe malade.' =>
         'Hunger, thirst, sleep, cleanliness, cuddles… You can read its needs on its face. Without care, it gets sick.',
     'Il vit sa vie' => 'It lives its life',
-    'Il se promène, court, fait des roulades et passe d\'un écran à l\'autre. Il fait même ses besoins sur le bureau !' =>
-        'It strolls, runs, rolls around and moves from one screen to another. It even does its business on the desktop!',
+    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres (Windows) : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.' =>
+        'It strolls around, moves from one screen to another and climbs onto your windows (Windows): close them and it falls! It even does its business on the desktop.',
     'Jeux et tours' => 'Games and tricks',
     'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.' =>
         'Catch the treats, the cup game, a yarn ball… and tricks it learns little by little.',

@@ -27,8 +27,8 @@ return [
     'Faim, soif, sommeil, propreté, câlins… Ses besoins se lisent sur son visage. Sans soins, il tombe malade.' =>
         'Hambre, sed, sueño, limpieza, mimos… Sus necesidades se ven en su cara. Sin cuidados, se pone enfermo.',
     'Il vit sa vie' => 'Vive su vida',
-    'Il se promène, court, fait des roulades et passe d\'un écran à l\'autre. Il fait même ses besoins sur le bureau !' =>
-        'Pasea, corre, da volteretas y pasa de una pantalla a otra. ¡Incluso hace sus necesidades en el escritorio!',
+    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres (Windows) : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.' =>
+        'Pasea, pasa de una pantalla a otra y se sube a tus ventanas (Windows): ¡si las cierras, se cae! Incluso hace sus necesidades en el escritorio.',
     'Jeux et tours' => 'Juegos y trucos',
     'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.' =>
         'Atrapa las golosinas, el juego de los vasos, el ovillo de lana… y trucos que aprende poco a poco.',

@@ -325,6 +325,7 @@
     'Ouf !': '¡Uf!',
     'Atterrissage réussi !': '¡Aterrizaje perfecto!',
     'Boing !': '¡Boing!',
+    'Hop, là-haut !': '¡Hop, ahí arriba!',
     'ThomasGotchi': 'ThomasGotchi',
     'English': 'English', 'Español': 'Español', 'Français': 'Français', 'Italiano': 'Italiano',
   };

@@ -15,7 +15,7 @@ $animals = array_column($app['species'], 'name', 'id');
 $features = [
     ['🍽️', 'Il mange tes fichiers', 'Glisse une image, un PDF ou une vidéo sur lui : il se régale. Rassure-toi, tes fichiers ne sont jamais effacés.'],
     ['💖', 'Prends soin de lui', 'Faim, soif, sommeil, propreté, câlins… Ses besoins se lisent sur son visage. Sans soins, il tombe malade.'],
-    ['🐾', 'Il vit sa vie', 'Il se promène, court, fait des roulades et passe d\'un écran à l\'autre. Il fait même ses besoins sur le bureau !'],
+    ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres (Windows) : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.'],
     ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.'],
     ['🎃', 'Fêtes et météo', 'Halloween, Noël, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.'],
     ['💞', 'Plusieurs compagnons', 'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.'],

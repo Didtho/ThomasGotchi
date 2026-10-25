@@ -63,5 +63,10 @@ scratchpad) qui charge `src/index.html` avec un `preload` factice (objet `desk` 
 `show: true` si besoin. Pour tester en vrai sans toucher aux animaux de l'utilisateur, lancer
 `electron . --user-data-dir=<dossier de test>` avec des fichiers `pet.json` préparés.
 
+**Ne jamais toucher aux fenêtres ni aux programmes de l'utilisateur pendant un test** (ni les déplacer, ni les
+fermer, ni les capturer à l'écran) : le Bloc-notes de Windows 11 regroupe tous ses onglets dans un seul processus,
+et un test a déjà fermé de force les notes de l'utilisateur. Pour tester la marche sur les fenêtres, créer sa
+propre fenêtre (par exemple une `BrowserWindow` d'un script Electron jetable), et ne capturer que la zone de test.
+
 Éviter de faire passer du code JavaScript contenant des apostrophes échappées par un heredoc du terminal
 (les `\'` sont perdus) : écrire plutôt le script dans un fichier avec l'outil d'écriture.
