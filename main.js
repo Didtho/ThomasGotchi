@@ -296,14 +296,15 @@ ipcMain.handle('drag-end', (e) => {
 });
 
 // ---- Gravité et fenêtres ----
-// Sous Windows, un petit programme (src/windows-watcher.ps1) donne la position des fenêtres ouvertes :
-// les animaux peuvent marcher sur leur bord supérieur, tombent au bord ou quand la fenêtre disparaît,
-// et suivent la fenêtre si on la déplace. Sans ces informations (Mac), seul le bas de l'écran compte.
+// Un petit programme (src/windows-watcher.ps1 sous Windows, src/mac-watcher.js sur Mac) donne la position des
+// fenêtres ouvertes : les animaux peuvent marcher sur leur bord supérieur, tombent au bord ou quand la fenêtre
+// disparaît, et suivent la fenêtre si on la déplace. Sans ces informations, seul le bas de l'écran compte.
 
 const FEET = 290; // distance entre le haut de la fenêtre d'un animal et la ligne où posent ses pattes
 let platforms = []; // bords visibles : { h, x1, x2, y } en coordonnées d'écran (DIP)
 let windowRects = new Map(); // id de fenêtre -> { x1, y1, x2, y2 }
 let watcher = null;
+let appQuitting = false;
 
 // Morceaux d'un segment [a, b] qui ne sont pas recouverts par [c, d]
 function subtractSpan(spans, c, d) {
@@ -337,14 +338,22 @@ function updatePlatforms(raw) {
 }
 
 function startWindowWatcher() {
-  if (process.platform !== 'win32') return;
+  if (process.platform !== 'win32' && !isMac) return;
   try {
-    const script = fs.readFileSync(path.join(__dirname, 'src', 'windows-watcher.ps1'), 'utf8');
-    const encoded = Buffer.from(script, 'utf16le').toString('base64');
-    watcher = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded], {
-      env: { ...process.env, TG_PID: String(process.pid) },
-      windowsHide: true,
-    });
+    const env = { ...process.env, TG_PID: String(process.pid) };
+    if (isMac) {
+      // Le script est lu ici et passé en texte : osascript ne sait pas lire dans l'archive de l'application
+      const script = fs.readFileSync(path.join(__dirname, 'src', 'mac-watcher.js'), 'utf8');
+      watcher = spawn('/usr/bin/osascript', ['-l', 'JavaScript', '-e', script], { env });
+    } else {
+      const script = fs.readFileSync(path.join(__dirname, 'src', 'windows-watcher.ps1'), 'utf8');
+      const encoded = Buffer.from(script, 'utf16le').toString('base64');
+      watcher = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded], {
+        env,
+        windowsHide: true,
+      });
+    }
+    const startedAt = Date.now();
     let buffer = '';
     watcher.stdout.on('data', (chunk) => {
       buffer += chunk.toString();
@@ -353,7 +362,13 @@ function startWindowWatcher() {
       const last = lines.filter((l) => l.startsWith('[')).pop();
       if (last) { try { updatePlatforms(JSON.parse(last)); } catch { /* ligne incomplète */ } }
     });
-    watcher.on('exit', () => { watcher = null; platforms = []; });
+    watcher.on('exit', () => {
+      watcher = null;
+      // Sur Mac, le script s'arrête de lui-même toutes les 3 minutes : on le relance en gardant les fenêtres connues.
+      // S'il s'arrête tout de suite, c'est qu'il ne marche pas sur ce Mac : seul le bas de l'écran comptera.
+      if (isMac && !appQuitting && Date.now() - startedAt > 20000) return startWindowWatcher();
+      platforms = [];
+    });
   } catch { watcher = null; }
 }
 
@@ -1344,4 +1359,4 @@ app.whenReady().then(() => {
 
 app.on('before-quit', () => { for (const p of pets.values()) saveWindowPosition(p); });
 app.on('window-all-closed', () => app.quit());
-app.on('will-quit', () => { if (watcher) watcher.kill(); });
+app.on('will-quit', () => { appQuitting = true; if (watcher) watcher.kill(); });
