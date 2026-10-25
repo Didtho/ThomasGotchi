@@ -209,6 +209,12 @@ html, body {
 .friend { display: flex; align-items: center; gap: 4px; padding: 3px 0; border-bottom: 1px dashed rgba(59,42,58,.2); }
 .friend span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .friend em { font-size: 11px; opacity: .7; }
+.friend { flex-wrap: wrap; }
+.friend .who { display: flex; flex-direction: column; line-height: 1.2; flex: 1 1 80px; min-width: 80px; }
+.fr-btns { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.friend .who b, .friend .who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.friend .who b { font-weight: 600; }
+.friend .who small { font-size: 10.5px; opacity: .7; padding-left: 2px; }
 .friend button { flex: none; padding: 2px 4px; }
 .card-choices { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0 6px; }
 .card-choices button { font: inherit; font-size: 11px; padding: 2px 7px; background: #fff; border: 1.5px solid #ff9fc6; border-radius: 10px; cursor: pointer; }

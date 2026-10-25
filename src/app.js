@@ -1288,19 +1288,32 @@ function renderFriends(data) {
   for (const f of data.friends || []) {
     const row = document.createElement('div');
     row.className = 'friend';
+    // Prénom de l'ami, et en dessous son animal (icône de l'espèce + prénom)
     const who = document.createElement('span');
-    const pet = f.pet && f.pet.name ? ` (${f.pet.name})` : '';
-    who.textContent = (f.status === 'ok' ? (f.online ? '🟢 ' : '⚪ ') : '✉️ ') + (f.owner || f.code) + pet;
+    who.className = 'who';
+    const name = document.createElement('b');
+    name.textContent = (f.status === 'ok' ? (f.online ? '🟢 ' : '⚪ ') : '✉️ ') + (f.owner || f.code);
+    who.appendChild(name);
+    if (f.pet && f.pet.name) {
+      const pet = document.createElement('small');
+      pet.textContent = (SPECIES_EMOJI[f.pet.species] || '🐾') + ' ' + f.pet.name;
+      who.appendChild(pet);
+    }
+    who.title = f.pet && f.pet.name ? t('{owner} et son animal {pet}', { owner: f.owner || f.code, pet: f.pet.name }) : (f.owner || f.code);
     row.appendChild(who);
+    // Les boutons restent groupés : s'ils ne tiennent pas à côté du prénom, ils passent ensemble à la ligne
+    const btns = document.createElement('div');
+    btns.className = 'fr-btns';
+    row.appendChild(btns);
     const button = (label, title, onClick) => {
       const b = document.createElement('button');
       b.textContent = label;
       if (title) b.title = t(title);
       b.addEventListener('click', onClick);
-      row.appendChild(b);
+      btns.appendChild(b);
     };
     if (f.status === 'received') button(t('Accepter'), null, async () => renderFriends(await desk.online.accept(f.code)));
-    else if (f.status === 'sent') { const s = document.createElement('em'); s.textContent = t('en attente'); row.appendChild(s); }
+    else if (f.status === 'sent') { const s = document.createElement('em'); s.textContent = t('en attente'); btns.appendChild(s); }
     else {
       if (f.online) button('🚪', 'Envoyer en visite', () => sendVisit(f));
       if (f.online) button('🐾', 'Promenade à deux (son animal le raccompagnera)', () => sendVisit(f, true));

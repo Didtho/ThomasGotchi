@@ -582,6 +582,7 @@
     "On part en promenade chez {owner} ! 🐾": "Si va a passeggio da {owner}! 🐾",
     "On s'est promenés ensemble ! Coucou, c'est {name} de {owner} 🐾": "Abbiamo passeggiato insieme! Ciao, sono {name} di {owner} 🐾",
     "Promenade à deux (son animal le raccompagnera)": "Passeggiata in due (il suo animale riaccompagnerà il tuo)",
+    "{owner} et son animal {pet}": "{owner} e il suo animale {pet}",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).it = L;
