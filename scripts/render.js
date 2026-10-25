@@ -39,8 +39,44 @@ window.renderAll = () => {
   out['scene-fete'] = renderPng(view('dragon', 'vert', { decor: 'fireworks', accessory: 'fete', eyes: 'joy', mouth: 'open', t: 7.3 }));
   out['scene-retro'] = renderPng(view('chien', 'marron', { style: 'pixel', t: 2 }));
   out['scene-soif'] = renderPng(view('hamster', 'caramel', { mood: 'sad', eyes: 'sad', mouth: 'tongue', need: 'thirst', t: 3 }));
+  out['partage'] = renderShare();
   return out;
 };
+
+// Image d'aperçu quand on partage le site (réseaux sociaux, messageries, moteurs de recherche) : 1200 x 630
+function renderShare() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = 630;
+  const ctx = canvas.getContext('2d');
+  const bg = ctx.createLinearGradient(0, 0, 0, 630);
+  bg.addColorStop(0, '#fff0f6');
+  bg.addColorStop(1, '#ffd9e8');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1200, 630);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#3b2a3a';
+  ctx.font = 'bold 104px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+  ctx.fillText('ThomasGotchi', 600, 150);
+  ctx.font = '600 40px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+  ctx.fillStyle = '#c2447a';
+  ctx.fillText('Windows · Mac', 600, 215);
+  // Une rangée d'animaux, posés sur la même ligne
+  const pets = [['chat', 'simba'], ['renard', 'orange'], ['panda', 'blanc'], ['licorne', 'blanc'], ['dragon', 'vert']];
+  // Chaque animal est dessiné à part (le moteur efface sa zone), puis collé
+  const scale = 2.1;
+  const wide = { x: PET.x - 20, y: PET.y - 30, w: PET.w + 40, h: PET.h + 30 }; // marge pour queues et oreilles
+  pets.forEach(([sp, color], i) => {
+    const img = document.createElement('canvas');
+    img.width = wide.w * scale;
+    img.height = wide.h * scale;
+    const c = img.getContext('2d');
+    c.setTransform(scale, 0, 0, scale, -wide.x * scale, -wide.y * scale);
+    Draw.render(c, view(sp, color, { t: 1 + i * 0.7, eyes: i % 2 ? 'joy' : 'open' }));
+    ctx.drawImage(img, 120 + i * 240 - img.width / 2, 630 - 15 - img.height);
+  });
+  return canvas.toDataURL('image/png');
+}
 
 // Données reprises par le site : liste des animaux, nombre de pelages et d'accessoires
 window.appData = () => ({

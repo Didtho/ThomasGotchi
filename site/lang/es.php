@@ -1,9 +1,9 @@
 <?php
 // Site en espagnol : texte français -> traduction
 return [
-    'ThomasGotchi — un petit compagnon sur ton bureau' => 'ThomasGotchi — un pequeño compañero en tu escritorio',
-    'ThomasGotchi : un petit animal façon Tamagotchi qui vit sur le bureau de ton ordinateur (Windows et Mac). Gratuit et sans publicité.' =>
-        'ThomasGotchi: una pequeña mascota al estilo Tamagotchi que vive en el escritorio de tu ordenador (Windows y Mac). Gratis y sin publicidad.',
+    'ThomasGotchi — un Tamagotchi gratuit sur ton bureau (Windows et Mac)' => 'ThomasGotchi — un Tamagotchi gratis en tu escritorio (Windows y Mac)',
+    'ThomasGotchi : un animal virtuel façon Tamagotchi qui vit sur le bureau de ton ordinateur (Windows et Mac). {n} animaux à adopter, nourrir et faire jouer. Gratuit et sans publicité.' =>
+        'ThomasGotchi: una mascota virtual al estilo Tamagotchi que vive en el escritorio de tu ordenador (Windows y Mac). {n} animales para adoptar, alimentar y jugar. Gratis y sin publicidad.',
     'Fonctions' => 'Funciones',
     'Animaux' => 'Mascotas',
     'Installer' => 'Instalar',

@@ -50,18 +50,66 @@ $faq = [
 $asset = fn(string $file): string => $root . $file . '?v=' . (@filemtime(__DIR__ . '/' . $file) ?: '0');
 
 $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root . $code . '/');
+
+// Référencement : adresses complètes du site en ligne, description et fiche lue par les moteurs de recherche
+const TG_SITE_URL = 'https://thomasgotchi.mirimix.fr/';
+$absUrl = fn(string $code): string => TG_SITE_URL . ($code === 'fr' ? '' : $code . '/');
+$title = tt('ThomasGotchi — un Tamagotchi gratuit sur ton bureau (Windows et Mac)');
+$description = tt('ThomasGotchi : un animal virtuel façon Tamagotchi qui vit sur le bureau de ton ordinateur (Windows et Mac). {n} animaux à adopter, nourrir et faire jouer. Gratuit et sans publicité.', ['n' => count($animals)]);
+$locales = ['fr' => 'fr_FR', 'en' => 'en_US', 'es' => 'es_ES', 'it' => 'it_IT'];
+$jsonLd = [
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'SoftwareApplication',
+        'name' => 'ThomasGotchi',
+        'description' => $description,
+        'url' => $absUrl(TG_CURRENT),
+        'image' => TG_SITE_URL . 'img/partage.png',
+        'applicationCategory' => 'GameApplication',
+        'operatingSystem' => 'Windows, macOS',
+        'inLanguage' => array_keys(TG_LANGS),
+        'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'EUR'],
+        'downloadUrl' => TG_RELEASES,
+        'creator' => ['@type' => 'Organization', 'name' => 'DidTech', 'url' => 'https://www.didtech.fr/'],
+    ] + ($release['version'] ? ['softwareVersion' => $release['version']] : []),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => array_map(fn($q) => [
+            '@type' => 'Question',
+            'name' => tt($q[0]),
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => tt($q[1])],
+        ], $faq),
+    ],
+];
 ?>
 <!doctype html>
 <html lang="<?= TG_CURRENT ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= $h(tt('ThomasGotchi — un petit compagnon sur ton bureau')) ?></title>
-  <meta name="description" content="<?= $h(tt('ThomasGotchi : un petit animal façon Tamagotchi qui vit sur le bureau de ton ordinateur (Windows et Mac). Gratuit et sans publicité.')) ?>">
+  <title><?= $h($title) ?></title>
+  <meta name="description" content="<?= $h($description) ?>">
+  <link rel="canonical" href="<?= $h($absUrl(TG_CURRENT)) ?>">
   <?php foreach (TG_LANGS as $code => $label): ?>
-    <link rel="alternate" hreflang="<?= $code ?>" href="<?= $h($langUrl($code)) ?>">
+    <link rel="alternate" hreflang="<?= $code ?>" href="<?= $h($absUrl($code)) ?>">
   <?php endforeach; ?>
+  <link rel="alternate" hreflang="x-default" href="<?= TG_SITE_URL ?>">
+  <!-- Aperçu quand le lien est partagé (réseaux sociaux, messageries) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ThomasGotchi">
+  <meta property="og:title" content="<?= $h($title) ?>">
+  <meta property="og:description" content="<?= $h($description) ?>">
+  <meta property="og:url" content="<?= $h($absUrl(TG_CURRENT)) ?>">
+  <meta property="og:image" content="<?= TG_SITE_URL ?>img/partage.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="<?= $locales[TG_CURRENT] ?>">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#ff8fb8">
+  <script type="application/ld+json"><?= json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
   <link rel="icon" href="<?= $asset('img/icon.png') ?>">
+  <link rel="apple-touch-icon" href="<?= $asset('img/icon.png') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">

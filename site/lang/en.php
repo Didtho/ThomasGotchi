@@ -1,9 +1,9 @@
 <?php
 // Site en anglais : texte français -> traduction
 return [
-    'ThomasGotchi — un petit compagnon sur ton bureau' => 'ThomasGotchi — a little companion on your desktop',
-    'ThomasGotchi : un petit animal façon Tamagotchi qui vit sur le bureau de ton ordinateur (Windows et Mac). Gratuit et sans publicité.' =>
-        'ThomasGotchi: a little Tamagotchi-style pet that lives on your computer desktop (Windows and Mac). Free and ad-free.',
+    'ThomasGotchi — un Tamagotchi gratuit sur ton bureau (Windows et Mac)' => 'ThomasGotchi — a free Tamagotchi for your desktop (Windows and Mac)',
+    'ThomasGotchi : un animal virtuel façon Tamagotchi qui vit sur le bureau de ton ordinateur (Windows et Mac). {n} animaux à adopter, nourrir et faire jouer. Gratuit et sans publicité.' =>
+        'ThomasGotchi: a Tamagotchi-style virtual pet that lives on your computer desktop (Windows and Mac). {n} animals to adopt, feed and play with. Free and ad-free.',
     'Fonctions' => 'Features',
     'Animaux' => 'Pets',
     'Installer' => 'Install',
