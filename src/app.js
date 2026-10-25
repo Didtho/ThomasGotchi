@@ -1050,6 +1050,9 @@ desk.onDnd((on) => {
 
 desk.onCursor((pos) => {
   cursor = pos;
+  // Sur Mac, pendant qu'on fait glisser un fichier, la fenêtre ne reçoit aucun mouvement de souris : sans ça,
+  // elle laisserait passer le fichier jusqu'au bureau au lieu de le donner à manger
+  if (!dragging && overPet(pos.x, pos.y)) desk.setIgnore(false);
   // L'animal a pu s'éloigner de la souris sans qu'elle bouge (marche, chute, fenêtre déplacée) : on vérifie ici
   if (!panel.classList.contains('hidden') && !modalIsOpen() && !dragging && !overInteractive(pos.x, pos.y)) {
     desk.setIgnore(true);

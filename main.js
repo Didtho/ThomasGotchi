@@ -120,6 +120,7 @@ function createPetWindow(id) {
     skipTaskbar: true,
     hasShadow: false,
     alwaysOnTop: true,
+    enableLargerThanScreen: true, // Mac : sinon la fenêtre ne peut pas dépasser en haut de l'écran (sous la barre des menus)
     backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -849,12 +850,18 @@ function updateDecor() {
   const win = new BrowserWindow({
     width: DECOR.w, height: DECOR.h, x, y: wa.y + wa.height - DECOR.h,
     transparent: true, frame: false, resizable: false, movable: false, maximizable: false, minimizable: false,
-    fullscreenable: false, skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true,
-    backgroundColor: '#00000000', webPreferences: { contextIsolation: true, nodeIntegration: false },
+    fullscreenable: false, skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true, show: false,
+    backgroundColor: '#00000000', webPreferences: { contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
   });
   win.setAlwaysOnTop(true, 'floating');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  win.setIgnoreMouseEvents(true);
+  win.setIgnoreMouseEvents(true, { forward: true });
+  // Affichée seulement une fois dessinée, fond transparent réaffirmé : sur Mac, elle apparaissait avec un carré blanc
+  win.once('ready-to-show', () => {
+    if (win.isDestroyed()) return;
+    win.setBackgroundColor('#00000000');
+    win.showInactive();
+  });
   win.loadFile(path.join(__dirname, 'src', 'decor.html'), { query: { kind } });
   decor = { win, kind };
   try { writeJson('decor.json', { x }); } catch { /* sans gravité */ }
