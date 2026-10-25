@@ -14,6 +14,59 @@
     document.body.classList.add('fete-' + fete.id);
     const banner = document.querySelector('.fete-banner');
     if (banner) { banner.textContent = t(fete.greeting); banner.hidden = false; }
+    if (fete.id === 'halloween' && !matchMedia('(prefers-reduced-motion: reduce)').matches) startBats();
+  }
+
+  // Halloween : trois chauves-souris (même dessin que dans l'application) traversent l'écran en volant en vague,
+  // sur une couche qui laisse passer les clics
+  function startBats() {
+    const layer = document.createElement('canvas');
+    layer.className = 'bats';
+    layer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(layer);
+    const ctx = layer.getContext('2d');
+    // Chacune a sa hauteur, sa vitesse et son sens ; elle repart d'un bord après avoir traversé
+    const bats = [0, 1, 2].map((i) => ({ y: 0.15 + i * 0.22, speed: 55 + i * 18, dir: i % 2 ? -1 : 1, offset: i * 0.37, size: 1.6 - i * 0.2 }));
+    function bat(x, y, flap, s) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(s, s);
+      ctx.fillStyle = '#2b1d33';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-7, -6 - flap, -14, -flap);
+      ctx.quadraticCurveTo(-8, 1, 0, 3);
+      ctx.quadraticCurveTo(8, 1, 14, -flap);
+      ctx.quadraticCurveTo(7, -6 - flap, 0, 0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(0, 1, 3, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    let lastBat = 0;
+    function fly(now) {
+      requestAnimationFrame(fly);
+      if (now - lastBat < 33) return;
+      lastBat = now;
+      const dpr = window.devicePixelRatio || 1;
+      const W = innerWidth, H = innerHeight;
+      if (layer.width !== Math.round(W * dpr) || layer.height !== Math.round(H * dpr)) {
+        layer.width = Math.round(W * dpr);
+        layer.height = Math.round(H * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      const t = now / 1000;
+      for (const [i, b] of bats.entries()) {
+        const span = W + 200;
+        const k = ((t * b.speed) / span + b.offset) % 1; // position le long de la traversée
+        const x = b.dir > 0 ? -100 + k * span : W + 100 - k * span;
+        const y = H * b.y + Math.sin(t * 1.6 + i * 2) * 28 + Math.sin(t * 4 + i) * 6;
+        bat(x, y, Math.sin(t * 14 + i) * 5, b.size);
+      }
+    }
+    requestAnimationFrame(fly);
   }
 
   // Animaux dessinés en direct : cartes de la liste, et chats du haut de page (qui remplacent leur image)
