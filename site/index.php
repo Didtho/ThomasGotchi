@@ -4,6 +4,8 @@ require __DIR__ . '/inc/i18n.php';
 require __DIR__ . '/inc/db.php';
 
 date_default_timezone_set('Europe/Paris');
+// La page change avec chaque version et le compteur : le navigateur doit la redemander à chaque visite
+header('Cache-Control: no-cache, must-revalidate');
 define('TG_CURRENT', tg_lang());
 $root = TG_CURRENT === 'fr' ? '' : '../'; // chemin vers les images et la feuille de style
 $release = tg_latest_release();
