@@ -43,8 +43,11 @@ function draw(now) {
     return;
   }
 
-  if (kind === 'gift' || kind === 'egg' || kind === 'letter' || kind === 'card') {
-    if (kind === 'gift') drawGift(t); else if (kind === 'letter' || kind === 'card') drawLetter(t, kind === 'card'); else drawEgg(t);
+  if (kind === 'gift' || kind === 'egg' || kind === 'letter' || kind === 'card' || kind === 'advent') {
+    if (kind === 'gift') drawGift(t);
+    else if (kind === 'letter' || kind === 'card') drawLetter(t, kind === 'card');
+    else if (kind === 'advent') drawAdvent(t, Number(edge) || 1);
+    else drawEgg(t);
     setTimeout(() => requestAnimationFrame(draw), 60);
     return;
   }
@@ -191,6 +194,39 @@ function drawLetter(t, card = false) {
   ctx.fillStyle = '#ffd84a';
   ctx.fillRect(41, y - 31, 2, 8);
   ctx.fillRect(38, y - 28, 8, 2);
+  ctx.globalAlpha = 1;
+}
+
+// Boîte du calendrier de l'Avent : verte, ruban rouge, numéro du jour en doré ; elle se dandine doucement
+function drawAdvent(t, day) {
+  const tilt = Math.sin(t * 2.2) * 0.06;
+  ellipse(28, 53, 15, 3, 'rgba(0,0,0,.15)');
+  ctx.save();
+  ctx.translate(28, 50);
+  ctx.rotate(tilt);
+  ctx.fillStyle = '#3f9b5a';
+  ctx.fillRect(-16, -30, 32, 30);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = INK;
+  ctx.strokeRect(-16, -30, 32, 30);
+  // Ruban et nœud
+  ctx.fillStyle = '#e8455d';
+  ctx.fillRect(-16, -21, 32, 5);
+  ellipse(-5, -33, 5, 3.5, '#e8455d', INK, 1.5);
+  ellipse(5, -33, 5, 3.5, '#e8455d', INK, 1.5);
+  // Numéro du jour dans une pastille
+  ellipse(0, -8, 9, 7.5, '#fff7d6', INK, 1.5);
+  ctx.fillStyle = '#c28a10';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(day), 0, -7.5);
+  ctx.restore();
+  // Petite étoile qui scintille
+  ctx.globalAlpha = 0.5 + Math.sin(t * 4) * 0.5;
+  ctx.fillStyle = '#ffd84a';
+  ctx.fillRect(45, 14, 2, 8);
+  ctx.fillRect(42, 17, 8, 2);
   ctx.globalAlpha = 1;
 }
 

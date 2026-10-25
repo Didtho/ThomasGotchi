@@ -80,8 +80,8 @@ let reminderUntil = 0; // un rappel du pense-bête reste affiché : les autres b
 
 function say(text, ms = 3800) {
   if (!text || performance.now() < reminderUntil) return;
-  // « Ne pas déranger » : il ne parle que si on est en train de s'occuper de lui
-  if (dnd && panel.classList.contains('hidden') && !modalIsOpen()) return;
+  // « Ne pas déranger » et mode concentration : il ne parle que si on est en train de s'occuper de lui
+  if ((dnd || focusMode === 'sit') && panel.classList.contains('hidden') && !modalIsOpen()) return;
   bubble.textContent = t(text);
   bubble.classList.remove('hidden');
   bubbleUntil = performance.now() + ms;
@@ -175,6 +175,7 @@ function buildView(now) {
     need,
     dirty: mood !== 'dead' && state.clean < 35,
     care: state.care,
+    shine: Pet.shine(state), // embellissement : jours bien soignés (pelage brillant, collier, étoile)
     style: state.style,
     t,
     anim,
@@ -241,7 +242,7 @@ function frame(now) {
 // ---------- Promenade sur le bureau ----------
 
 function canWander(allowedAnim) {
-  return state && !state.dead && !state.sleeping && !state.paused && !dnd && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
+  return state && !state.dead && !state.sleeping && !state.paused && !dnd && focusMode !== 'sit' && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
     !dragging && panel.classList.contains('hidden') && !modalIsOpen() && visitWalk === null && !visitAway;
 }
 
@@ -267,6 +268,11 @@ desk.onVisit((ev) => {
     addTreat(ev.kind === 'carte' ? 'card' : 'gift', ev.kind === 'carte' ? { from, msg: ev.msg || 0 } : { from });
     play('jump', 800);
     say(ev.kind === 'carte' ? t('Une carte postale de {pet} ({owner}) ! 💌', from) : t('Un cadeau de la part de {pet} ({owner}) ! 🎁', from), 5500);
+  } else if (ev.type === 'advent' && !desk.guest) {
+    // Calendrier de l'Avent : la boîte du jour, posée sur le bureau (le numéro passe par « edge »)
+    addTreat('advent', { edge: String(ev.day), day: ev.day });
+    play('jump', 800);
+    say(t('La case {day} du calendrier de l\'Avent est arrivée ! Clique dessus 🎁', ev), 5000);
   } else if (ev.type === 'hosted' && !desk.guest) {
     state.stats.guests = (state.stats.guests || 0) + 1; // un visiteur est venu (trophée « Maison accueillante »)
     save();
@@ -339,6 +345,35 @@ function wander(now) {
         facing = walking.dir;
       }
     });
+    return;
+  }
+  // Mode concentration : il va s'installer dans son panier (ou reste où il est)
+  if (focusMode === 'go') {
+    if (furn && furn.basket && Math.abs(furn.basket.x - 120) >= 25 && canWander()) goToFurniture('basket', 'focus', now);
+    else focusMode = 'sit';
+    return;
+  }
+  // Pointeur laser : il court vers le point rouge et bondit quand il est dessous
+  // (pendant le laser, il ne fait rien d'autre ; les calmes ne le chassent qu'une fois de temps en temps)
+  if (laserOn && cursor && canWander()) {
+    if (now < nextLaserAt) return;
+    nextLaserAt = now + (Pet.trait(state).calm ? 1500 : 180);
+    const dx = cursor.x - 120;
+    if (Math.abs(dx) > 25) {
+      startWalk(dx > 0 ? 1 : -1, Math.min(20, Math.ceil(Math.abs(dx) / 6)), 6);
+      walking.target = 'laser';
+    } else if (Math.random() < 0.35) {
+      play('jump', 700);
+    }
+    return;
+  }
+  // Musique : de temps en temps, quelques pas de danse (sans bruitage)
+  if (musicOn && canWander() && now > nextDanceAt) {
+    nextDanceAt = now + 12000 + Math.random() * 15000;
+    anim = 'dance';
+    animStart = now;
+    animDur = 2400;
+    if (Math.random() < 0.3) say('🎵', 1500);
     return;
   }
   // Faim ou soif : il va se servir à la gamelle
@@ -459,6 +494,7 @@ function goToFurniture(kind, what, now) {
 
 function arriveFurniture(kind, what) {
   facing = 0;
+  if (kind === 'basket' && what === 'focus') { focusMode = 'sit'; return; } // installé pour le mode concentration
   if (kind === 'basket') return lieDown(what === 'night');
   if (kind === 'plant') {
     // Il renifle la plante ; il remarque quand elle a soif, ou quand elle a fleuri
@@ -606,7 +642,7 @@ function celebrate() {
 // extra : informations gardées avec la surprise (par exemple qui l'envoie)
 async function addTreat(kind, extra = {}) {
   const id = kind + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const pos = await desk.poopAdd(id, Math.random() < 0.5 ? -1 : 1, state.style, kind);
+  const pos = await desk.poopAdd(id, Math.random() < 0.5 ? -1 : 1, state.style, kind, extra.edge); // edge : n° du jour (Avent)
   if (!pos || !state) return;
   state.treatSpots = state.treatSpots || [];
   state.treatSpots.push({ id, kind, ...pos, ...extra });
@@ -635,6 +671,8 @@ function openTreat(spot) {
     play('love', 1600);
     const from = spot.from || { pet: '?', owner: '?' };
     say(t('« {msg} » — {pet}, de chez {owner} 💌', { ...from, msg: t(CARD_MESSAGES[spot.msg] || CARD_MESSAGES[0]) }), 6000);
+  } else if (spot.kind === 'advent') {
+    openAdvent(Number(spot.day || spot.edge) || 1);
   } else if (spot.kind === 'letter') {
     // Lettre de la soirée magique : un chapeau de magicien, puis de gentils messages
     state.fun = Math.min(100, state.fun + 20);
@@ -654,6 +692,51 @@ function openTreat(spot) {
     play(left ? 'jump' : 'love', 1200);
   }
   save();
+}
+
+// ---------- Calendrier de l'Avent (boîte du jour envoyée par main.js) ----------
+// Friandise, blague, neige magique ou jouet selon le jour ; le 24, un vrai cadeau (un accessoire s'il en manque)
+const ADVENT_JOKES = [
+  'Pourquoi les chats n\'aiment pas les ordinateurs ? À cause de la souris ! 🐭',
+  'Que dit un flocon à un autre flocon ? « Tu es unique ! » ❄️',
+  'Pourquoi le père Noël est-il toujours de bonne humeur ? Parce qu\'il connaît tous les enfants sages ! 🎅',
+  'Quel est le dessert préféré des bonshommes de neige ? Les glaces, bien sûr ! ⛄',
+  'Pourquoi les rennes ont-ils un nez rouge ? Ils ont trop fait de luge ! 🦌',
+  'Comment appelle-t-on un sapin qui chante ? Un sapin de Noël… à capella ! 🎄',
+];
+
+function openAdvent(day) {
+  state.fun = Math.min(100, state.fun + 10);
+  if (day >= 24) {
+    const missing = Pet.accessoriesFor(state).filter((a) => !state.unlocked.includes(a.id));
+    const prize = missing[Math.floor(Math.random() * missing.length)];
+    state.fun = 100;
+    play('love', 1800);
+    if (prize) {
+      state.unlocked.push(prize.id);
+      state.accessory = prize.id;
+      say(t('Dernière case : {icon} {name} ! Joyeux Noël ! 🎄', { icon: prize.icon, name: t(prize.name) }), 7000);
+    } else {
+      say('Dernière case : un énorme câlin ! Joyeux Noël ! 🎄💕', 7000);
+    }
+    return;
+  }
+  const kind = day % 4;
+  if (kind === 1) {
+    state.hunger = Math.min(100, state.hunger + 15);
+    play('eat', 1600);
+    say(t('Case {day} : une friandise ! Miam 🍪', { day }), 5000);
+  } else if (kind === 2) {
+    play('jump', 900);
+    say(t('Case {day} : une blague ! {joke}', { day, joke: t(ADVENT_JOKES[Math.floor(day / 4) % ADVENT_JOKES.length]) }), 9000);
+  } else if (kind === 3) {
+    play('dance', 2000);
+    say(t('Case {day} : de la neige magique ! ❄️✨', { day }), 5000);
+  } else {
+    state.fun = Math.min(100, state.fun + 10);
+    play('roll', 900);
+    say(t('Case {day} : un petit jouet ! 🧸', { day }), 5000);
+  }
 }
 
 // ---------- Rythme du jour ----------
@@ -739,11 +822,19 @@ function logic() {
   }
   celebrate();
 
-  // Bilan de la semaine : une minute de plus passée ensemble ; le lundi, le bilan de la semaine passée est prêt
-  if (unlockTick % 60 === 30 && !desk.guest && !state.dead && !state.paused && !Pet.isEgg(state) && Pet.weekTick(state)) {
-    const w = state.lastWeek;
-    if (w.minutes >= 30) say('Le bilan de la semaine est dans mon carnet ! 📒', 6000);
-    save();
+  // Chaque minute passée ensemble : bilan de la semaine (prêt le lundi) et embellissement (jours bien soignés)
+  if (unlockTick % 60 === 30 && !desk.guest && !state.dead && !state.paused && !Pet.isEgg(state)) {
+    if (Pet.weekTick(state)) {
+      if (state.lastWeek.minutes >= 30) say('Le bilan de la semaine est dans mon carnet ! 📒', 6000);
+      save();
+    }
+    const shine = Pet.careTick(state);
+    if (shine) {
+      play('love', 1800);
+      say([null, 'Mon pelage brille ! Merci de si bien t\'occuper de moi ✨', 'Un collier doré ! Un mois que tu prends soin de moi 💛',
+        'Une médaille étoile ! Trois mois de bons soins, tu es formidable 🌟'][shine], 7000);
+      save();
+    }
   }
 
   // Pastille sur l'icône de la barre des tâches quand il a besoin de quelque chose (voir main.js)
@@ -875,7 +966,8 @@ function overPet(x, y) {
 }
 
 document.addEventListener('mousemove', (e) => {
-  if (press && !dragging && Math.hypot(e.screenX - press.x, e.screenY - press.y) > 4) {
+  if (press && !dragging && !bigHug && Math.hypot(e.screenX - press.x, e.screenY - press.y) > 4) {
+    clearTimeout(hugTimer);
     dragging = true;
     walking = null;
     desk.dragStart();
@@ -883,7 +975,7 @@ document.addEventListener('mousemove', (e) => {
   if (dragging) return;
   const over = overInteractive(e.clientX, e.clientY);
   desk.setIgnore(!wantsMouse(e.clientX, e.clientY));
-  if (over) showPanel();
+  if (over && !laserOn) showPanel(); // pendant le laser, pas de panneau : il doit pouvoir bondir sur le point
   else scheduleHide();
 });
 
@@ -896,10 +988,15 @@ document.addEventListener('mouseout', (e) => {
 document.addEventListener('mousedown', (e) => {
   if (e.button !== 0 || e.target.closest('.hit') || !overPet(e.clientX, e.clientY)) return;
   press = { x: e.screenX, y: e.screenY };
+  clearTimeout(hugTimer);
+  hugTimer = setTimeout(startBigHug, 700); // bouton gardé enfoncé sans bouger : un gros câlin
 });
 
 document.addEventListener('mouseup', () => {
-  if (dragging) {
+  clearTimeout(hugTimer);
+  if (bigHug) {
+    endBigHug();
+  } else if (dragging) {
     dragging = false;
     desk.dragEnd();
   } else if (press) {
@@ -909,9 +1006,42 @@ document.addEventListener('mouseup', () => {
 });
 
 window.addEventListener('blur', () => {
+  clearTimeout(hugTimer);
+  if (bigHug) endBigHug();
   if (dragging) { dragging = false; desk.dragEnd(); }
   press = null;
 });
+
+// ---------- Gros câlin : on reste appuyé sur lui ----------
+// Les félins ronronnent ; il fait des cœurs tant qu'on le tient, et ça compte double.
+let hugTimer = null;
+let bigHug = null;
+const PURRS = ['chat', 'lion', 'tigre'];
+
+function startBigHug() {
+  if (!press || dragging || !state || state.dead || state.sleeping || state.paused || Pet.isEgg(state)) return;
+  walking = null;
+  const purr = PURRS.includes(state.species || 'chat');
+  const tick = () => {
+    anim = 'love';
+    animStart = performance.now();
+    animDur = 900;
+    state.fun = Math.min(100, state.fun + 2);
+    if (purr) Sound.play('purr');
+  };
+  tick();
+  bigHug = setInterval(tick, 800);
+  say(purr ? 'Rrrrrr… 💕' : 'Oh oui, un gros câlin ! 🥰', 3000);
+}
+
+function endBigHug() {
+  clearInterval(bigHug);
+  bigHug = null;
+  Pet.pet(state);
+  Pet.pet(state); // un gros câlin compte double
+  play('love', 1400);
+  save();
+}
 
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault();
@@ -1608,6 +1738,45 @@ $('set-export').addEventListener('click', async () => {
 });
 
 desk.onFurniture((f) => { furn = f; });
+
+// Musique (Windows) : il danse en rythme de temps en temps, sans bruitage pour ne pas couvrir la musique
+let musicOn = false;
+let nextDanceAt = 0;
+let nextLaserAt = 0;
+desk.onMusic((on) => { musicOn = on; nextDanceAt = performance.now() + 4000; });
+
+// Pointeur laser : il court après le point rouge (sauf les calmes, qui s'en lassent vite)
+let laserOn = false;
+desk.onLaser((on) => {
+  laserOn = on;
+  if (!state || state.dead || Pet.isEgg(state)) return;
+  if (on && canWander()) say(Pet.trait(state).calm ? 'Un point rouge ? Bof… 😐' : 'Un point rouge ! Je vais l\'attraper ! 🔴', 2500);
+  if (!on && walking && walking.target === 'laser') walking = null;
+});
+
+// Mode concentration : il va s'installer (dans son panier s'il y en a un), puis ne bouge plus et ne parle plus
+let focusMode = null; // null, 'go' (en route vers le panier) ou 'sit' (installé)
+desk.onFocus((f) => {
+  if (!state || state.dead || Pet.isEgg(state)) return;
+  Sound.muted = dnd || f.phase === 'work';
+  if (f.phase === 'work') {
+    walking = null;
+    closeModal();
+    say('Au travail ! Je me fais tout petit… 🤫', 3000);
+    focusMode = 'go';
+  } else {
+    focusMode = null;
+    if (f.phase === 'pause') {
+      state.stats.focus = (state.stats.focus || 0) + 1;
+      play('dance', 2000);
+      say(t('Bravo, {n} minutes de concentration ! Une pause de 5 minutes ? ☕', { n: f.minutes }), 8000);
+      save();
+    } else if (f.phase === 'end') {
+      play('jump', 800);
+      say('Fin de la pause ! On s\'y remet ? 💪', 5000);
+    }
+  }
+});
 desk.onDnd((on) => {
   dnd = on;
   Sound.muted = on;

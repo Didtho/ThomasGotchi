@@ -13,13 +13,22 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   programmes (.exe…) = mal au ventre ! Aussi possible par le menu de l'icône : « Donner un fichier à manger… »
   (et sur Mac, en déposant des fichiers sur l'icône de la barre des menus).
 - 🥤 boire · 🌙 dormir / réveiller · 🎾 jouer · 🛁 laver · 💊 soigner · ⚙️ réglages
-- **Clic** : un câlin. **Glisser** : le déplacer. **Clic droit** : réglages.
+- **Clic** : un câlin. **Rester appuyé** : un gros câlin (les félins ronronnent, ça compte double). **Glisser** : le
+  déplacer. **Clic droit** : réglages.
+- ✨ **Il embellit** quand il est bien soigné jour après jour : pelage brillant après 7 jours, collier doré après 30,
+  médaille étoile après 90 (suivi dans le carnet).
 - **Crottes et pipi** 💩💦 sur le bureau, avec leurs petites mouches : cliquer dessus pour nettoyer, ou le bain pour tout
   nettoyer. Posées sur une fenêtre, elles tombent quand on la ferme.
 - **Petits ennuis** au hasard (environ tous les trois jours) : rhume 🤧 et mal de ventre 🤢 à soigner avec le médicament,
   puces 🐜 à faire partir avec un bain. Malade, il se voit (nez rouge, puces…), refuse de jouer et bouge moins.
 - 🔴 **Pastille sur l'icône** quand un animal a faim, soif, est malade ou sale (le détail s'affiche au survol de l'icône).
-- 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets, jeu des paires.
+- 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets, jeu des paires, et le 🔴 **pointeur
+  laser** (menu de l'icône) : 30 secondes à courir après le point rouge qui suit la souris.
+- 🎯 **Mode concentration** (menu de l'icône) : 25 minutes pendant lesquelles il s'installe dans son panier sans bouger
+  ni parler, puis il félicite et propose 5 minutes de pause.
+- 🎵 **Musique** (Windows) : quand de la musique joue (Spotify, navigateur…), il danse de temps en temps.
+- 🎄 **Calendrier de l'Avent** du 1er au 24 décembre : chaque jour une boîte numérotée sur le bureau (friandise,
+  blague, neige magique, jouet ; le 24, un accessoire).
 - 🎓 **Tours** appris petit à petit (dire bonjour, roulade, danse, toupie, saut périlleux).
 - 📖 **Carnet** : âge, plat préféré, câlins, souvenirs des anciens compagnons, et le **bilan de la semaine** (temps passé
   ensemble, repas, câlins, jeux, visites…) comparé à la semaine d'avant.

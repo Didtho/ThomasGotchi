@@ -286,6 +286,78 @@ function drawThought(ctx, need, x, y, t) {
   }
 }
 
+// Embellissement (v.shine, voir Pet.shine) : petite étoile à quatre branches
+function sparkle(ctx, x, y, s, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = '#fffbe0';
+  ctx.beginPath();
+  ctx.moveTo(x, y - s);
+  ctx.quadraticCurveTo(x, y, x + s, y);
+  ctx.quadraticCurveTo(x, y, x, y + s);
+  ctx.quadraticCurveTo(x, y, x - s, y);
+  ctx.quadraticCurveTo(x, y, x, y - s);
+  ctx.fill();
+  ctx.restore();
+}
+
+// Pelage brillant : trois reflets qui s'allument chacun leur tour, discrètement ; avec l'étoile (shine 3), quelques
+// paillettes dorées en plus autour de lui
+function drawGlints(ctx, cx, g, v) {
+  const { r, headRx, headRy, headCy, bodyCy, bodyRy } = g;
+  const spots = [[cx - r * 0.45, bodyCy - bodyRy * 0.15], [cx + headRx * 0.55, headCy - headRy * 0.35], [cx + r * 0.4, bodyCy + bodyRy * 0.35]];
+  spots.forEach(([x, y], i) => {
+    const k = (v.t * 0.45 + i / 3) % 1;
+    if (k < 0.22) sparkle(ctx, x, y, r * 0.13, Math.sin(k / 0.22 * Math.PI));
+  });
+  if (v.shine >= 3) {
+    for (let i = 0; i < 4; i++) {
+      const a = v.t * 0.6 + i * Math.PI / 2;
+      const k = (v.t * 0.3 + i / 4) % 1;
+      ctx.save();
+      ctx.globalAlpha = 0.55 * Math.sin(k * Math.PI);
+      ctx.fillStyle = '#ffd84a';
+      ctx.fillRect(cx + Math.cos(a) * r * 1.05 - 1.5, headCy + Math.sin(a) * r * 0.9 - 1.5, 3, 3);
+      ctx.restore();
+    }
+  }
+}
+
+// Collier doré avec sa médaille (ronde, puis en étoile au bout de trois mois)
+function drawCollar(ctx, cx, g, v) {
+  const { r, headRx, headRy, headCy } = g;
+  const y = headCy + headRy * 0.93;
+  const w = headRx * 0.62;
+  ctx.beginPath();
+  ctx.moveTo(cx - w, y - r * 0.05);
+  ctx.quadraticCurveTo(cx, y + r * 0.12, cx + w, y - r * 0.05);
+  ctx.lineWidth = r * 0.12;
+  ctx.strokeStyle = INK;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.lineWidth = r * 0.075;
+  ctx.strokeStyle = '#f2c230';
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  const my = y + r * 0.15;
+  if (v.shine >= 3) {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const rr = i % 2 ? r * 0.065 : r * 0.15;
+      const ang = -Math.PI / 2 + i * Math.PI / 5;
+      ctx.lineTo(cx + Math.cos(ang) * rr, my + Math.sin(ang) * rr);
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#ffd84a';
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+  } else {
+    ellipse(ctx, cx, my, r * 0.095, r * 0.095, '#ffd84a', INK, 1.5);
+  }
+}
+
 // Accessoires gagnés en prenant soin de lui
 function drawAccessory(ctx, kind, cx, g, v) {
   const { r, headRx, headRy, headCy, bodyCy, bodyRy } = g;
@@ -789,6 +861,7 @@ function drawCreature(ctx, v) {
   }
   // Les chapeaux laissent la place au bonnet de nuit quand il dort
   const hat = ['couronne', 'sorciere', 'noel', 'fete', 'magicien'].includes(v.accessory);
+  if (v.shine >= 2 && v.mood !== 'dead') drawCollar(ctx, cx, g, v); // bien soigné depuis un mois : collier doré
   if (v.accessory && v.mood !== 'dead' && !(hat && v.nightcap)) drawAccessory(ctx, v.accessory, cx, g, v);
   if (v.magic && v.mood !== 'dead' && v.mood !== 'sleep') {
     // Soirée magique : lunettes rondes (en plus de son accessoire) et baguette
@@ -831,6 +904,9 @@ function drawCreature(ctx, v) {
     ctx.strokeStyle = INK;
     ctx.stroke();
   }
+
+  // Bien soigné depuis une semaine : pelage brillant (petits reflets qui scintillent tour à tour)
+  if (v.shine >= 1 && v.mood !== 'dead') drawGlints(ctx, cx, g, v);
 
   if (v.mood === 'sick') {
     ctx.beginPath();

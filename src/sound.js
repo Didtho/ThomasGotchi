@@ -157,6 +157,7 @@ const Sound = (() => {
       noise(0.9, { at: 1.1, vol: 0.5, freq: 1100, q: 0.8, attack: 0.25 });
     },
     sad() { tone('sine', 520, 300, 0.6, { vol: 0.35 }); },
+    purr() { noise(0.75, { vol: 0.2, freq: 140, q: 2, attack: 0.3 }); }, // ronronnement (gros câlin)
     flip() { tone('triangle', 700, 900, 0.06, { vol: 0.25 }); }, // carte retournée (jeu des paires)
     pee() { noise(1.4, { vol: 0.25, freq: 3500, q: 1.5, attack: 0.2 }); },
     jump() { tone('sine', 300, 900, 0.22, { vol: 0.5 }); },

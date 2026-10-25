@@ -471,6 +471,12 @@ function buildTrayMenu() {
     food,
     photo,
     { label: tr('📝 Pense-bête…'), click: () => sendMenu(list.find((p) => !p.away) || list[0], 'notes') },
+    { label: tr('🔴 Pointeur laser'), type: 'checkbox', checked: !!laser, click: () => (laser ? stopLaser() : startLaser()) },
+    {
+      label: tr(focus && focus.phase === 'work' ? '🎯 Concentration jusqu\'à {time}' : '🎯 Mode concentration ({n} min)',
+        { n: FOCUS_MIN, time: focus && focus.until ? new Date(focus.until).toLocaleTimeString(currentLang(), { hour: '2-digit', minute: '2-digit' }) : '' }),
+      type: 'checkbox', checked: !!(focus && focus.phase === 'work'), click: () => (focus && focus.phase === 'work' ? stopFocus() : startFocus()),
+    },
     { label: tr('Adopter un autre animal'), enabled: list.length < MAX_PETS, click: adoptPet },
     { label: tr(yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶'), click: toggleYarn },
     { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture.bowl, click: () => toggleFurniture('bowl') },
@@ -673,6 +679,14 @@ function updatePlatforms(raw) {
   checkSupports();
 }
 
+let musicOn = false;
+function setMusic(on) {
+  if (on === musicOn) return;
+  musicOn = on;
+  diag(on ? 'musique en cours' : 'musique arrêtée');
+  sendToPets('music', on);
+}
+
 function startWindowWatcher() {
   if (process.platform !== 'win32' && !isMac) return;
   try {
@@ -700,6 +714,9 @@ function startWindowWatcher() {
       buffer += chunk.toString();
       const lines = buffer.split(/\r?\n/);
       buffer = lines.pop();
+      // Windows : « M1 » / « M0 » quand de la musique se met à jouer ou s'arrête (les animaux dansent)
+      const media = lines.filter((l) => l === 'M1' || l === 'M0').pop();
+      if (media) setMusic(media === 'M1');
       const last = lines.filter((l) => l.startsWith('[')).pop();
       if (last) { try { updatePlatforms(JSON.parse(last)); } catch { /* ligne incomplète */ } }
     });
@@ -2049,6 +2066,84 @@ app.on('second-instance', () => {
   keepOnTop();
 });
 
+// ---------- Pointeur laser ----------
+// Pendant 30 s, un point rouge suit la souris (petite fenêtre qui laisse passer les clics) ; les animaux le chassent.
+let laser = null; // { win, timer, end }
+
+function startLaser() {
+  if (laser) return;
+  const win = new BrowserWindow({
+    width: 40, height: 40, transparent: true, frame: false, resizable: false, focusable: false, skipTaskbar: true,
+    hasShadow: false, alwaysOnTop: true, show: false, backgroundColor: '#00000000',
+    webPreferences: { contextIsolation: true, nodeIntegration: false },
+  });
+  win.setIgnoreMouseEvents(true);
+  win.setAlwaysOnTop(true, PET_LEVEL);
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.loadFile(path.join(__dirname, 'src', 'laser.html'));
+  win.once('ready-to-show', () => win.showInactive());
+  const follow = () => {
+    if (win.isDestroyed()) return;
+    const c = screen.getCursorScreenPoint();
+    win.setBounds({ x: c.x - 20, y: c.y - 20, width: 40, height: 40 });
+    win.moveTop();
+  };
+  follow();
+  laser = { win, timer: setInterval(follow, 16), end: setTimeout(stopLaser, 30000) };
+  sendToPets('laser', true);
+  buildTrayMenu();
+}
+
+function stopLaser() {
+  if (!laser) return;
+  clearInterval(laser.timer);
+  clearTimeout(laser.end);
+  if (!laser.win.isDestroyed()) laser.win.destroy();
+  laser = null;
+  sendToPets('laser', false);
+  buildTrayMenu();
+}
+
+// ---------- Calendrier de l'Avent ----------
+// Du 1er au 24 décembre, une boîte numérotée par jour, posée près d'un animal (advent.json : dernier jour donné).
+// TG_ADVENT_DAY : forcer un jour pour les tests.
+function checkAdvent() {
+  const d = new Date();
+  const day = Number(process.env.TG_ADVENT_DAY) || (d.getMonth() === 11 && d.getDate() <= 24 ? d.getDate() : 0);
+  if (!day || allHidden()) return;
+  const key = `${d.getFullYear()}-${day}`;
+  if ((readJson('advent.json') || {}).last === key) return;
+  const p = [...pets.values()].find((x) => alive(x) && !x.away && x.lastState && !x.lastState.dead && !(Date.now() < x.lastState.hatchAt));
+  if (!p) return;
+  try { writeJson('advent.json', { last: key }); } catch { return; }
+  p.win.webContents.send('visit', { type: 'advent', day });
+}
+
+// ---------- Mode concentration ----------
+// 25 min de travail : les animaux vont s'installer sagement (dans leur panier s'il y en a un), sans bouger ni parler.
+// Ensuite ils félicitent et proposent 5 min de pause ; à la fin de la pause, ils le signalent.
+const FOCUS_MIN = Number(process.env.TG_FOCUS_MIN) || 25; // TG_FOCUS_MIN : plus court pour les tests
+let focus = null; // { phase: 'work' | 'pause', until, timer }
+
+function startFocus() {
+  stopFocus(true);
+  const until = Date.now() + FOCUS_MIN * 60000;
+  focus = { phase: 'work', until, timer: setTimeout(() => {
+    focus = { phase: 'pause', timer: setTimeout(() => { focus = null; sendToPets('focus', { phase: 'end' }); buildTrayMenu(); }, (FOCUS_MIN / 5) * 60000) };
+    sendToPets('focus', { phase: 'pause', minutes: FOCUS_MIN });
+    buildTrayMenu();
+  }, FOCUS_MIN * 60000) };
+  sendToPets('focus', { phase: 'work', until });
+  buildTrayMenu();
+}
+
+function stopFocus(silent) {
+  if (!focus) return;
+  clearTimeout(focus.timer);
+  focus = null;
+  if (!silent) { sendToPets('focus', { phase: 'stop' }); buildTrayMenu(); }
+}
+
 // ---------- Pense-bête ----------
 // Rappels notés par l'utilisateur (reminders.json), communs à tous les animaux : { id, text, at (ms), daily }.
 // À l'heure dite, un animal vient le dire dans une bulle ; s'ils sont tous cachés ou partis, une notification.
@@ -2142,6 +2237,8 @@ app.whenReady().then(() => {
   reminders = Array.isArray(readJson('reminders.json')) ? readJson('reminders.json') : [];
   setTimeout(checkReminders, 8000); // laisse aux animaux le temps de se réveiller
   setInterval(checkReminders, 15000);
+  setTimeout(checkAdvent, 20000);
+  setInterval(checkAdvent, 60000);
   setTimeout(syncOnline, 5000);
   setInterval(syncOnline, Number(process.env.TG_SYNC) || 30000); // TG_SYNC : plus court pour les tests
 });

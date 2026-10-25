@@ -361,6 +361,12 @@ function openJournal() {
   const next = Pet.accessoriesFor(s).find((a) => !s.unlocked.includes(a.id));
   if (next) addRow('Prochain cadeau', next.icon + ' ' + t(next.hint));
 
+  // Embellissement : jours bien soignés, et la prochaine récompense
+  const good = s.goodDays || 0;
+  const goal = Pet.SHINE_DAYS.find((d) => good < d);
+  const reward = { 7: '✨ pelage brillant', 30: '💛 collier doré', 90: '🌟 médaille étoile' }[goal];
+  addRow('Jours bien soignés', goal ? t('{n} ({reward} à {goal})', { n: good, reward: t(reward), goal }) : `${good} 🌟`);
+
   const addSub = (text) => {
     const sub = document.createElement('div');
     sub.className = 'journal-sub';

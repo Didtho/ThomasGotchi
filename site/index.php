@@ -20,14 +20,14 @@ $traits = $app['traits'][TG_CURRENT] ?? $app['traits']['fr'] ?? []; // caractèr
 
 $features = [
     ['🍽️', 'Il mange tes fichiers', 'Glisse une image, un PDF ou une vidéo sur lui : il se régale. Rassure-toi, tes fichiers ne sont jamais effacés.'],
-    ['💖', 'Prends soin de lui', 'Faim, soif, sommeil, propreté, câlins… Ses besoins se lisent sur son visage. Sans soins, il tombe malade.'],
-    ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.'],
-    ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, jeu des paires, pelote de laine… des tours qu\'il apprend petit à petit, et des trophées à gagner.'],
-    ['🎃', 'Fêtes et météo', 'Halloween, Noël et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.'],
+    ['💖', 'Prends soin de lui', 'Faim, soif, sommeil, propreté, câlins (reste appuyé sur lui : il ronronne)… Bien soigné, il embellit : pelage brillant, collier doré. Sans soins, il tombe malade.'],
+    ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.'],
+    ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, jeu des paires, pelote de laine, pointeur laser… des tours qu\'il apprend petit à petit, et des trophées à gagner.'],
+    ['🎃', 'Fêtes et météo', 'Halloween, Noël avec son calendrier de l\'Avent et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.'],
     ['💞', 'Plusieurs compagnons', 'Jusqu\'à 5 animaux qui deviennent amis et jouent ensemble… et qui peuvent même rendre visite aux animaux de tes proches, sur leur ordinateur, ou partir en promenade avec eux !'],
     ['🗣️', 'Il te parle', 'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.'],
     ['🧺', 'Son petit coin', 'Un panier où il fait la sieste et dort la nuit, une gamelle où il se sert tout seul, et une plante à arroser qui fleurit si tu t\'en occupes.'],
-    ['📝', 'Pense-bête', 'Note « appeler maman à 18 h » : à l\'heure dite, il vient te le rappeler. Et chaque semaine, son carnet fait le bilan de vos moments ensemble.'],
+    ['📝', 'Pense-bête', 'Note « appeler maman à 18 h » : à l\'heure dite, il vient te le rappeler. Mode concentration : 25 minutes de calme, puis il te propose une pause. Et chaque semaine, son carnet fait le bilan de vos moments ensemble.'],
     ['🎁', 'Gratuit, sans pub', 'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).'],
 ];
 

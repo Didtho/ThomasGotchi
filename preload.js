@@ -71,6 +71,9 @@ contextBridge.exposeInMainWorld('desk', {
   bowlUse: (what) => ipcRenderer.invoke('bowl-use', what),
   exportPet: (state) => ipcRenderer.invoke('export-pet', state),
   onDnd: (cb) => ipcRenderer.on('dnd', (_e, on) => cb(on)),
+  onMusic: (cb) => ipcRenderer.on('music', (_e, on) => cb(on)), // Windows : de la musique joue (il danse)
+  onLaser: (cb) => ipcRenderer.on('laser', (_e, on) => cb(on)), // pointeur laser à chasser
+  onFocus: (cb) => ipcRenderer.on('focus', (_e, f) => cb(f)), // mode concentration : { phase: 'work' | 'pause' | 'end' | 'stop' }
   onFriends: (cb) => ipcRenderer.on('friends', (_e, list) => cb(list)),
   onUserEvent: (cb) => ipcRenderer.on('user-event', (_e, ev) => cb(ev)),
   speak: (text) => ipcRenderer.send('speak', text),
