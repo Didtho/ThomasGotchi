@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld('desk', {
     open: (on) => ipcRenderer.invoke('online-open', on),
     visit: (code) => ipcRenderer.invoke('online-visit', code),
   },
+  guestAte: (amount) => ipcRenderer.send('guest-ate', amount), // invité : ce qu'il vient de manger chez l'hôte
   onOnline: (cb) => ipcRenderer.on('online', (_e, data) => cb(data)),
   onVisit: (cb) => ipcRenderer.on('visit', (_e, ev) => cb(ev)),
   onHiddenTop: (cb) => ipcRenderer.on('hidden-top', (_e, px) => cb(px)),

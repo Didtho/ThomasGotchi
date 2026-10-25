@@ -477,6 +477,8 @@
     'Retirer {name} de tes amis ?': '¿Quitar a {name} de tus amigos?',
     'Ton code ami': 'Tu código de amigo',
     'Vous êtes amis ! 🎉': '¡Sois amigos! 🎉',
+    'Me revoilà ! J\'ai bien mangé chez {owner} 😋': '¡Ya estoy aquí! He comido muy bien en casa de {owner} 😋',
+    'Me revoilà ! J\'ai joué avec {played} et bien mangé chez {owner} 😋': '¡Ya estoy aquí! He jugado con {played} y he comido muy bien en casa de {owner} 😋',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;

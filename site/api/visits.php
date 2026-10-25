@@ -52,6 +52,9 @@ $db->exec('CREATE TABLE IF NOT EXISTS tg_visits (
     KEY (guest, state)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
 
+// Ajouté après coup : ce que le visiteur a mangé chez l'ami (il en profite à son retour)
+$db->exec('ALTER TABLE tg_visits ADD COLUMN IF NOT EXISTS ate SMALLINT NOT NULL DEFAULT 0');
+
 const ONLINE = 90; // secondes : au-delà, l'application de l'ami est considérée comme fermée
 
 // Textes et apparence de l'animal : seulement des champs connus, raccourcis
@@ -143,8 +146,8 @@ switch ((string) ($in['action'] ?? '')) {
         })();
         $incoming = array_map(fn($v) => ['id' => (int) $v['id'], 'owner' => $v['owner'], 'pet' => json_decode((string) $v['pet'], true)],
             $visits("SELECT * FROM tg_visits WHERE host = ? AND state = 'going'"));
-        $back = array_map(fn($v) => ['id' => (int) $v['id'], 'played' => $v['played'], 'owner' => $v['hostOwner']],
-            $visits("SELECT v.id, v.played, p.owner AS hostOwner FROM tg_visits v JOIN tg_players p ON p.id = v.host WHERE v.guest = ? AND v.state = 'back'"));
+        $back = array_map(fn($v) => ['id' => (int) $v['id'], 'played' => $v['played'], 'ate' => (int) $v['ate'], 'owner' => $v['hostOwner']],
+            $visits("SELECT v.id, v.played, v.ate, p.owner AS hostOwner FROM tg_visits v JOIN tg_players p ON p.id = v.host WHERE v.guest = ? AND v.state = 'back'"));
         out(['code' => $me['code'], 'friends' => $friends, 'incoming' => $incoming, 'back' => $back]);
 
     // Demande d'amitié par code ; si l'autre l'avait déjà demandée, l'amitié est acceptée
@@ -215,8 +218,8 @@ switch ((string) ($in['action'] ?? '')) {
 
     case 'visit-end':
         $me = me($db, $in);
-        $db->prepare("UPDATE tg_visits SET state = 'back', played = ?, updated = NOW() WHERE id = ? AND host = ? AND state IN ('going', 'here')")
-            ->execute([clean((string) ($in['played'] ?? ''), 40), (int) ($in['id'] ?? 0), $me['id']]);
+        $db->prepare("UPDATE tg_visits SET state = 'back', played = ?, ate = ?, updated = NOW() WHERE id = ? AND host = ? AND state IN ('going', 'here')")
+            ->execute([clean((string) ($in['played'] ?? ''), 40), max(0, min(100, (int) ($in['ate'] ?? 0))), (int) ($in['id'] ?? 0), $me['id']]);
         out(['status' => 'ok']);
 
     // De retour à la maison

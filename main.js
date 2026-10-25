@@ -1588,7 +1588,7 @@ function comeHome(v) {
   p.away = null;
   const wa = screen.getDisplayMatching(p.win.getBounds()).workArea;
   slideIn(p, Math.random() < 0.5 ? -1 : 1, wa, () => {
-    p.win.webContents.send('visit', { type: 'home', owner: v.owner || owner, played: v.played });
+    p.win.webContents.send('visit', { type: 'home', owner: v.owner || owner, played: v.played, ate: v.ate || 0 });
     diag(`[${p.name || p.id}] rentre de chez ${v.owner || owner}`);
   });
   updateTrayAlert();
@@ -1632,10 +1632,16 @@ function guestLeave(g) {
   clearTimeout(g.leaveTimer);
   g.win.webContents.send('visit', { type: 'bye' });
   setTimeout(() => slideOut(g, () => {
-    api({ action: 'visit-end', secret: online.secret, id: g.visit.id, played: [...g.played][0] || '' });
+    api({ action: 'visit-end', secret: online.secret, id: g.visit.id, played: [...g.played][0] || '', ate: Math.round(g.ate || 0) });
     if (alive(g)) g.win.destroy();
   }), 2500);
 }
+
+// Le visiteur a mangé un fichier chez nous : il en profitera en rentrant chez lui
+ipcMain.on('guest-ate', (e, amount) => {
+  const g = [...guests.values()].find((x) => alive(x) && x.win.webContents === e.sender);
+  if (g) g.ate = Math.min(100, (g.ate || 0) + Math.max(0, Number(amount) || 0));
+});
 
 // La page d'un invité apprend qui elle est (sa page est la même que celle d'un animal de la maison)
 ipcMain.on('get-guest', (e) => {

@@ -259,7 +259,13 @@ desk.onVisit((ev) => {
     visitAway = false;
     state.fun = Math.min(100, state.fun + 15);
     play('jump', 800);
-    say(ev.played ? t('Me revoilà ! J\'ai joué avec {played} chez {owner} 🎉', ev) : t('Me revoilà ! C\'était bien chez {owner} 🏠', ev), 6000);
+    if (ev.ate > 0) {
+      // On lui a donné à manger chez l'ami : il est vraiment rassasié
+      state.hunger = Math.min(100, state.hunger + ev.ate);
+      say(ev.played ? t('Me revoilà ! J\'ai joué avec {played} et bien mangé chez {owner} 😋', ev) : t('Me revoilà ! J\'ai bien mangé chez {owner} 😋', ev), 6000);
+    } else {
+      say(ev.played ? t('Me revoilà ! J\'ai joué avec {played} chez {owner} 🎉', ev) : t('Me revoilà ! C\'était bien chez {owner} 🏠', ev), 6000);
+    }
     save();
   } else if (ev.type === 'arrive' && desk.guest) {
     play('jump', 800);
@@ -943,8 +949,10 @@ function eat(meals) {
   meals.slice(0, 5).forEach((meal, i) => {
     setTimeout(() => {
       if (state.paused) return say('Je suis en vacances 🏖️');
+      const before = state.hunger;
       const r = Pet.feed(state, meal);
-      if (r.ok) checkUnlocks();
+      if (r.ok && desk.guest) desk.guestAte(state.hunger - before); // invité : il en profitera en rentrant chez lui
+      if (r.ok && !desk.guest) checkUnlocks();
       if (r.ok && Pet.trait(state).feedFun) state.fun = Math.min(100, state.fun + Pet.trait(state).feedFun); // l'ourson gourmand
       if (r.msg) say(r.msg, 3500);
       if (r.ok) play(r.anim, 1800);
@@ -1513,8 +1521,9 @@ translatePage();
   if (desk.guest) {
     const g = desk.guest, pet = g.pet || {};
     state = Pet.create(pet.name || '?', pet.style || 'cute', pet.color || 'rose', pet.species || 'chat');
+    // Faim à moitié : de quoi accepter un repas de son hôte (ce qu'il mange lui profite à son retour)
     Object.assign(state, { gender: pet.gender || 'm', accessory: pet.accessory || null, hatchAt: Date.now() - 30 * 86400000,
-      hunger: 90, thirst: 90, energy: 90, fun: 90, clean: 90, health: 100 });
+      hunger: 40, thirst: 90, energy: 90, fun: 90, clean: 90, health: 100 });
     applyStyle(state.style);
     requestAnimationFrame(frame);
     return;
