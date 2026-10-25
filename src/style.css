@@ -23,6 +23,8 @@ html, body {
 #scene {
   position: absolute;
   inset: 0;
+  width: 240px; /* taille affichée ; la toile elle-même suit la densité de l'écran (voir fitCanvas) */
+  height: 300px;
 }
 
 .hidden { display: none !important; }

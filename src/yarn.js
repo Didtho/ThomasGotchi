@@ -7,17 +7,23 @@ const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 let yarn = null; // { x, r, angle, trail: [x…] } en coordonnées de la fenêtre
 
+// Toile à la densité de l'écran (zoom Windows, écran Retina) pour un dessin net ; on dessine en coordonnées de la fenêtre
 function resize() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(innerWidth * dpr);
+  canvas.height = Math.round(innerHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
+// Changement d'écran ou de zoom pendant que la fenêtre est ouverte
+const fitCanvas = () => { if (canvas.width !== Math.round(innerWidth * (window.devicePixelRatio || 1))) resize(); };
 addEventListener('resize', resize);
 resize();
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  fitCanvas();
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
   if (!yarn) return;
-  const ground = canvas.height - 8;
+  const ground = innerHeight - 8;
 
   // Fil déroulé, posé au sol, qui ondule et s'emmêle quand la pelote revient sur ses pas
   if (yarn.trail.length > 1) {
@@ -73,7 +79,7 @@ window.yarnApi.onState((s) => {
 // La fenêtre laisse passer les clics partout, sauf sur la pelote
 function overBall(x, y) {
   if (!yarn) return false;
-  const ground = canvas.height - 8;
+  const ground = innerHeight - 8;
   return Math.hypot(x - yarn.x, y - (ground - yarn.r)) < yarn.r + 6;
 }
 

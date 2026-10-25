@@ -13,6 +13,19 @@ const modal = $('modal');
 const stageEl = $('stage');
 
 let state = null;
+
+// La toile suit la densité de l'écran (zoom Windows 125 %, écran Retina…), sinon le dessin est agrandi et flou.
+// Le dessin garde ses coordonnées de 240 x 300 grâce à la mise à l'échelle.
+let canvasDpr = 0;
+function fitCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  if (dpr !== canvasDpr) {
+    canvasDpr = dpr;
+    canvas.width = Math.round(240 * dpr);
+    canvas.height = Math.round(300 * dpr);
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
 let draft = { style: 'cute', color: 'rose', species: 'chat', gender: 'm' }; // choix en cours dans la fenêtre « nouvel œuf »
 let box = { left: 80, right: 160, top: 200, bottom: 292 };
 let anim = null;
@@ -194,6 +207,7 @@ function frame(now) {
   }
   if (now > bubbleUntil) bubble.classList.add('hidden');
 
+  fitCanvas();
   box = Draw.render(ctx, buildView(now));
   placePanel();
   placeBubble();

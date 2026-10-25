@@ -8,10 +8,15 @@ const ctx = canvas.getContext('2d');
 let data = { food: 100, water: 100 };
 let sparkleAt = 0;
 
+// Toile à la densité de l'écran (zoom Windows, écran Retina) pour un dessin net ; on dessine en coordonnées de la fenêtre
 function resize() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(innerWidth * dpr);
+  canvas.height = Math.round(innerHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
+// Changement d'écran ou de zoom pendant que la fenêtre est ouverte
+const fitCanvas = () => { if (canvas.width !== Math.round(innerWidth * (window.devicePixelRatio || 1))) resize(); };
 addEventListener('resize', resize);
 resize();
 
@@ -46,7 +51,8 @@ function shade(c) {
 
 function draw(now) {
   const t = now / 1000;
-  const W = canvas.width, H = canvas.height;
+  fitCanvas();
+  const W = innerWidth, H = innerHeight;
   ctx.clearRect(0, 0, W, H);
   const base = H - 8;
   ellipse(W / 2, base + 2, W / 2 - 6, 4, 'rgba(0,0,0,.15)');

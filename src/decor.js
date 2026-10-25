@@ -6,10 +6,15 @@ const kind = new URLSearchParams(location.search).get('kind');
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 
+// Toile à la densité de l'écran (zoom Windows, écran Retina) pour un dessin net ; on dessine en coordonnées de la fenêtre
 function resize() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(innerWidth * dpr);
+  canvas.height = Math.round(innerHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
+// Changement d'écran ou de zoom pendant que la fenêtre est ouverte
+const fitCanvas = () => { if (canvas.width !== Math.round(innerWidth * (window.devicePixelRatio || 1))) resize(); };
 addEventListener('resize', resize);
 resize();
 
@@ -94,8 +99,9 @@ const DRAW = { halloween: pumpkin, snow: tree, cake, spring: eggs };
 
 function draw(now) {
   const t = now / 1000;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (DRAW[kind]) DRAW[kind](canvas.width / 2, canvas.height - 8, t);
+  fitCanvas();
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  if (DRAW[kind]) DRAW[kind](innerWidth / 2, innerHeight - 8, t);
   setTimeout(() => requestAnimationFrame(draw), 120); // animation lente : presque rien pour le processeur
 }
 requestAnimationFrame(draw);

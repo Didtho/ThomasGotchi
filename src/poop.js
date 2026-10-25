@@ -7,12 +7,10 @@ const kind = params.get('kind') || 'poop'; // 'poop' (crotte) ou 'pee' (flaque)
 const edge = params.get('edge'); // pipi contre le bord de l'écran : coulure verticale
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const scale = pixel ? 0.5 : 1; // en rétro, on dessine en basse résolution puis on agrandit
-if (pixel) {
-  canvas.width = 28;
-  canvas.height = 28;
-  canvas.classList.add('pixel');
-}
+// En rétro, on dessine en basse résolution puis on agrandit ; sinon, à la densité de l'écran pour rester net
+const scale = pixel ? 0.5 : (window.devicePixelRatio || 1);
+canvas.width = canvas.height = Math.round(56 * scale);
+if (pixel) canvas.classList.add('pixel');
 
 let cleanedAt = 0;
 
