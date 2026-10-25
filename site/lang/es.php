@@ -103,4 +103,6 @@ return [
 
     'ThomasGotchi · une création' => 'ThomasGotchi · una creación de',
     'code source' => 'código fuente',
+    'Déjà {n} téléchargements !' => '¡Ya {n} descargas!',
+    'Déjà {n} téléchargement !' => '¡Ya {n} descarga!',
 ];

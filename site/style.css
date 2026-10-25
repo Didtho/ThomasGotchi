@@ -267,3 +267,7 @@ code { padding: 2px 6px; font-size: 14px; background: #fff; border: 1px solid rg
 .langs a.on { color: var(--ink); border-color: var(--ink); background: #fff; }
 @media (max-width: 900px) { .langs { margin-left: auto; } .top .btn { margin-left: 0; } }
 @media (max-width: 520px) { .langs a { padding: 2px 4px; font-size: 12px; } .top .btn.small { display: none; } }
+
+/* Compteur de téléchargements */
+.counter { margin: 14px 0 0; font-weight: 700; color: var(--pink-deep); }
+.counter + .version { margin-top: 2px; }

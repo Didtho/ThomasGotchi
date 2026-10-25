@@ -1,2 +1,5 @@
 node_modules/
 dist/
+# Accès confidentiels (SFTP, base de données) : uniquement sur cet ordinateur, jamais sur GitHub
+deploy.local.json
+site/inc/config.local.php

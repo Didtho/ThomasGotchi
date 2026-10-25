@@ -1,11 +1,13 @@
 <?php
 require __DIR__ . '/inc/release.php';
 require __DIR__ . '/inc/i18n.php';
+require __DIR__ . '/inc/db.php';
 
 date_default_timezone_set('Europe/Paris');
 define('TG_CURRENT', tg_lang());
 $root = TG_CURRENT === 'fr' ? '' : '../'; // chemin vers les images et la feuille de style
 $release = tg_latest_release();
+$downloads = tg_download_total();
 $h = fn(string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 
 // Animaux et chiffres repris de l'application (générés par « npm run site-assets »)
@@ -87,13 +89,16 @@ $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root
       <h1><?= tt('Un petit compagnon<br>qui vit sur ton bureau') ?></h1>
       <p class="lead"><?= $h(tt('Nourris-le avec tes fichiers, fais-le boire, joue avec lui et regarde-le se promener entre tes fenêtres. Comme les Tamagotchi des années 80… mais sur ton ordinateur.')) ?></p>
       <div class="downloads" id="telecharger">
-        <a class="btn" data-os="windows" href="<?= $h($release['windows']) ?>">
+        <a class="btn" data-os="windows" href="<?= $root ?>download.php?os=windows">
           <span class="os">⊞</span> <?= $h(tt('Télécharger pour Windows')) ?>
         </a>
-        <a class="btn alt" data-os="mac" href="<?= $h($release['mac']) ?>">
+        <a class="btn alt" data-os="mac" href="<?= $root ?>download.php?os=mac">
           <span class="os">🍎</span> <?= $h(tt('Télécharger pour Mac')) ?>
         </a>
       </div>
+      <?php if ($downloads > 0): ?>
+        <p class="counter"><?= $h(tt($downloads > 1 ? 'Déjà {n} téléchargements !' : 'Déjà {n} téléchargement !', ['n' => number_format($downloads, 0, ',', ' ')])) ?></p>
+      <?php endif; ?>
       <p class="version">
         <?php if ($release['version']): ?>
           <?= $h(tt('Version {v}', ['v' => $release['version']])) ?><?= $release['date'] ? ' · ' . $h(date('d/m/Y', strtotime($release['date']))) : '' ?> · <?= $h(tt('gratuit · sans publicité')) ?>

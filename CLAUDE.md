@@ -47,8 +47,14 @@ Electron, sinon il démarre comme Node (`Remove-Item Env:ELECTRON_RUN_AS_NODE`).
   `$asset('chemin')` (dans `site/index.php`), qui ajoute `?v=<date de modification>` ; ne jamais écrire
   l'adresse en dur, sinon les navigateurs gardent l'ancienne version.
 - **Crédit** : le site est signé « une création DidTech » (lien https://www.didtech.fr/), pas « par Didtho ».
-- **Mise en ligne chez IONOS** (PHP + MariaDB, FTP) seulement quand l'utilisateur le décidera ; ne jamais
-  enregistrer d'identifiants FTP dans le dépôt.
+- **Mise en ligne chez IONOS** (https://thomasgotchi.mirimix.fr/, PHP + MariaDB, SFTP) seulement quand
+  l'utilisateur le décidera : `npm run deploy-site` (`-- --list` pour voir les dossiers du serveur). Les accès
+  sont dans `deploy.local.json` (racine, exclu de GitHub) ; le script crée `inc/config.local.php` directement
+  sur le serveur. **Aucun accès (serveur, identifiant, mot de passe, nom de base) ne doit jamais aller sur
+  GitHub ni dans un commit** : vérifier `git diff --cached` avant chaque commit qui touche au déploiement.
+- **Compteur de téléchargements** : les boutons passent par `site/download.php` (compte puis redirige vers
+  GitHub). Base locale de test : MariaDB de WAMP, port 3307, base `thomasgotchi`, accès dans
+  `site/inc/config.local.php` (exclu de GitHub). Sans base, le site marche quand même.
 - **Traductions** : le français est la langue de référence et sert de clé. Tout nouveau texte affiché passe par
   `t()` (renderer), `tr()` (main.js) ou `tt()` (site), avec `{nom}` pour les parties variables ; les bulles
   `say()` sont traduites automatiquement. Pour un texte genré, écrire les deux variantes françaises avec

@@ -276,9 +276,17 @@ function wander(now) {
     startWalk(buddy.x > 0 ? 1 : -1, Math.ceil((Math.abs(buddy.x) - 90) / 3), 3);
     return;
   }
-  if (roll > 0.9) {
-    // Saut sur une fenêtre au-dessus de lui (s'il y en a une à portée)
-    desk.climb().then((ok) => { if (ok) { play('jump', 800); if (Math.random() < 0.4) say('Hop, là-haut !', 1800); } });
+  if (roll > 0.7) {
+    // Saut sur une fenêtre au-dessus de lui (s'il y en a une à portée) ; sinon, une balade ordinaire
+    desk.climb().then((r) => {
+      if (r) {
+        if (r.dir) facing = r.dir;
+        play('jump', 800);
+        if (Math.random() < 0.4) say('Hop, là-haut !', 1800);
+      } else if (canWander()) {
+        startWalk(Math.random() < 0.5 ? -1 : 1, 40 + Math.floor(Math.random() * 120));
+      }
+    });
     return;
   }
   if (cursorNear && roll < 0.35) {

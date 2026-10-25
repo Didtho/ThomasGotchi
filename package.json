@@ -1,6 +1,6 @@
 {
   "name": "thomasgotchi",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Un petit être virtuel façon Tamagotchi qui vit sur le bureau (Windows et Mac)",
   "main": "main.js",
   "author": "ThomasGotchi",
@@ -10,7 +10,8 @@
     "icon": "electron scripts/make-icon.js",
     "dist": "electron-builder --win --publish never",
     "dist:mac": "electron-builder --mac --publish never",
-    "site-assets": "electron scripts/site-assets.js"
+    "site-assets": "electron scripts/site-assets.js",
+    "deploy-site": "node scripts/deploy-site.js"
   },
   "build": {
     "appId": "com.thomasgotchi.app",
@@ -62,7 +63,8 @@
   },
   "devDependencies": {
     "electron": "^33.2.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "ssh2-sftp-client": "^11.0.0"
   },
   "dependencies": {
     "electron-updater": "^6.8.11"

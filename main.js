@@ -330,7 +330,7 @@ function updatePlatforms(raw) {
       const o = rects[j];
       if (o.y1 <= w.y1 && o.y2 >= w.y1) spans = subtractSpan(spans, o.x1, o.x2);
     }
-    for (const [a, b] of spans) if (b - a >= 60 && w.y1 > 20) list.push({ h: w.h, x1: a, x2: b, y: w.y1 });
+    for (const [a, b] of spans) if (b - a >= 60 && w.y1 > 150) list.push({ h: w.h, x1: a, x2: b, y: w.y1 });
   });
   platforms = list;
   checkSupports();
@@ -434,26 +434,33 @@ ipcMain.handle('climb', (e) => {
   if (!p || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) return false;
   const b = p.win.getBounds();
   const f = feetOf(b);
+  // Fenêtre au-dessus de lui, jusqu'à 350 px sur le côté : il choisit la plus proche
+  const gap = (pl) => (f.x < pl.x1 ? pl.x1 - f.x : f.x > pl.x2 ? f.x - pl.x2 : 0);
   const target = platforms
-    .filter((pl) => f.x >= pl.x1 + 20 && f.x <= pl.x2 - 20 && pl.y < f.y - 60 && pl.y > f.y - 280)
-    .sort((a, c) => c.y - a.y)[0];
+    .filter((pl) => pl.y < f.y - 50 && gap(pl) <= 350 && pl.x2 - pl.x1 >= 100)
+    .sort((x, y) => (gap(x) + (f.y - x.y) * 0.5) - (gap(y) + (f.y - y.y) * 0.5))[0];
   if (!target) return false;
-  // Petit bond : montée qui ralentit, juste au-dessus du bord, puis il se pose
-  const goal = target.y - FEET - 20;
-  let vy = -Math.sqrt(2 * 1.4 * (b.y - goal));
+  // Grand bond en arc : il monte juste au-dessus du bord en se décalant vers la fenêtre, puis se pose dessus
+  const g = 1.4;
+  const landX = Math.min(Math.max(f.x, target.x1 + 40), target.x2 - 40);
+  const rise = (f.y - target.y) + 30;
+  let vy = -Math.sqrt(2 * g * rise);
+  const ticks = Math.ceil(-vy / g);
+  const vx = (landX - f.x) / ticks;
+  p.platform = null;
   p.climbTimer = setInterval(() => {
     if (!alive(p) || p.dragTimer) { clearInterval(p.climbTimer); p.climbTimer = null; return; }
     const cb = p.win.getBounds();
-    vy += 1.4;
+    vy += g;
     if (vy >= 0) {
       clearInterval(p.climbTimer);
       p.climbTimer = null;
       fallToFloor(p); // il retombe sur le bord de la fenêtre
       return;
     }
-    placeWindow(p, cb.x, cb.y + vy);
+    placeWindow(p, cb.x + vx, cb.y + vy);
   }, 16);
-  return true;
+  return { dir: Math.sign(landX - f.x) };
 });
 
 ipcMain.handle('expand', (e, extra) => {
