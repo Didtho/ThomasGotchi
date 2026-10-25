@@ -143,6 +143,13 @@ function createPetWindow(id) {
   win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
   win.on('closed', () => { p.win = null; if (p.zone && !p.zone.isDestroyed()) p.zone.destroy(); });
+  // Haut de la fenêtre qui dépasse de l'écran (perché tout en haut d'une fenêtre) : le panneau et les bulles s'en écartent
+  win.on('move', () => {
+    if (!alive(p)) return;
+    const b = win.getBounds();
+    const hidden = Math.max(0, screen.getDisplayMatching(b).workArea.y - b.y);
+    if (hidden !== p.hiddenTop) { p.hiddenTop = hidden; win.webContents.send('hidden-top', hidden); }
+  });
   if (USE_DROP_ZONE) createDropZone(p);
   // Au chargement, il apprend si le mode « ne pas déranger » est actif
   win.webContents.once('did-finish-load', () => setTimeout(() => fallToFloor(p), 1500));
@@ -774,15 +781,19 @@ ipcMain.handle('expand', (e, extra) => {
   if (p.expandUp || p.expandDown) return { above: p.expandUp > 0, extra: p.expandUp || p.expandDown };
   const b = p.win.getBounds();
   const wa = screen.getDisplayMatching(b).workArea;
-  const roomUp = Math.max(0, b.y - wa.y);
-  const roomDown = Math.max(0, wa.y + wa.height - (b.y + b.height));
+  // Perché tout en haut d'une fenêtre, le haut de sa propre fenêtre peut dépasser de l'écran : on la redescend
+  // le temps des réglages (elle reprend sa place à la fermeture), sinon la carte serait coupée en haut
+  p.expandShift = Math.max(0, wa.y - b.y);
+  const top = b.y + p.expandShift;
+  const roomUp = Math.max(0, top - wa.y);
+  const roomDown = Math.max(0, wa.y + wa.height - (top + b.height));
   // Vers le haut s'il y a la place, sinon vers le bas ; si aucun côté ne suffit, on prend le plus grand
   // (la fenêtre de réglages défilera) : elle ne sort jamais de l'écran
   if (roomUp >= extra) p.expandUp = extra;
   else if (roomDown >= extra) p.expandDown = extra;
   else if (roomUp >= roomDown) p.expandUp = roomUp;
   else p.expandDown = roomDown;
-  p.win.setBounds({ x: b.x, y: b.y - p.expandUp, width: W, height: H + p.expandUp + p.expandDown });
+  p.win.setBounds({ x: b.x, y: top - p.expandUp, width: W, height: H + p.expandUp + p.expandDown });
   return { above: p.expandUp > 0, extra: p.expandUp || p.expandDown };
 });
 
@@ -790,10 +801,11 @@ ipcMain.handle('collapse', (e) => {
   const p = petOf(e.sender);
   if (!p || !(p.expandUp || p.expandDown)) return;
   const b = p.win.getBounds();
-  const up = p.expandUp;
+  const up = p.expandUp, shift = p.expandShift || 0;
   p.expandUp = 0;
   p.expandDown = 0;
-  p.win.setBounds({ x: b.x, y: b.y + up, width: W, height: H });
+  p.expandShift = 0;
+  p.win.setBounds({ x: b.x, y: b.y + up - shift, width: W, height: H }); // il retrouve sa place d'avant
 });
 
 // Distance verticale entre une hauteur et une zone d'écran (0 si elle est dedans)

@@ -195,10 +195,14 @@ function buildView(now) {
   };
 }
 
+// Hauteur du haut de la fenêtre qui dépasse de l'écran (perché tout en haut d'une fenêtre) : rien n'y est placé
+let hiddenTop = 0;
+desk.onHiddenTop((px) => { hiddenTop = px; });
+
 function placePanel() {
   if (panel.classList.contains('hidden')) return;
   const head = Draw.restTop(state ? Pet.stage(state) : 'egg', state && state.species);
-  panel.style.top = Math.max(2, head - panel.offsetHeight - 6) + 'px';
+  panel.style.top = Math.max(2 + hiddenTop, head - panel.offsetHeight - 6) + 'px';
 }
 
 function placeBubble() {
@@ -207,7 +211,7 @@ function placeBubble() {
   const top = panel.classList.contains('hidden')
     ? box.top - bubble.offsetHeight - 10
     : panel.offsetTop - bubble.offsetHeight - 6;
-  bubble.style.top = Math.max(2, top) + 'px';
+  bubble.style.top = Math.max(2 + hiddenTop, top) + 'px';
 }
 
 function frame(now) {

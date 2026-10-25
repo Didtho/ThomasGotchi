@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('desk', {
   status: (alert) => ipcRenderer.send('pet-status', alert), // besoin à signaler sur l'icône (ou null)
   savePhoto: (dataUrl, name) => ipcRenderer.invoke('save-photo', dataUrl, name),
   owl: () => ipcRenderer.invoke('owl'), // soirée magique : un hibou traverse l'écran ; répond quand il passe au-dessus
+  onHiddenTop: (cb) => ipcRenderer.on('hidden-top', (_e, px) => cb(px)),
   onFeedFiles: (cb) => ipcRenderer.on('feed-files', (_e, meals) => cb(meals)),
   poopAdd: (id, side, style, kind, edge) => ipcRenderer.invoke('poop-add', id, side, style, kind, edge),
   poopRestore: (spots, style) => ipcRenderer.invoke('poop-restore', spots, style),
