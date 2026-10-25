@@ -52,8 +52,6 @@ return [
     'Pingouin' => 'Pinguino', 'Hamster' => 'Criceto', 'Koala' => 'Koala', 'Grenouille' => 'Rana', 'Licorne' => 'Unicorno',
     'Dragon' => 'Drago', 'Loup' => 'Lupo', 'Lion' => 'Leone', 'Tigre' => 'Tigre', 'Cochon' => 'Maialino', 'Mouton' => 'Pecora',
     'Souris' => 'Topolino', 'Hibou' => 'Gufo', 'Singe' => 'Scimmia', 'Raton laveur' => 'Procione',
-    'Et les modèles <strong>Simba</strong>, <strong>Snoop</strong> et <strong>Grisette</strong>, dessinés d\'après de vrais chats de la maison.' =>
-        'E i modelli <strong>Simba</strong>, <strong>Snoop</strong> e <strong>Grisette</strong>, disegnati ispirandosi a veri gatti di casa.',
 
     'Une vie pleine de surprises' => 'Una vita piena di sorprese',
     'Il sort son parapluie quand il pleut chez toi' => 'Tira fuori l\'ombrello quando piove dove abiti',
@@ -105,4 +103,9 @@ return [
     'code source' => 'codice sorgente',
     'Déjà {n} téléchargements !' => 'Già {n} download!',
     'Déjà {n} téléchargement !' => 'Già {n} download!',
+    'Les chats de la maison' => 'I gatti di casa',
+    'Trois modèles dessinés d\'après les vrais chats du créateur. Choisis leur pelage dans les réglages pour adopter le même !' => 'Tre modelli disegnati dai veri gatti del creatore. Scegli il loro mantello nelle impostazioni per adottarne uno uguale!',
+    'Le roux de la maison : pelage orange rayé et bouille ronde.' => 'Il rosso di casa: mantello arancione tigrato e musetto tondo.',
+    'Une tigrée grise aux rayures bien dessinées.' => 'Una tigrata grigia dalle strisce ben disegnate.',
+    'Noire et blanche, avec son petit masque.' => 'Bianca e nera, con la sua mascherina.',
 ];

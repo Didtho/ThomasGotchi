@@ -32,7 +32,7 @@ window.renderAll = () => {
   out['chat-grisette'] = renderPng(view('chat', 'grisette'), PET);
   // Scènes complètes (décor compris)
   out['scene-pluie'] = renderPng(view('chat', 'simba', { weather: 'rain', gear: 'umbrella', t: 2.1 }));
-  out['scene-halloween'] = renderPng(view('chat', 'noir', { decor: 'halloween', decorBack: true, accessory: 'sorciere', night: true, t: 3.2 }));
+  out['scene-halloween'] = renderPng(view('chat', 'grisette', { decor: 'halloween', decorBack: true, accessory: 'sorciere', night: true, t: 3.2 }));
   out['scene-noel'] = renderPng(view('renard', 'orange', { decor: 'snow', decorBack: true, accessory: 'noel', t: 4 }));
   out['scene-danse'] = renderPng(view('licorne', 'blanc', { anim: 'dance', animT: 0.35, eyes: 'joy', mouth: 'open', t: 5 }));
   out['scene-dodo'] = renderPng(view('panda', 'blanc', { mood: 'sleep', eyes: 'closed', mouth: 'o', nightcap: true, weather: 'clear', isDay: false, t: 6 }));
@@ -62,7 +62,8 @@ function renderShare() {
   ctx.fillStyle = '#c2447a';
   ctx.fillText('Windows · Mac', 600, 215);
   // Une rangée d'animaux, posés sur la même ligne
-  const pets = [['chat', 'simba'], ['renard', 'orange'], ['panda', 'blanc'], ['licorne', 'blanc'], ['dragon', 'vert']];
+  // Les trois chats de la maison au milieu
+  const pets = [['renard', 'orange'], ['chat', 'simba'], ['chat', 'snoop'], ['chat', 'grisette'], ['licorne', 'blanc']];
   // Chaque animal est dessiné à part (le moteur efface sa zone), puis collé
   const scale = 2.1;
   const wide = { x: PET.x - 20, y: PET.y - 30, w: PET.w + 40, h: PET.h + 30 }; // marge pour queues et oreilles

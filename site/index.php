@@ -25,6 +25,13 @@ $features = [
     ['🎁', 'Gratuit, sans pub', 'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).'],
 ];
 
+// Les trois chats de la maison, modèles de pelage dans l'application
+$houseCats = [
+    ['simba', 'Simba', 'Le roux de la maison : pelage orange rayé et bouille ronde.'],
+    ['snoop', 'Snoop', 'Une tigrée grise aux rayures bien dessinées.'],
+    ['grisette', 'Grisette', 'Noire et blanche, avec son petit masque.'],
+];
+
 $moments = [
     ['scene-pluie', 'Il sort son parapluie quand il pleut chez toi'],
     ['scene-halloween', 'Citrouille et chauves-souris pour Halloween'],
@@ -160,8 +167,8 @@ $jsonLd = [
         <div class="window-bar"><i></i><i></i><i></i></div>
         <div class="window-body">
           <img class="pet p1" src="<?= $asset('img/chat-simba.png') ?>" alt="">
-          <img class="pet p2" src="<?= $asset('img/animal-licorne.png') ?>" alt="">
-          <img class="pet p3" src="<?= $asset('img/animal-renard.png') ?>" alt="">
+          <img class="pet p2" src="<?= $asset('img/chat-snoop.png') ?>" alt="">
+          <img class="pet p3" src="<?= $asset('img/chat-grisette.png') ?>" alt="">
           <span class="bubble"><?= $h(tt('Miam, un PDF ! 😋')) ?></span>
         </div>
       </div>
@@ -192,11 +199,16 @@ $jsonLd = [
         </figure>
       <?php endforeach; ?>
     </div>
+    <h3 class="house-title"><?= $h(tt('Les chats de la maison')) ?></h3>
+    <p class="section-lead"><?= $h(tt('Trois modèles dessinés d\'après les vrais chats du créateur. Choisis leur pelage dans les réglages pour adopter le même !')) ?></p>
     <div class="house-cats">
-      <img src="<?= $asset('img/chat-simba.png') ?>" alt="Simba">
-      <img src="<?= $asset('img/chat-snoop.png') ?>" alt="Snoop">
-      <img src="<?= $asset('img/chat-grisette.png') ?>" alt="Grisette">
-      <p><?= tt('Et les modèles <strong>Simba</strong>, <strong>Snoop</strong> et <strong>Grisette</strong>, dessinés d\'après de vrais chats de la maison.') ?></p>
+      <?php foreach ($houseCats as [$id, $name, $text]): ?>
+        <article class="house-cat">
+          <img src="<?= $asset('img/chat-' . $id . '.png') ?>" alt="<?= $h($name) ?>" loading="lazy">
+          <h4><?= $h($name) ?></h4>
+          <p><?= $h(tt($text)) ?></p>
+        </article>
+      <?php endforeach; ?>
     </div>
   </section>
 

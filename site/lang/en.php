@@ -52,8 +52,6 @@ return [
     'Pingouin' => 'Penguin', 'Hamster' => 'Hamster', 'Koala' => 'Koala', 'Grenouille' => 'Frog', 'Licorne' => 'Unicorn',
     'Dragon' => 'Dragon', 'Loup' => 'Wolf', 'Lion' => 'Lion', 'Tigre' => 'Tiger', 'Cochon' => 'Pig', 'Mouton' => 'Sheep',
     'Souris' => 'Mouse', 'Hibou' => 'Owl', 'Singe' => 'Monkey', 'Raton laveur' => 'Raccoon',
-    'Et les modèles <strong>Simba</strong>, <strong>Snoop</strong> et <strong>Grisette</strong>, dessinés d\'après de vrais chats de la maison.' =>
-        'And the <strong>Simba</strong>, <strong>Snoop</strong> and <strong>Grisette</strong> models, drawn after real cats from home.',
 
     'Une vie pleine de surprises' => 'A life full of surprises',
     'Il sort son parapluie quand il pleut chez toi' => 'It takes out its umbrella when it rains where you live',
@@ -105,4 +103,9 @@ return [
     'code source' => 'source code',
     'Déjà {n} téléchargements !' => 'Already {n} downloads!',
     'Déjà {n} téléchargement !' => 'Already {n} download!',
+    'Les chats de la maison' => 'The house cats',
+    'Trois modèles dessinés d\'après les vrais chats du créateur. Choisis leur pelage dans les réglages pour adopter le même !' => 'Three models drawn from the creator\'s real cats. Pick their coat in the settings to adopt the same one!',
+    'Le roux de la maison : pelage orange rayé et bouille ronde.' => 'The ginger of the house: striped orange coat and a round little face.',
+    'Une tigrée grise aux rayures bien dessinées.' => 'A grey tabby with neatly drawn stripes.',
+    'Noire et blanche, avec son petit masque.' => 'Black and white, with her little mask.',
 ];

@@ -762,6 +762,13 @@ document.addEventListener('drop', (e) => {
     const file = item.getAsFile();
     if (file) meals.push({ name: file.name, size: file.size, isDir: !!(entry && entry.isDirectory) });
   }
+  eat(meals);
+});
+
+// Fichiers choisis depuis le menu de l'icône (ou déposés sur l'icône, sur Mac)
+desk.onFeedFiles((meals) => { if (state) eat(meals); });
+
+function eat(meals) {
   meals.slice(0, 5).forEach((meal, i) => {
     setTimeout(() => {
       if (state.paused) return say('Je suis en vacances 🏖️');
@@ -774,7 +781,7 @@ document.addEventListener('drop', (e) => {
     }, i * 2000);
   });
   if (meals.length > 5) setTimeout(() => say('Ouf, j\'ai assez mangé pour l\'instant !'), 10000);
-});
+}
 
 // ---------- Voix : il dit le prénom de son maître ou de sa maîtresse ----------
 

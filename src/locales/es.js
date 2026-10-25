@@ -328,6 +328,9 @@
     'Hop, là-haut !': '¡Hop, ahí arriba!',
     'ThomasGotchi': 'ThomasGotchi',
     'English': 'English', 'Español': 'Español', 'Français': 'Français', 'Italiano': 'Italiano',
+    'Donner un fichier à manger': 'Dar un archivo de comer',
+    'Donner un fichier à manger…': 'Dar un archivo de comer…',
+    'Site internet 🌐': 'Sitio web 🌐',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;

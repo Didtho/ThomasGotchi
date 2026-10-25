@@ -183,15 +183,50 @@ function anyVisible() {
   return [...pets.values()].some((p) => alive(p) && p.win.isVisible());
 }
 
+// Cachés avec les animaux : crottes, décor de fête, pelote, gamelle (y compris ceux qui apparaissent pendant ce temps)
+let hiddenByUser = false;
+
+function objectWindows() {
+  const list = [...poopWindows.values()].map((poop) => poop.win);
+  if (decor) list.push(decor.win);
+  if (yarn) list.push(yarn.win);
+  if (furniture) list.push(...Object.values(furniture).map((f) => f.win));
+  return list.filter((w) => w && !w.isDestroyed());
+}
+
 function toggleVisible() {
   const show = !anyVisible();
+  hiddenByUser = !show;
   for (const p of pets.values()) {
     if (!alive(p)) continue;
     if (show) p.win.show(); else p.win.hide();
   }
+  for (const w of objectWindows()) if (show) w.showInactive(); else w.hide();
   if (show) keepOnTop();
   buildTrayMenu();
 }
+
+// Nourrir avec des fichiers choisis dans une fenêtre, ou déposés sur l'icône (Mac) :
+// seuls leur nom et leur taille sont lus, comme pour un fichier glissé sur l'animal
+function feedFiles(p, files) {
+  if (!alive(p)) return;
+  const meals = files.map((f) => {
+    try {
+      const st = fs.statSync(f);
+      return { name: path.basename(f), size: st.size, isDir: st.isDirectory() };
+    } catch { return null; }
+  }).filter(Boolean);
+  if (!meals.length) return;
+  p.win.show();
+  p.win.webContents.send('feed-files', meals);
+}
+
+async function chooseFood(p) {
+  const r = await dialog.showOpenDialog({ title: tr('Donner un fichier à manger'), properties: ['openFile', 'multiSelections'] });
+  if (!r.canceled) feedFiles(p, r.filePaths);
+}
+
+const siteUrl = () => 'https://thomasgotchi.mirimix.fr/' + (currentLang() === 'fr' ? '' : currentLang() + '/');
 
 function openSettings(p) {
   if (!alive(p)) return;
@@ -206,15 +241,25 @@ function buildTrayMenu() {
   const settings = list.length === 1
     ? { label: tr('Réglages…'), click: () => openSettings(list[0]) }
     : { label: tr('Réglages'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => openSettings(p) })) };
+  const food = list.length === 1
+    ? { label: tr('Donner un fichier à manger…'), click: () => chooseFood(list[0]) }
+    : { label: tr('Donner un fichier à manger'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => chooseFood(p) })) };
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: `ThomasGotchi v${app.getVersion()}`, enabled: false },
+    { label: tr('Site internet 🌐'), click: () => shell.openExternal(siteUrl()) },
     { type: 'separator' },
     { label: tr(anyVisible() ? 'Cacher' : 'Afficher'), click: toggleVisible },
     {
       label: tr('Ramener au coin de l\'écran'),
-      click: () => list.forEach((p, i) => { const d = defaultPosition(i); placeWindow(p, d.x, d.y); if (alive(p)) p.win.show(); }),
+      click: () => {
+        list.forEach((p, i) => { const d = defaultPosition(i); placeWindow(p, d.x, d.y); if (alive(p)) p.win.show(); });
+        hiddenByUser = false;
+        for (const w of objectWindows()) w.showInactive();
+        buildTrayMenu();
+      },
     },
     settings,
+    food,
     { label: tr('Adopter un autre animal'), enabled: list.length < MAX_PETS, click: adoptPet },
     { label: tr(yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶'), click: toggleYarn },
     { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture, click: () => (furniture ? removeFurniture() : spawnFurniture()) },
@@ -239,6 +284,11 @@ function createTray() {
   tray = new Tray(icon);
   tray.setToolTip(`ThomasGotchi v${app.getVersion()}`);
   if (!isMac) tray.on('click', toggleVisible);
+  // Mac : des fichiers déposés sur l'icône de la barre des menus sont donnés à manger au premier animal visible
+  tray.on('drop-files', (e, files) => {
+    const p = [...pets.values()].find((x) => alive(x) && x.win.isVisible()) || [...pets.values()].find(alive);
+    feedFiles(p, files);
+  });
   buildTrayMenu();
 }
 
@@ -645,6 +695,7 @@ function createPoop(owner, id, x, y, style, kind, edge) {
     hasShadow: false,
     focusable: false,
     alwaysOnTop: true,
+    show: !hiddenByUser,
     backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload-poop.js'),
@@ -747,6 +798,7 @@ function spawnYarn() {
     hasShadow: false,
     focusable: false,
     alwaysOnTop: true,
+    show: !hiddenByUser,
     backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload-yarn.js'),
@@ -860,7 +912,7 @@ function updateDecor() {
   win.once('ready-to-show', () => {
     if (win.isDestroyed()) return;
     win.setBackgroundColor('#00000000');
-    win.showInactive();
+    if (!hiddenByUser) win.showInactive();
   });
   win.loadFile(path.join(__dirname, 'src', 'decor.html'), { query: { kind } });
   decor = { win, kind };
@@ -901,7 +953,7 @@ function createFurnitureWindow(kind, x) {
     x: Math.round(Math.min(Math.max(x - w / 2, wa.x), wa.x + wa.width - w)),
     y: wa.y + wa.height - h,
     transparent: true, frame: false, resizable: false, maximizable: false, minimizable: false, fullscreenable: false,
-    skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true, backgroundColor: '#00000000',
+    skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true, show: !hiddenByUser, backgroundColor: '#00000000',
     webPreferences: { preload: path.join(__dirname, 'preload-furniture.js'), contextIsolation: true, nodeIntegration: false },
   });
   win.setAlwaysOnTop(true, 'floating');

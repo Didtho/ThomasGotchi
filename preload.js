@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('desk', {
   setLogin: (on) => ipcRenderer.invoke('set-login', on),
   quit: () => ipcRenderer.send('quit'),
   onMenu: (cb) => ipcRenderer.on('menu', (_e, action) => cb(action)),
+  onFeedFiles: (cb) => ipcRenderer.on('feed-files', (_e, meals) => cb(meals)),
   poopAdd: (id, side, style, kind, edge) => ipcRenderer.invoke('poop-add', id, side, style, kind, edge),
   poopRestore: (spots, style) => ipcRenderer.invoke('poop-restore', spots, style),
   poopClearAll: () => ipcRenderer.send('poop-clear-all'),

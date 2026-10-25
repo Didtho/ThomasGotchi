@@ -162,19 +162,21 @@ img { max-width: 100%; }
 .animal img { width: 100%; aspect-ratio: 152 / 160; object-fit: contain; }
 .animal figcaption { font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 18px; }
 
-.house-cats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 760px;
-  margin: 36px auto 0;
-  padding: 14px 22px;
+/* Les chats de la maison : une petite fiche pour chacun */
+.house-title { margin: 56px 0 6px; text-align: center; font-size: 28px; }
+.house-cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 860px; margin: 0 auto; }
+.house-cat {
+  padding: 16px 18px 20px;
+  text-align: center;
   background: var(--card);
   border: 3px dashed rgba(59, 42, 58, .35);
   border-radius: var(--radius);
+  transition: transform .2s;
 }
-.house-cats img { width: 72px; }
-.house-cats p { margin: 0 0 0 10px; }
+.house-cat:hover { transform: translateY(-4px) rotate(1.5deg); }
+.house-cat img { width: 70%; aspect-ratio: 152 / 160; object-fit: contain; }
+.house-cat h4 { margin: 6px 0 4px; font-family: "Fredoka", sans-serif; font-size: 24px; }
+.house-cat p { margin: 0; color: var(--ink-soft); font-size: 16px; }
 
 .moments { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .moment {
@@ -243,8 +245,8 @@ code { padding: 2px 6px; font-size: 14px; background: #fff; border: 1px solid rg
   body { font-size: 16px; }
   .features, .moments { grid-template-columns: 1fr; }
   .animals { grid-template-columns: repeat(3, 1fr); }
-  .house-cats { flex-wrap: wrap; justify-content: center; text-align: center; }
-  .house-cats p { margin: 8px 0 0; }
+  .house-cats { grid-template-columns: 1fr; }
+  .house-cat img { width: 50%; }
   .btn { width: 100%; justify-content: center; }
   .top .btn { width: auto; }
   .brand { font-size: 20px; }

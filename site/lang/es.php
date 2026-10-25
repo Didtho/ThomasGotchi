@@ -52,8 +52,6 @@ return [
     'Pingouin' => 'Pingüino', 'Hamster' => 'Hámster', 'Koala' => 'Koala', 'Grenouille' => 'Rana', 'Licorne' => 'Unicornio',
     'Dragon' => 'Dragón', 'Loup' => 'Lobo', 'Lion' => 'León', 'Tigre' => 'Tigre', 'Cochon' => 'Cerdito', 'Mouton' => 'Oveja',
     'Souris' => 'Ratón', 'Hibou' => 'Búho', 'Singe' => 'Mono', 'Raton laveur' => 'Mapache',
-    'Et les modèles <strong>Simba</strong>, <strong>Snoop</strong> et <strong>Grisette</strong>, dessinés d\'après de vrais chats de la maison.' =>
-        'Y los modelos <strong>Simba</strong>, <strong>Snoop</strong> y <strong>Grisette</strong>, dibujados a partir de gatos reales de la casa.',
 
     'Une vie pleine de surprises' => 'Una vida llena de sorpresas',
     'Il sort son parapluie quand il pleut chez toi' => 'Saca su paraguas cuando llueve donde vives',
@@ -105,4 +103,9 @@ return [
     'code source' => 'código fuente',
     'Déjà {n} téléchargements !' => '¡Ya {n} descargas!',
     'Déjà {n} téléchargement !' => '¡Ya {n} descarga!',
+    'Les chats de la maison' => 'Los gatos de la casa',
+    'Trois modèles dessinés d\'après les vrais chats du créateur. Choisis leur pelage dans les réglages pour adopter le même !' => 'Tres modelos dibujados a partir de los gatos reales del creador. ¡Elige su pelaje en los ajustes para adoptar uno igual!',
+    'Le roux de la maison : pelage orange rayé et bouille ronde.' => 'El pelirrojo de la casa: pelaje naranja a rayas y carita redonda.',
+    'Une tigrée grise aux rayures bien dessinées.' => 'Una atigrada gris de rayas bien marcadas.',
+    'Noire et blanche, avec son petit masque.' => 'Blanca y negra, con su pequeño antifaz.',
 ];
