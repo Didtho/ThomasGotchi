@@ -539,7 +539,8 @@ function drawRuff(ctx, cx, g) {
 const WHITE_FUR = '#fbf8f4';
 
 // Motifs du pelage, découpés à la forme de la tête ou du corps
-function drawCoat(ctx, coat, part, cx, cy, rx, ry, r) {
+// faceShift : décalage du nez quand il tourne la tête (voir drawFace) ; museau et liseré blancs le suivent
+function drawCoat(ctx, coat, part, cx, cy, rx, ry, r, faceShift = 0) {
   if (!coat || !(coat.stripes || coat.spots || coat.muzzle || coat.chest || coat.patches)) return;
   ctx.save();
   ctx.beginPath();
@@ -552,14 +553,15 @@ function drawCoat(ctx, coat, part, cx, cy, rx, ry, r) {
     if (where === part) ellipse(ctx, cx + dx * rx, cy + dy * ry, prx * rx, pry * ry, color);
   }
   if (part === 'head' && coat.muzzle) {
-    // Museau blanc, et liseré blanc entre les yeux (plus large pour Grisette)
-    ellipse(ctx, cx, cy + ry * 0.5, rx * 0.46, ry * 0.38, WHITE_FUR);
+    // Museau blanc, et liseré blanc entre les yeux (plus large pour Grisette), décalés avec le nez
+    const mx = cx + faceShift;
+    ellipse(ctx, mx, cy + ry * 0.5, rx * 0.46, ry * 0.38, WHITE_FUR);
     if (coat.blaze) {
       const w = coat.blaze === 'wide' ? 0.24 : 0.13;
       ctx.beginPath();
-      ctx.moveTo(cx - rx * w, cy + ry * 0.25);
-      ctx.quadraticCurveTo(cx - rx * w * 0.2, cy - ry * 0.3, cx, cy - ry * 0.55);
-      ctx.quadraticCurveTo(cx + rx * w * 0.2, cy - ry * 0.3, cx + rx * w, cy + ry * 0.25);
+      ctx.moveTo(mx - rx * w, cy + ry * 0.25);
+      ctx.quadraticCurveTo(mx - rx * w * 0.2, cy - ry * 0.3, mx, cy - ry * 0.55);
+      ctx.quadraticCurveTo(mx + rx * w * 0.2, cy - ry * 0.3, mx + rx * w, cy + ry * 0.25);
       ctx.closePath();
       ctx.fillStyle = WHITE_FUR;
       ctx.fill();
@@ -770,7 +772,7 @@ function drawCreature(ctx, v) {
   hg.addColorStop(1, shade(body, -0.1));
   ellipse(ctx, cx, headCy, headRx, headRy, hg, INK, 3);
   halo(false);
-  drawCoat(ctx, coat, 'head', cx, headCy, headRx, headRy, r);
+  drawCoat(ctx, coat, 'head', cx, headCy, headRx, headRy, r, (v.facing || 0) * 3); // même décalage que le nez
   if (coat && coat.fluffy && coat.chest) drawRuff(ctx, cx, g);
   speciesLayer(ctx, 'head', species, cx, g, body, v);
   if (v.mood === 'sick') ellipse(ctx, cx, headCy, headRx, headRy, 'rgba(130,190,70,.28)');

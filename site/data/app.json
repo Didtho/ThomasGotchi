@@ -541,6 +541,17 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.9.0",
+   "date": "2026-10-25",
+   "items": [
+    "Taille des animaux (normale, grande, très grande) dans l'onglet Options",
+    "Cadeaux et cartes postales entre amis, avec un message choisi dans une liste (un de chaque par jour et par ami), remis même si l'ami n'est pas connecté",
+    "Jusqu'à 3 visiteurs en même temps",
+    "Le nez et le museau suivent bien la tête quand l'animal tourne la tête (Grisette)",
+    "Site : FAQ (cadeaux, cartes, taille), mentions légales"
+   ]
+  },
+  {
    "version": "2.8.0",
    "date": "2026-10-25",
    "items": [
@@ -870,13 +881,6 @@
    "date": "2026-10-24",
    "items": [
     "Fabrication plus robuste (nouvel essai automatique, Windows et Mac indépendants)"
-   ]
-  },
-  {
-   "version": "1.3.1",
-   "date": "2026-10-24",
-   "items": [
-    "Un animal déjà endormi au coucher dort toute la nuit"
    ]
   }
  ]
