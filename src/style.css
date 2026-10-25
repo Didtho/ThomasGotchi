@@ -208,6 +208,9 @@ html, body {
 .friend { display: flex; align-items: center; gap: 4px; padding: 3px 0; border-bottom: 1px dashed rgba(59,42,58,.2); }
 .friend span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .friend em { font-size: 11px; opacity: .7; }
+.card-choices { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0 6px; }
+.card-choices button { font: inherit; font-size: 11px; padding: 2px 7px; background: #fff; border: 1.5px solid #ff9fc6; border-radius: 10px; cursor: pointer; }
+.card-choices button:hover { background: #fff3f7; }
 .bday select { flex: 1; font: inherit; padding: 2px 4px; border: 1.5px solid #3b2a3a; border-radius: 8px; background: #fff; }
 #modal-settings > .row { margin-top: 8px; }
 button.primary { background: #ffb3c9 !important; }

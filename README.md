@@ -36,7 +36,11 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   deux côtés, quand les deux applications sont ouvertes, votre animal part vraiment en visite : il quitte votre écran,
   apparaît chez votre ami (« Coucou, c'est Simba de Didier ! »), joue avec ses animaux, puis revient. Une ou deux
   visites par jour, ou à la demande. Votre ami peut lui donner un fichier à manger : il rentre rassasié
-  (« J'ai bien mangé chez Lucas ! 😋 »). Seuls passent le prénom du maître et l'apparence de l'animal.
+  (« J'ai bien mangé chez Lucas ! 😋 »). Jusqu'à 3 visiteurs en même temps. On peut aussi envoyer à un ami un
+  🎁 **cadeau** ou une 💌 **carte postale** (message choisi dans une liste : « Je pense à toi ! », « Joyeux
+  anniversaire ! 🎂 »…), qui arrive même si son ordinateur est éteint. Seuls passent le prénom du maître et
+  l'apparence de l'animal : pas de messages libres.
+- 🔍 **Taille** (onglet « Options » des réglages) : normale, grande ou très grande, pour les grands écrans.
 - 🧶 **Pelote de laine** et 🥣 **gamelle** (menu de l'icône) : il court après la pelote, va manger et boire tout seul.
 - 🗣️ **Voix** : il dit ton prénom avec la voix de l'ordinateur, et te souhaite ton **anniversaire** (gâteau, chanson
   et cadeau) si tu indiques ta date dans les réglages.

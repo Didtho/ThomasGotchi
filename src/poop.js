@@ -43,8 +43,8 @@ function draw(now) {
     return;
   }
 
-  if (kind === 'gift' || kind === 'egg' || kind === 'letter') {
-    if (kind === 'gift') drawGift(t); else if (kind === 'letter') drawLetter(t); else drawEgg(t);
+  if (kind === 'gift' || kind === 'egg' || kind === 'letter' || kind === 'card') {
+    if (kind === 'gift') drawGift(t); else if (kind === 'letter' || kind === 'card') drawLetter(t, kind === 'card'); else drawEgg(t);
     setTimeout(() => requestAnimationFrame(draw), 60);
     return;
   }
@@ -158,8 +158,9 @@ function drawGift(t) {
   ellipse(33, y - 34, 6, 4, '#ffd84a', INK, 1.8);
 }
 
-// Lettre de la soirée magique, avec son cachet rouge ; une petite étoile scintille dessus
-function drawLetter(t) {
+// Lettre de la soirée magique, avec son cachet rouge ; une petite étoile scintille dessus.
+// card : carte postale d'un ami (cachet en cœur rose)
+function drawLetter(t, card = false) {
   const y = 50 - Math.abs(Math.sin(t * 2.5)) * 2;
   ellipse(28, 53, 16, 3, 'rgba(0,0,0,.15)');
   ctx.fillStyle = '#fffaf0';
@@ -172,7 +173,20 @@ function drawLetter(t) {
   ctx.lineTo(28, y - 9);
   ctx.lineTo(46, y - 22);
   ctx.stroke();
-  ellipse(28, y - 9, 4.5, 4.5, '#d8384a', INK, 1.5);
+  if (card) {
+    // Cachet en forme de cœur rose
+    ctx.beginPath();
+    ctx.moveTo(28, y - 5);
+    ctx.bezierCurveTo(22, y - 9, 24, y - 14, 28, y - 11);
+    ctx.bezierCurveTo(32, y - 14, 34, y - 9, 28, y - 5);
+    ctx.fillStyle = '#ff6f91';
+    ctx.fill();
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+  } else {
+    ellipse(28, y - 9, 4.5, 4.5, '#d8384a', INK, 1.5);
+  }
+  if (card) return;
   ctx.globalAlpha = 0.5 + Math.sin(t * 5) * 0.5;
   ctx.fillStyle = '#ffd84a';
   ctx.fillRect(41, y - 31, 2, 8);

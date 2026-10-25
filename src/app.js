@@ -13,6 +13,8 @@ const modal = $('modal');
 const stageEl = $('stage');
 
 let state = null;
+let petScaleNow = desk.scale || 1; // taille des animaux (réglage commun, voir main.js)
+desk.onScale((s) => { petScaleNow = s; });
 
 // La toile suit la densité de l'écran (zoom Windows 125 %, écran Retina…), sinon le dessin est agrandi et flou.
 // Le dessin garde ses coordonnées de 240 x 300 grâce à la mise à l'échelle.
@@ -255,6 +257,12 @@ desk.onVisit((ev) => {
     panel.classList.add('hidden');
     closeModal();
     say(t('Je vais rendre visite à {owner} ! 👋', { owner: ev.owner }), 2500);
+  } else if (ev.type === 'gift' && !desk.guest) {
+    // Cadeau ou carte postale envoyé par un ami : posé sur le bureau, à ouvrir d'un clic
+    const from = { owner: ev.owner || '?', pet: ev.pet || '?' };
+    addTreat(ev.kind === 'carte' ? 'card' : 'gift', ev.kind === 'carte' ? { from, msg: ev.msg || 0 } : { from });
+    play('jump', 800);
+    say(ev.kind === 'carte' ? t('Une carte postale de {pet} ({owner}) ! 💌', from) : t('Un cadeau de la part de {pet} ({owner}) ! 🎁', from), 5500);
   } else if (ev.type === 'hosted' && !desk.guest) {
     state.stats.guests = (state.stats.guests || 0) + 1; // un visiteur est venu (trophée « Maison accueillante »)
     save();
@@ -549,12 +557,13 @@ function celebrate() {
 }
 
 // Surprises posées sur le bureau (cadeau, œufs) : comme les crottes, une petite fenêtre qu'on clique
-async function addTreat(kind) {
+// extra : informations gardées avec la surprise (par exemple qui l'envoie)
+async function addTreat(kind, extra = {}) {
   const id = kind + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const pos = await desk.poopAdd(id, Math.random() < 0.5 ? -1 : 1, state.style, kind);
   if (!pos || !state) return;
   state.treatSpots = state.treatSpots || [];
-  state.treatSpots.push({ id, kind, ...pos });
+  state.treatSpots.push({ id, kind, ...pos, ...extra });
   save();
 }
 
@@ -574,6 +583,12 @@ function openTreat(spot) {
     } else {
       say('Un cadeau ! J\'adore, merci ! 🎁💕', 5000);
     }
+  } else if (spot.kind === 'card') {
+    // Carte postale d'un ami
+    state.fun = Math.min(100, state.fun + 10);
+    play('love', 1600);
+    const from = spot.from || { pet: '?', owner: '?' };
+    say(t('« {msg} » — {pet}, de chez {owner} 💌', { ...from, msg: t(CARD_MESSAGES[spot.msg] || CARD_MESSAGES[0]) }), 6000);
   } else if (spot.kind === 'letter') {
     // Lettre de la soirée magique : un chapeau de magicien, puis de gentils messages
     state.fun = Math.min(100, state.fun + 20);
@@ -1165,6 +1180,12 @@ async function openSettings() {
   bindChoices(card.querySelector('[data-group=species]'), state.species || 'chat', (v) => { state.species = v; showTraitHint(card, v, state.gender); save(); });
   bindChoices(card.querySelector('[data-group=gender]'), state.gender || 'm', (v) => { state.gender = v; showTraitHint(card, state.species, v); save(); });
   bindChoices(card.querySelector('[data-group=pace]'), state.pace || 'normal', (v) => { state.pace = v; save(); });
+  // Taille de tous les animaux : les réglages se ferment, puis les fenêtres s'agrandissent (pattes au même endroit)
+  bindChoices(card.querySelector('[data-group=scale]'), String(petScaleNow), (v) => {
+    petScaleNow = Number(v);
+    closeModal();
+    setTimeout(() => desk.setScale(petScaleNow), 300);
+  });
   bindChoices(card.querySelector('[data-group=lang]'), langSetting, (v) => { langSetting = v; desk.setLang(v); });
   updatePauseButton();
   buildAccessories(card.querySelector('[data-group=accessory]'));
@@ -1229,7 +1250,11 @@ function renderFriends(data) {
     };
     if (f.status === 'received') button(t('Accepter'), null, async () => renderFriends(await desk.online.accept(f.code)));
     else if (f.status === 'sent') { const s = document.createElement('em'); s.textContent = t('en attente'); row.appendChild(s); }
-    else if (f.online) button('🚪', 'Envoyer en visite', () => sendVisit(f));
+    else {
+      if (f.online) button('🚪', 'Envoyer en visite', () => sendVisit(f));
+      button('🎁', 'Envoyer un cadeau', () => sendGift(f, 'cadeau'));
+      button('💌', 'Envoyer une carte postale', () => toggleCardChoices(row, f));
+    }
     button('✕', 'Retirer cet ami', async () => { if (confirm(t('Retirer {name} de tes amis ?', { name: f.owner || f.code }))) renderFriends(await desk.online.remove(f.code)); });
     list.appendChild(row);
   }
@@ -1239,6 +1264,35 @@ function renderFriends(data) {
 async function loadFriends() {
   $('fr-msg').textContent = '';
   renderFriends(await desk.online.get());
+}
+
+// Messages des cartes postales : seul le numéro voyage (chacun le lit dans sa langue).
+// Ne jamais changer l'ordre : ajouter les nouveaux à la fin.
+const CARD_MESSAGES = ['Je pense à toi !', 'Bonne journée ! ☀️', 'Tu me manques !', 'Joyeux anniversaire ! 🎂', 'Bon courage ! 💪', 'Gros bisous ! 😘'];
+
+// Liste des messages sous la ligne de l'ami ; un clic envoie la carte
+function toggleCardChoices(row, f) {
+  const open = row.nextElementSibling && row.nextElementSibling.classList.contains('card-choices');
+  document.querySelectorAll('#fr-list .card-choices').forEach((el) => el.remove());
+  if (open) return;
+  const box = document.createElement('div');
+  box.className = 'card-choices';
+  CARD_MESSAGES.forEach((text, i) => {
+    const b = document.createElement('button');
+    b.textContent = t(text);
+    b.addEventListener('click', () => { box.remove(); sendGift(f, 'carte', i); });
+    box.appendChild(b);
+  });
+  row.after(box);
+}
+
+// Cadeau ou carte postale (un de chaque par jour et par ami) ; il arrive même si l'ami n'est pas connecté
+async function sendGift(f, kind, msg = 0) {
+  const r = await desk.online.gift(f.code, kind, msg);
+  const name = f.owner || f.code;
+  $('fr-msg').textContent = r.error === 'deja' ? t('Déjà envoyé aujourd\'hui à {name} : réessaie demain.', { name })
+    : r.error ? t('Pas de connexion pour le moment.')
+      : kind === 'carte' ? t('Carte postale envoyée à {name} ! 💌', { name }) : t('Cadeau envoyé à {name} ! 🎁', { name });
 }
 
 // « Envoyer en visite » : les réglages se ferment d'abord (sa fenêtre doit retrouver sa taille pour qu'il parte)

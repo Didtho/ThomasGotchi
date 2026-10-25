@@ -4,8 +4,12 @@ const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 
-const W = 240;
-const H = 300;
+// Taille des fenêtres d'animaux (240 x 300 à la taille normale). Le réglage « Taille des animaux » (petScale)
+// agrandit tout : ces valeurs suivent, et leurs pages sont zoomées (voir setPetScale).
+let petScale = 1;
+let W = 240;
+let H = 300;
+const PET_SESSION = 'pets'; // les fenêtres d'animaux ont leur propre session : leur zoom ne touche pas les autres fenêtres
 const MAX_PETS = 5;
 
 // ---- Langue : automatique (celle de l'ordinateur) ou choisie dans les réglages ----
@@ -135,9 +139,12 @@ function createPetWindow(id) {
       nodeIntegration: false,
       backgroundThrottling: false,
       additionalArguments: USE_DROP_ZONE ? ['--tg-drop-zone'] : [],
+      partition: PET_SESSION,
+      zoomFactor: petScale,
     },
   });
   const p = { id, win, name: '', active: false, expandUp: 0, expandDown: 0, dragTimer: null, ignoring: true };
+  win.webContents.on('did-finish-load', () => win.webContents.setZoomFactor(petScale));
   pets.set(id, p);
 
   win.setAlwaysOnTop(true, PET_LEVEL);
@@ -150,7 +157,7 @@ function createPetWindow(id) {
     if (!alive(p)) return;
     const b = win.getBounds();
     const hidden = Math.max(0, screen.getDisplayMatching(b).workArea.y - b.y);
-    if (hidden !== p.hiddenTop) { p.hiddenTop = hidden; win.webContents.send('hidden-top', hidden); }
+    if (hidden !== p.hiddenTop) { p.hiddenTop = hidden; win.webContents.send('hidden-top', hidden / petScale); }
   });
   if (USE_DROP_ZONE) createDropZone(p);
   // Au chargement, il apprend si le mode « ne pas déranger » est actif
@@ -214,8 +221,9 @@ const petOfZone = (sender) => [...pets.values()].find((p) => p.zone && !p.zone.i
 
 ipcMain.on('drop-box', (e, box) => {
   const p = petOf(e.sender);
-  if (!p || !p.zone) return;
-  p.zoneBox = box;
+  if (!p || !p.zone || !box) return;
+  // La page de l'animal est zoomée : sa silhouette est convertie en points de l'écran
+  p.zoneBox = { x: box.x * petScale, y: box.y * petScale, w: Math.round(box.w * petScale), h: Math.round(box.h * petScale) };
   syncDropZone(p);
 });
 
@@ -245,6 +253,32 @@ ipcMain.on('zone-diag', (e, text) => {
 });
 
 if (USE_DROP_ZONE) setInterval(() => { for (const p of pets.values()) syncDropZone(p); }, 100);
+
+// Réglage « Taille des animaux » (1, 1,25 ou 1,5) : fenêtres et pages agrandies, pattes gardées au même endroit
+function applyScaleValues(scale) {
+  petScale = [1, 1.25, 1.5].includes(scale) ? scale : 1;
+  W = Math.round(240 * petScale);
+  H = Math.round(300 * petScale);
+  FEET = 290 * petScale;
+}
+
+function setPetScale(scale) {
+  const oldW = W, oldFeet = FEET;
+  applyScaleValues(scale);
+  for (const p of [...pets.values(), ...guests.values()]) {
+    if (!alive(p)) continue;
+    const b = p.win.getBounds();
+    const feetX = b.x + oldW / 2, feetY = b.y + p.expandUp + oldFeet;
+    p.win.webContents.setZoomFactor(petScale);
+    placeWindow(p, feetX - W / 2, feetY - FEET - p.expandUp);
+    saveWindowPosition(p);
+  }
+  sendToPets('scale', petScale);
+  saveSettings();
+}
+
+ipcMain.on('get-scale', (e) => { e.returnValue = petScale; });
+ipcMain.on('set-scale', (_e, scale) => setPetScale(Number(scale)));
 
 function saveWindowPosition(p) {
   if (!alive(p) || p.guest) return;
@@ -597,7 +631,7 @@ ipcMain.handle('drag-end', (e) => {
 // fenêtres ouvertes : les animaux peuvent marcher sur leur bord supérieur, tombent au bord ou quand la fenêtre
 // disparaît, et suivent la fenêtre si on la déplace. Sans ces informations, seul le bas de l'écran compte.
 
-const FEET = 290; // distance entre le haut de la fenêtre d'un animal et la ligne où posent ses pattes
+let FEET = 290; // distance entre le haut de la fenêtre d'un animal et la ligne où posent ses pattes (suit la taille)
 let platforms = []; // bords visibles : { h, x1, x2, y } en coordonnées d'écran (DIP)
 let windowRects = new Map(); // id de fenêtre -> { x1, y1, x2, y2 }
 let watcher = null;
@@ -832,8 +866,12 @@ ipcMain.handle('climb', (e) => {
   return { dir: Math.sign(landX - f.x) };
 });
 
-ipcMain.handle('expand', (e, extra) => {
-  const p = petOf(e.sender);
+ipcMain.handle('expand', async (e, cssExtra) => {
+  const r = expandPet(petOf(e.sender), Math.round(cssExtra * petScale));
+  return r && { above: r.above, extra: r.extra / petScale }; // la page compte en points zoomés
+});
+
+function expandPet(p, extra) {
   if (!p) return null;
   if (p.expandUp || p.expandDown) return { above: p.expandUp > 0, extra: p.expandUp || p.expandDown };
   const b = p.win.getBounds();
@@ -852,7 +890,7 @@ ipcMain.handle('expand', (e, extra) => {
   else p.expandDown = roomDown;
   p.win.setBounds({ x: b.x, y: top - p.expandUp, width: W, height: H + p.expandUp + p.expandDown });
   return { above: p.expandUp > 0, extra: p.expandUp || p.expandDown };
-});
+}
 
 ipcMain.handle('collapse', (e) => {
   const p = petOf(e.sender);
@@ -877,6 +915,8 @@ function verticalGap(wa, y) {
 ipcMain.handle('move-by', (e, dx, dy) => {
   const p = petOf(e.sender);
   if (!p || p.dragTimer) return null;
+  dx *= petScale; // un grand animal fait de plus grands pas
+  dy *= petScale;
   const b = p.win.getBounds();
   const feetX = b.x + W / 2 + dx;
   const feetY = b.y + b.height;
@@ -1388,7 +1428,7 @@ function sendToPets(channel, value) {
 }
 
 function saveSettings() {
-  try { writeJson('settings.json', { dnd, city, lang: langSetting, autoHide: autoHideSetting }); } catch { /* sans gravité */ }
+  try { writeJson('settings.json', { dnd, city, lang: langSetting, autoHide: autoHideSetting, scale: petScale }); } catch { /* sans gravité */ }
 }
 
 ipcMain.on('get-lang', (e) => { e.returnValue = { setting: langSetting, lang: currentLang() }; });
@@ -1436,7 +1476,7 @@ function sendCursor() {
       p.cursorInside = inside;
       diag(`[${p.name || p.id}] souris ${inside ? 'entre dans' : 'sort de'} sa fenêtre (${c.x}, ${c.y})`);
     }
-    p.win.webContents.send('cursor', { x: c.x - b.x, y: c.y - b.y });
+    p.win.webContents.send('cursor', { x: (c.x - b.x) / petScale, y: (c.y - b.y) / petScale }); // en points de sa page
   }
 }
 
@@ -1546,6 +1586,11 @@ async function syncOnline() {
   sendToPets('online', publicOnline());
   for (const v of r.incoming || []) receiveGuest(v);
   for (const v of r.back || []) comeHome(v);
+  // Cadeau ou carte postale d'un ami : remis à l'un des animaux présents, qui le pose sur le bureau
+  for (const gift of r.gifts || []) {
+    const p = [...pets.values()].find((x) => alive(x) && !x.away && x.lastState && !x.lastState.dead);
+    if (p) p.win.webContents.send('visit', { type: 'gift', kind: gift.kind, msg: gift.msg || 0, owner: gift.owner, pet: gift.pet });
+  }
   maybeVisit();
 }
 
@@ -1658,7 +1703,7 @@ function comeHome(v) {
 // Un animal d'un ami arrive en visite : une fenêtre d'animal « invité », sans sauvegarde ni réglages
 function receiveGuest(v) {
   if (guests.has(v.id)) return;
-  if (dnd || allHidden() || guests.size >= 1) {
+  if (dnd || allHidden() || guests.size >= 3) { // jusqu'à 3 visiteurs en même temps
     api({ action: 'visit-end', secret: online.secret, id: v.id, played: '' }); // pas le moment : il rentre aussitôt
     return;
   }
@@ -1670,8 +1715,10 @@ function receiveGuest(v) {
     transparent: true, frame: false, resizable: false, movable: true, maximizable: false, minimizable: false,
     fullscreenable: false, skipTaskbar: true, hasShadow: false, alwaysOnTop: true, enableLargerThanScreen: true,
     show: false, backgroundColor: '#00000000',
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false,
+      partition: PET_SESSION, zoomFactor: petScale },
   });
+  win.webContents.on('did-finish-load', () => win.webContents.setZoomFactor(petScale));
   const g = { id: 'invite-' + v.id, win, visit: v, guest: true, name: v.pet.name || '', played: new Set(),
     active: true, expandUp: 0, expandDown: 0, dragTimer: null, ignoring: true };
   guests.set(v.id, g);
@@ -1742,6 +1789,16 @@ ipcMain.handle('online-open', async (_e, open) => {
   await syncOnline();
   return publicOnline();
 });
+// Envoyer un cadeau ou une carte postale à un ami, de la part de cet animal
+// (msg : numéro du message de la carte, choisi dans une liste ; jamais de texte libre)
+ipcMain.handle('online-gift', async (e, code, kind, msg) => {
+  const p = petOf(e.sender);
+  if (!online || !p || p.guest) return { error: 'reseau' };
+  const card = petCard(p);
+  return api({ action: 'gift-send', secret: online.secret, code: String(code || ''), kind: kind === 'carte' ? 'carte' : 'cadeau',
+    msg: Number(msg) || 0, owner: card.owner, pet: card.pet.name || '' });
+});
+
 // « Envoyer en visite » : cet animal part chez l'ami choisi
 ipcMain.handle('online-visit', async (e, code) => {
   const p = petOf(e.sender);
@@ -1953,6 +2010,7 @@ app.setAppUserModelId('com.thomasgotchi.app'); // nom affiché dans les notifica
 
 app.whenReady().then(() => {
   if (isMac && app.dock) app.dock.hide();
+  applyScaleValues(Number((readJson('settings.json') || {}).scale) || 1); // taille des animaux, avant de créer leurs fenêtres
   const saved = readJson('pets.json');
   const ids = Array.isArray(saved) && saved.length ? saved.slice(0, MAX_PETS) : ['main'];
   ids.forEach(createPetWindow);

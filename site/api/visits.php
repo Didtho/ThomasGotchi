@@ -54,6 +54,22 @@ $db->exec('CREATE TABLE IF NOT EXISTS tg_visits (
 
 // Ajouté après coup : ce que le visiteur a mangé chez l'ami (il en profite à son retour)
 $db->exec('ALTER TABLE tg_visits ADD COLUMN IF NOT EXISTS ate SMALLINT NOT NULL DEFAULT 0');
+// Cadeaux et cartes postales entre amis (arrivent même si l'ami n'est pas connecté) ; msg : numéro du message choisi
+$db->exec('CREATE TABLE IF NOT EXISTS tg_gifts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sender INT UNSIGNED NOT NULL,
+    recipient INT UNSIGNED NOT NULL,
+    kind VARCHAR(8) NOT NULL,
+    msg TINYINT NOT NULL DEFAULT 0,
+    owner VARCHAR(20) NOT NULL DEFAULT \'\',
+    pet VARCHAR(20) NOT NULL DEFAULT \'\',
+    delivered TINYINT NOT NULL DEFAULT 0,
+    created DATETIME NOT NULL,
+    KEY (recipient, delivered)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+$db->exec('ALTER TABLE tg_gifts ADD COLUMN IF NOT EXISTS msg TINYINT NOT NULL DEFAULT 0');
+
+const MAX_GUESTS = 3; // visiteurs reçus en même temps
 
 const ONLINE = 90; // secondes : au-delà, l'application de l'ami est considérée comme fermée
 
@@ -148,7 +164,34 @@ switch ((string) ($in['action'] ?? '')) {
             $visits("SELECT * FROM tg_visits WHERE host = ? AND state = 'going'"));
         $back = array_map(fn($v) => ['id' => (int) $v['id'], 'played' => $v['played'], 'ate' => (int) $v['ate'], 'owner' => $v['hostOwner']],
             $visits("SELECT v.id, v.played, v.ate, p.owner AS hostOwner FROM tg_visits v JOIN tg_players p ON p.id = v.host WHERE v.guest = ? AND v.state = 'back'"));
-        out(['code' => $me['code'], 'friends' => $friends, 'incoming' => $incoming, 'back' => $back]);
+        // Cadeaux et cartes reçus : remis une seule fois
+        $q = $db->prepare('SELECT g.id, g.kind, g.msg, g.owner, g.pet FROM tg_gifts g WHERE g.recipient = ? AND g.delivered = 0');
+        $q->execute([$me['id']]);
+        $gifts = $q->fetchAll(PDO::FETCH_ASSOC);
+        if ($gifts) {
+            $db->prepare('UPDATE tg_gifts SET delivered = 1 WHERE recipient = ? AND delivered = 0')->execute([$me['id']]);
+        }
+        $db->exec('DELETE FROM tg_gifts WHERE delivered = 1 AND created < NOW() - INTERVAL 7 DAY');
+        out(['code' => $me['code'], 'friends' => $friends, 'incoming' => $incoming, 'back' => $back,
+            'gifts' => array_map(fn($g) => ['id' => (int) $g['id'], 'kind' => $g['kind'], 'msg' => (int) $g['msg'], 'owner' => $g['owner'], 'pet' => $g['pet']], $gifts)]);
+
+    // Envoyer un cadeau ou une carte postale à un ami : un de chaque par jour et par ami
+    case 'gift-send':
+        $me = me($db, $in);
+        $kind = ($in['kind'] ?? '') === 'carte' ? 'carte' : 'cadeau';
+        $other = byCode($db, (string) ($in['code'] ?? ''));
+        $l = $other ? friendLink($db, (int) $me['id'], (int) $other['id']) : null;
+        if (!$l || !$l['accepted']) {
+            out(['error' => 'ami']);
+        }
+        $st = $db->prepare('SELECT COUNT(*) FROM tg_gifts WHERE sender = ? AND recipient = ? AND kind = ? AND created > NOW() - INTERVAL 1 DAY');
+        $st->execute([$me['id'], $other['id'], $kind]);
+        if ($st->fetchColumn() > 0) {
+            out(['error' => 'deja']);
+        }
+        $db->prepare('INSERT INTO tg_gifts (sender, recipient, kind, msg, owner, pet, created) VALUES (?, ?, ?, ?, ?, ?, NOW())')
+            ->execute([$me['id'], $other['id'], $kind, max(0, min(20, (int) ($in['msg'] ?? 0))), clean((string) ($in['owner'] ?? ''), 16), clean((string) ($in['pet'] ?? ''), 14)]);
+        out(['status' => 'ok']);
 
     // Demande d'amitié par code ; si l'autre l'avait déjà demandée, l'amitié est acceptée
     case 'friend-add':
@@ -200,9 +243,15 @@ switch ((string) ($in['action'] ?? '')) {
         if (!$other['open'] || strtotime($other['last_seen']) < time() - ONLINE) {
             out(['error' => 'absent']);
         }
-        $st = $db->prepare("SELECT COUNT(*) FROM tg_visits WHERE (guest = ? AND state IN ('going', 'here', 'back')) OR (host = ? AND state IN ('going', 'here'))");
-        $st->execute([$me['id'], $other['id']]);
+        // Un seul de ses animaux en visite à la fois ; l'ami peut recevoir jusqu'à MAX_GUESTS visiteurs
+        $st = $db->prepare("SELECT COUNT(*) FROM tg_visits WHERE guest = ? AND state IN ('going', 'here', 'back')");
+        $st->execute([$me['id']]);
         if ($st->fetchColumn() > 0) {
+            out(['error' => 'parti']);
+        }
+        $st = $db->prepare("SELECT COUNT(*) FROM tg_visits WHERE host = ? AND state IN ('going', 'here')");
+        $st->execute([$other['id']]);
+        if ($st->fetchColumn() >= MAX_GUESTS) {
             out(['error' => 'occupe']);
         }
         $db->prepare("INSERT INTO tg_visits (guest, host, pet, owner, state, updated) VALUES (?, ?, ?, ?, 'going', NOW())")
@@ -235,6 +284,7 @@ switch ((string) ($in['action'] ?? '')) {
         $me = me($db, $in);
         $db->prepare('DELETE FROM tg_friends WHERE a = ? OR b = ?')->execute([$me['id'], $me['id']]);
         $db->prepare('DELETE FROM tg_visits WHERE guest = ? OR host = ?')->execute([$me['id'], $me['id']]);
+        $db->prepare('DELETE FROM tg_gifts WHERE sender = ? OR recipient = ?')->execute([$me['id'], $me['id']]);
         $db->prepare('DELETE FROM tg_players WHERE id = ?')->execute([$me['id']]);
         out(['status' => 'ok']);
 }

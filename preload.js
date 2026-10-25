@@ -7,6 +7,9 @@ contextBridge.exposeInMainWorld('desk', {
   lang: initialLang,
   country: ipcRenderer.sendSync('get-country'), // pays du système, pour les fêtes qui en dépendent
   isMac: process.platform === 'darwin',
+  scale: ipcRenderer.sendSync('get-scale'), // taille des animaux (réglage commun à tous)
+  setScale: (scale) => ipcRenderer.send('set-scale', scale),
+  onScale: (cb) => ipcRenderer.on('scale', (_e, scale) => cb(scale)),
   dropZone: process.argv.includes('--tg-drop-zone'), // zone de dépôt posée sur l'animal (Mac, voir main.js)
   setLang: (value) => ipcRenderer.send('set-lang', value),
   onLang: (cb) => ipcRenderer.on('lang', (_e, l) => cb(l)),
@@ -37,6 +40,7 @@ contextBridge.exposeInMainWorld('desk', {
     remove: (code) => ipcRenderer.invoke('online-remove', code),
     open: (on) => ipcRenderer.invoke('online-open', on),
     visit: (code) => ipcRenderer.invoke('online-visit', code),
+    gift: (code, kind, msg) => ipcRenderer.invoke('online-gift', code, kind, msg), // 'cadeau' ou 'carte' (+ numéro du message)
   },
   guestAte: (amount) => ipcRenderer.send('guest-ate', amount), // invité : ce qu'il vient de manger chez l'hôte
   onOnline: (cb) => ipcRenderer.on('online', (_e, data) => cb(data)),
