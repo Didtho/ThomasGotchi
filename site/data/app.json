@@ -541,6 +541,14 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.7.2",
+   "date": "2026-10-25",
+   "items": [
+    "Visites : le bouton 🚪 de l'onglet « Amis » refusait toujours (les réglages ouverts empêchaient le départ) ; il ferme maintenant les réglages puis l'animal part",
+    "Si le départ est impossible, l'animal dit pourquoi (il dort, il est malade, déjà en visite, l'ami reçoit déjà quelqu'un…)"
+   ]
+  },
+  {
    "version": "2.7.1",
    "date": "2026-10-25",
    "items": [
@@ -868,17 +876,6 @@
     "Numéro de version et état de la mise à jour dans le menu et les réglages",
     "Nouvelle icône (Simba)",
     "Installation dans Program Files"
-   ]
-  },
-  {
-   "version": "1.2.0",
-   "date": "2026-10-24",
-   "items": [
-    "Modèles Simba, Snoop et Grisette d'après les chats de la maison",
-    "Pelages : museau, liseré, plastron, pattes blancs, taches, bout de queue, poils longs",
-    "Choix il / elle, phrases accordées",
-    "Pipi après avoir bu, et contre le bord de l'écran",
-    "Ronflement plus audible, bouton « Recommencer »"
    ]
   }
  ]

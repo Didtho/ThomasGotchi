@@ -479,6 +479,11 @@
     'Vous êtes amis ! 🎉': 'You\'re friends! 🎉',
     'Me revoilà ! J\'ai bien mangé chez {owner} 😋': 'I\'m back! I ate well at {owner}\'s 😋',
     'Me revoilà ! J\'ai joué avec {played} et bien mangé chez {owner} 😋': 'I\'m back! I played with {played} and ate well at {owner}\'s 😋',
+    'Zzz… je dors, on ira plus tard 😴': 'Zzz… I\'m sleeping, we\'ll go later 😴',
+    'Je ne me sens pas assez bien pour sortir… 🤒': 'I don\'t feel well enough to go out… 🤒',
+    'Je suis déjà en visite !': 'I\'m already on a visit!',
+    '{name} reçoit déjà quelqu\'un, on essaiera plus tard.': '{name} already has a visitor, we\'ll try later.',
+    'Pas possible pour le moment.': 'Not possible right now.',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;
