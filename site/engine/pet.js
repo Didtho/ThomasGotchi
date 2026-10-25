@@ -453,6 +453,7 @@ const Pet = {
   cure(s) {
     const a = AILMENTS[s.ailment];
     s.ailment = null;
+    s.stats.cures = (s.stats.cures || 0) + 1; // pour le trophée « Petit docteur »
     s.health = clamp(Math.max(s.health, 60));
     return a ? a.cured : '';
   },
@@ -572,3 +573,31 @@ const TRICKS = [
     earned: (s) => Pet.stage(s) === 'adult' },
 ];
 Pet.TRICKS = TRICKS;
+
+// Trophées : petits défis remportés au fil du temps, rangés dans le carnet. check(s) : vrai quand c'est gagné
+const DAY = 24 * HOUR;
+const festivals = (s) => (s.greeted || []).filter((k) => !/-(cadeau|oeufs|lettre)$/.test(k)).length;
+const TROPHIES = [
+  { id: 'repas', icon: '🍽️', name: 'Premier repas', hint: 'manger un premier fichier', check: (s) => s.meals >= 1 },
+  { id: 'gourmet', icon: '🍰', name: 'Fin gourmet', hint: 'manger 100 fichiers', check: (s) => s.meals >= 100 },
+  { id: 'calins', icon: '🤗', name: 'Pot de colle', hint: 'recevoir 50 câlins', check: (s) => s.stats.hugs >= 50 },
+  { id: 'menage', icon: '🧹', name: 'Grand ménage', hint: 'ramasser 30 crottes', check: (s) => s.stats.poopsCleaned >= 30 },
+  { id: 'semaine', icon: '📅', name: 'Une semaine ensemble', hint: 'vivre 7 jours', check: (s) => Date.now() - s.hatchAt >= 7 * DAY },
+  { id: 'mois', icon: '🗓️', name: 'Un mois ensemble', hint: 'vivre 30 jours', check: (s) => Date.now() - s.hatchAt >= 30 * DAY },
+  { id: 'soigne', icon: '⭐', name: 'Chouchouté', hint: 'devenir un adulte très bien soigné', check: (s) => Pet.stage(s) === 'adult' && s.care >= 80 },
+  { id: 'docteur', icon: '🩺', name: 'Petit docteur', hint: 'guérir 3 petits ennuis', check: (s) => (s.stats.cures || 0) >= 3 },
+  { id: 'voyageur', icon: '🧳', name: 'Grand voyageur', hint: 'rendre 5 visites à des amis', check: (s) => (s.stats.visits || 0) >= 5 },
+  { id: 'hote', icon: '🏡', name: 'Maison accueillante', hint: 'recevoir 5 visiteurs', check: (s) => (s.stats.guests || 0) >= 5 },
+  { id: 'photo', icon: '📸', name: 'Star des photos', hint: 'prendre 5 photos', check: (s) => (s.stats.photos || 0) >= 5 },
+  { id: 'savant', icon: '🎓', name: 'Savant', hint: 'apprendre tous les tours', check: (s) => (s.tricks || []).length >= TRICKS.length },
+  { id: 'fetard', icon: '🎉', name: 'Fêtard', hint: 'fêter 5 fêtes', check: (s) => festivals(s) >= 5 },
+  { id: 'coquet', icon: '🎀', name: 'Coquet', hint: 'gagner 5 accessoires', check: (s) => s.unlocked.length >= 5 },
+];
+Pet.TROPHIES = TROPHIES;
+// Trophées gagnés à l'instant (ils sont ajoutés à s.trophies)
+Pet.checkTrophies = (s) => {
+  s.trophies = s.trophies || [];
+  const fresh = TROPHIES.filter((tr) => !s.trophies.includes(tr.id) && tr.check(s));
+  for (const tr of fresh) s.trophies.push(tr.id);
+  return fresh;
+};
