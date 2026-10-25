@@ -1,6 +1,7 @@
 User-agent: *
 Disallow: /cache/
 Disallow: /inc/
+Disallow: /api/
 Disallow: /download.php
 
 Sitemap: https://thomasgotchi.mirimix.fr/sitemap.php

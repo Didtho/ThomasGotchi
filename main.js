@@ -67,6 +67,8 @@ function savePetList() {
 
 function petOf(sender) {
   for (const p of pets.values()) if (p.win && !p.win.isDestroyed() && p.win.webContents === sender) return p;
+  // Animal venu en visite d'un autre ordinateur (voir « Visites entre ordinateurs »)
+  for (const g of guests.values()) if (g.win && !g.win.isDestroyed() && g.win.webContents === sender) return g;
   return null;
 }
 
@@ -105,7 +107,7 @@ function placeWindow(p, x, y) {
 const PET_LEVEL = isMac ? 'pop-up-menu' : 'screen-saver';
 
 function keepOnTop() {
-  for (const p of pets.values()) if (alive(p)) p.win.setAlwaysOnTop(true, PET_LEVEL);
+  for (const p of [...pets.values(), ...guests.values()]) if (alive(p)) p.win.setAlwaysOnTop(true, PET_LEVEL);
 }
 
 function createPetWindow(id) {
@@ -245,7 +247,7 @@ ipcMain.on('zone-diag', (e, text) => {
 if (USE_DROP_ZONE) setInterval(() => { for (const p of pets.values()) syncDropZone(p); }, 100);
 
 function saveWindowPosition(p) {
-  if (!alive(p)) return;
+  if (!alive(p) || p.guest) return;
   const [x, y] = p.win.getPosition();
   try { writeJson(windowFile(p.id), { x, y: y + p.expandUp }); } catch { /* sans gravité */ }
 }
@@ -296,8 +298,8 @@ function objectWindows() {
 function toggleVisible() {
   const show = !anyVisible();
   hiddenByUser = !show;
-  for (const p of pets.values()) {
-    if (!alive(p)) continue;
+  for (const p of [...pets.values(), ...guests.values()]) {
+    if (!alive(p) || p.away) continue; // parti en visite : il reste absent
     if (show) p.win.show(); else p.win.hide();
   }
   for (const w of objectWindows()) if (show) w.showInactive(); else w.hide();
@@ -359,12 +361,14 @@ const siteUrl = () => 'https://thomasgotchi.mirimix.fr/' + (currentLang() === 'f
 
 function sendMenu(p, action) {
   if (!alive(p)) return;
+  if (p.away) return notify(tr('{name} est en visite chez {owner} 🧳', { name: p.name, owner: p.away.owner }));
   p.win.show();
   p.win.webContents.send('menu', action);
 }
 
 function openSettings(p) {
   if (!alive(p)) return;
+  if (p.away) return notify(tr('{name} est en visite chez {owner} 🧳', { name: p.name, owner: p.away.owner }));
   p.win.show();
   p.win.webContents.send('menu', 'settings');
 }
@@ -390,7 +394,7 @@ function buildTrayMenu() {
     {
       label: tr('Ramener au coin de l\'écran'),
       click: () => {
-        list.forEach((p, i) => { const d = defaultPosition(i); placeWindow(p, d.x, d.y); if (alive(p)) p.win.show(); });
+        list.forEach((p, i) => { if (p.away) return; const d = defaultPosition(i); placeWindow(p, d.x, d.y); if (alive(p)) p.win.show(); });
         hiddenByUser = false;
         for (const w of objectWindows()) w.showInactive();
         buildTrayMenu();
@@ -443,9 +447,10 @@ function makeTrayIcons() {
 const ALERTS = { hunger: '{name} a faim 🍔', thirst: '{name} a soif 💧', sick: '{name} est malade 🤒', dirty: '{name} a besoin d\'un bain 🛁' };
 function updateTrayAlert() {
   if (!tray) return;
-  const lines = [...pets.values()].filter((p) => alive(p) && p.alert).map((p) => tr(ALERTS[p.alert], { name: p.name || tr('Œuf') }));
+  const lines = [...pets.values()].filter((p) => alive(p) && p.alert && !p.away).map((p) => tr(ALERTS[p.alert], { name: p.name || tr('Œuf') }));
   tray.setImage(lines.length ? trayIcons.alert : trayIcons.normal);
-  tray.setToolTip([`ThomasGotchi v${app.getVersion()}`, ...lines].join('\n'));
+  const away = [...pets.values()].filter((p) => p.away).map((p) => tr('{name} est en visite chez {owner} 🧳', { name: p.name, owner: p.away.owner }));
+  tray.setToolTip([`ThomasGotchi v${app.getVersion()}`, ...lines, ...away].join('\n'));
 }
 
 ipcMain.on('pet-status', (e, alert) => {
@@ -725,7 +730,7 @@ function checkPoopSupports() {
 function checkSupports() {
   checkPoopSupports();
   for (const p of pets.values()) {
-    if (!alive(p) || !p.platform || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) continue;
+    if (!alive(p) || !p.platform || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown || p.sliding) continue;
     const rect = windowRects.get(p.platform);
     const b = p.win.getBounds();
     if (rect && p.platformX !== null && rect.x1 !== p.platformX) {
@@ -858,7 +863,9 @@ ipcMain.handle('load-state', (e) => {
 ipcMain.handle('save-state', (e, state) => {
   const p = petOf(e.sender);
   if (!p || !state) return false;
+  if (p.guest) return false; // un invité ne s'enregistre pas ici
   const name = state.name || '';
+  p.lastState = state; // prénom du maître et apparence, pour les visites entre ordinateurs
   p.active = !state.dead && Date.now() >= state.hatchAt;
   if (name !== p.name) { p.name = name; buildTrayMenu(); }
   try { writeJson(stateFile(p.id), state); return true; } catch { return false; }
@@ -1393,7 +1400,8 @@ function saveFriendship() {
 
 const lastMeet = new Map();
 function checkMeetings() {
-  const list = [...pets.values()].filter((p) => alive(p) && p.active && p.win.isVisible() && !p.dragTimer);
+  // Les animaux en visite chez nous jouent aussi avec ceux de la maison (sans compter dans leur amitié)
+  const list = [...pets.values(), ...guests.values()].filter((p) => alive(p) && p.active && p.win.isVisible() && !p.dragTimer && !p.sliding);
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
       const a = list[i], b = list[j];
@@ -1402,6 +1410,14 @@ function checkMeetings() {
       const key = [a.id, b.id].sort().join('|');
       if (!close || Date.now() - (lastMeet.get(key) || 0) < 45000) continue;
       lastMeet.set(key, Date.now());
+      if (a.guest || b.guest) {
+        const [guest, host] = a.guest ? [a, b] : [b, a];
+        if (!host.guest && host.name) guest.played.add(host.name); // raconté au retour : « j'ai joué avec … »
+        const game = ['hug', 'chase', 'jump'][Math.floor(Math.random() * 3)];
+        a.win.webContents.send('meet', { name: b.name, side: bb.x > ba.x ? 1 : -1, game, role: 'flee', levelUp: null });
+        b.win.webContents.send('meet', { name: a.name, side: ba.x > bb.x ? 1 : -1, game, role: 'chase', levelUp: null });
+        continue;
+      }
       const before = friendLevel(friendship[key] || 0);
       friendship[key] = Math.min(100, (friendship[key] || 0) + 5);
       const level = friendLevel(friendship[key]);
@@ -1420,15 +1436,250 @@ function checkMeetings() {
 
 // Chaque animal sait où sont ses amis (pour aller les voir) et où en est leur amitié (pour le carnet)
 function sendFriends() {
-  const list = [...pets.values()].filter((p) => alive(p));
+  // Un visiteur venu d'ailleurs compte comme un copain : ceux de la maison vont le voir, et lui va vers eux
+  const list = [...pets.values(), ...guests.values()].filter((p) => alive(p) && !p.away);
   for (const p of list) {
     const bx = p.win.getBounds().x;
     p.win.webContents.send('friends', list.filter((o) => o !== p && o.active).map((o) => {
-      const pts = friendship[[p.id, o.id].sort().join('|')] || 0;
+      const pts = p.guest || o.guest ? 40 : friendship[[p.id, o.id].sort().join('|')] || 0;
       return { name: o.name, x: o.win.getBounds().x - bx, points: pts, level: friendLevel(pts) };
     }));
   }
 }
+
+// ---- Visites entre ordinateurs (amis acceptés des deux côtés, voir site/api/visits.php) ----
+// L'installation ne s'inscrit qu'à la première ouverture de l'onglet « Amis » ; ensuite elle donne de ses nouvelles
+// toutes les 30 s. Un animal part vraiment : il quitte l'écran, apparaît chez l'ami (« invité »), puis revient.
+// TG_API permet de tester avec le service de WAMP.
+const VISITS_API = process.env.TG_API || 'https://thomasgotchi.mirimix.fr/api/visits.php';
+const VISIT_LENGTH = Number(process.env.TG_VISIT_LENGTH) || 10 * 60000;
+let online = null; // { code, secret, open } (online.json)
+let onlineData = { friends: [] };
+const guests = new Map(); // animaux venus en visite : id de visite -> fenêtre et infos
+let visitsToday = { day: '', count: 0 };
+
+async function api(body) {
+  try {
+    const r = await net.fetch(VISITS_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return await r.json();
+  } catch {
+    return { error: 'reseau' };
+  }
+}
+
+async function ensureOnline() {
+  if (online) return online;
+  const r = await api({ action: 'register' });
+  if (!r.code) return null;
+  online = { code: r.code, secret: r.secret, open: true };
+  writeJson('online.json', online);
+  return online;
+}
+
+// Prénom du maître et apparence d'un animal, d'après sa dernière sauvegarde
+function petCard(p) {
+  const s = p && p.lastState;
+  if (!s) return { owner: '', pet: {} };
+  return { owner: s.owner || '', pet: { name: s.name, species: s.species || 'chat', color: s.color, gender: s.gender, accessory: s.accessory, style: s.style } };
+}
+
+const publicOnline = () => ({ code: online ? online.code : null, open: online ? online.open : true, friends: onlineData.friends || [] });
+
+async function syncOnline() {
+  if (!online) return;
+  const first = [...pets.values()].find((p) => alive(p) && p.lastState);
+  const r = await api({ action: 'sync', secret: online.secret, open: online.open, ...petCard(first) });
+  if (r.error) return;
+  onlineData = r;
+  sendToPets('online', publicOnline());
+  for (const v of r.incoming || []) receiveGuest(v);
+  for (const v of r.back || []) comeHome(v);
+  maybeVisit();
+}
+
+// Un animal peut partir en visite s'il est éveillé, en forme et pas déjà occupé
+function canVisit(p) {
+  const s = p && p.lastState;
+  return alive(p) && !p.away && !p.sliding && p.win.isVisible() && !p.expandUp && !p.expandDown && !p.dragTimer
+    && s && !s.dead && !s.sleeping && !s.paused && !s.ailment && Date.now() >= s.hatchAt && (s.health || 100) >= 45;
+}
+
+// Visites spontanées : une ou deux par jour au plus, quand un ami a son application ouverte
+function maybeVisit() {
+  if (!online || !online.open || dnd || hiddenByUser) return;
+  const day = new Date().toDateString();
+  if (visitsToday.day !== day) visitsToday = { day, count: 0 };
+  if (visitsToday.count >= 2 || Math.random() > 1 / 60) return;
+  const friends = (onlineData.friends || []).filter((f) => f.status === 'ok' && f.online);
+  const ready = [...pets.values()].filter(canVisit);
+  if (!friends.length || !ready.length) return;
+  startVisit(ready[Math.floor(Math.random() * ready.length)], friends[Math.floor(Math.random() * friends.length)].code);
+}
+
+async function startVisit(p, code) {
+  if (!online || !canVisit(p)) return { error: 'occupe' };
+  const r = await api({ action: 'visit-start', secret: online.secret, code, ...petCard(p) });
+  if (r.error) return r;
+  visitsToday.count++;
+  p.away = { id: r.id, owner: r.owner };
+  diag(`[${p.name || p.id}] part en visite chez ${r.owner}`);
+  p.win.webContents.send('visit', { type: 'leave', owner: r.owner });
+  setTimeout(() => slideOut(p, () => { if (alive(p)) p.win.hide(); updateTrayAlert(); }), 2500);
+  return r;
+}
+
+// Bord de l'écran le plus proche pour sortir ou entrer
+function edgeOf(p) {
+  const b = p.win.getBounds();
+  const wa = screen.getDisplayMatching(b).workArea;
+  return { wa, dir: b.x + W / 2 < wa.x + wa.width / 2 ? -1 : 1 };
+}
+
+// Il marche jusqu'à sortir de l'écran (la fenêtre glisse ; la page n'anime que ses pattes)
+function slideOut(p, done) {
+  if (!alive(p)) return done && done();
+  const { wa, dir } = edgeOf(p);
+  p.sliding = true;
+  p.platform = null;
+  p.win.webContents.send('visit', { type: 'walk', dir });
+  const timer = setInterval(() => {
+    if (!alive(p)) { clearInterval(timer); return; }
+    const b = p.win.getBounds();
+    placeWindow(p, b.x + dir * 5, b.y);
+    if (b.x > wa.x + wa.width || b.x + W < wa.x) {
+      clearInterval(timer);
+      p.sliding = false;
+      p.win.webContents.send('visit', { type: 'walk', dir: 0 });
+      if (done) done();
+    }
+  }, 16);
+}
+
+// Il entre par un bord de l'écran, au sol, et s'avance un peu
+function slideIn(p, side, wa, done) {
+  if (!alive(p)) return;
+  const y = wa.y + wa.height - H;
+  const target = side < 0 ? wa.x + 40 + Math.random() * 160 : wa.x + wa.width - W - 40 - Math.random() * 160;
+  placeWindow(p, side < 0 ? wa.x - W : wa.x + wa.width, y);
+  p.sliding = true;
+  p.platform = null;
+  if (!p.win.isVisible()) p.win.showInactive();
+  p.win.webContents.send('visit', { type: 'walk', dir: -side });
+  const timer = setInterval(() => {
+    if (!alive(p)) { clearInterval(timer); return; }
+    const b = p.win.getBounds();
+    const nx = b.x - side * 5;
+    placeWindow(p, nx, y);
+    if (side < 0 ? nx >= target : nx <= target) {
+      clearInterval(timer);
+      p.sliding = false;
+      p.win.webContents.send('visit', { type: 'walk', dir: 0 });
+      if (done) done();
+    }
+  }, 16);
+}
+
+// Retour de visite : il revient par le bord de l'écran, tout content
+function comeHome(v) {
+  const p = [...pets.values()].find((x) => x.away && x.away.id === v.id);
+  api({ action: 'visit-home', secret: online.secret, id: v.id });
+  if (!alive(p)) return;
+  const owner = p.away.owner;
+  p.away = null;
+  const wa = screen.getDisplayMatching(p.win.getBounds()).workArea;
+  slideIn(p, Math.random() < 0.5 ? -1 : 1, wa, () => {
+    p.win.webContents.send('visit', { type: 'home', owner: v.owner || owner, played: v.played });
+    diag(`[${p.name || p.id}] rentre de chez ${v.owner || owner}`);
+  });
+  updateTrayAlert();
+}
+
+// Un animal d'un ami arrive en visite : une fenêtre d'animal « invité », sans sauvegarde ni réglages
+function receiveGuest(v) {
+  if (guests.has(v.id)) return;
+  if (dnd || hiddenByUser || guests.size >= 1) {
+    api({ action: 'visit-end', secret: online.secret, id: v.id, played: '' }); // pas le moment : il rentre aussitôt
+    return;
+  }
+  const first = [...pets.values()].find(alive);
+  const wa = first ? screen.getDisplayMatching(first.win.getBounds()).workArea : screen.getPrimaryDisplay().workArea;
+  const side = Math.random() < 0.5 ? -1 : 1;
+  const win = new BrowserWindow({
+    width: W, height: H, x: side < 0 ? wa.x - W : wa.x + wa.width, y: wa.y + wa.height - H,
+    transparent: true, frame: false, resizable: false, movable: true, maximizable: false, minimizable: false,
+    fullscreenable: false, skipTaskbar: true, hasShadow: false, alwaysOnTop: true, enableLargerThanScreen: true,
+    show: false, backgroundColor: '#00000000',
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
+  });
+  const g = { id: 'invite-' + v.id, win, visit: v, guest: true, name: v.pet.name || '', played: new Set(),
+    active: true, expandUp: 0, expandDown: 0, dragTimer: null, ignoring: true };
+  guests.set(v.id, g);
+  win.setAlwaysOnTop(true, PET_LEVEL);
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.setIgnoreMouseEvents(true, { forward: true });
+  win.loadFile(path.join(__dirname, 'src', 'index.html'));
+  win.on('closed', () => { g.win = null; guests.delete(v.id); });
+  win.webContents.once('did-finish-load', () => {
+    api({ action: 'visit-arrived', secret: online.secret, id: v.id });
+    diag(`visite de ${v.pet.name || '?'} (${v.owner})`);
+    slideIn(g, side, wa, () => win.webContents.send('visit', { type: 'arrive' }));
+    g.leaveTimer = setTimeout(() => guestLeave(g), VISIT_LENGTH);
+  });
+}
+
+function guestLeave(g) {
+  if (!alive(g)) return;
+  clearTimeout(g.leaveTimer);
+  g.win.webContents.send('visit', { type: 'bye' });
+  setTimeout(() => slideOut(g, () => {
+    api({ action: 'visit-end', secret: online.secret, id: g.visit.id, played: [...g.played][0] || '' });
+    if (alive(g)) g.win.destroy();
+  }), 2500);
+}
+
+// La page d'un invité apprend qui elle est (sa page est la même que celle d'un animal de la maison)
+ipcMain.on('get-guest', (e) => {
+  const g = [...guests.values()].find((x) => alive(x) && x.win.webContents === e.sender);
+  e.returnValue = g ? { owner: g.visit.owner, pet: g.visit.pet } : null;
+});
+
+// Onglet « Amis » des réglages
+ipcMain.handle('online-get', async () => {
+  if (!(await ensureOnline())) return { error: 'reseau' };
+  await syncOnline();
+  return publicOnline();
+});
+ipcMain.handle('online-add', async (_e, code) => {
+  if (!(await ensureOnline())) return { error: 'reseau' };
+  const r = await api({ action: 'friend-add', secret: online.secret, code: String(code || '') });
+  await syncOnline();
+  return { ...r, ...publicOnline() };
+});
+ipcMain.handle('online-accept', async (_e, code) => {
+  if (!online) return publicOnline();
+  await api({ action: 'friend-accept', secret: online.secret, code: String(code || '') });
+  await syncOnline();
+  return publicOnline();
+});
+ipcMain.handle('online-remove', async (_e, code) => {
+  if (!online) return publicOnline();
+  await api({ action: 'friend-remove', secret: online.secret, code: String(code || '') });
+  await syncOnline();
+  return publicOnline();
+});
+ipcMain.handle('online-open', async (_e, open) => {
+  if (!online) return publicOnline();
+  online.open = !!open;
+  writeJson('online.json', online);
+  await syncOnline();
+  return publicOnline();
+});
+// « Envoyer en visite » : cet animal part chez l'ami choisi
+ipcMain.handle('online-visit', async (e, code) => {
+  const p = petOf(e.sender);
+  if (!p || p.guest) return { error: 'occupe' };
+  return startVisit(p, String(code || ''));
+});
 
 // ---- Voix : on utilise la synthèse vocale du système (Windows : voix française installée ; Mac : say) ----
 
@@ -1660,6 +1911,11 @@ app.whenReady().then(() => {
   setupAutoUpdater();
   checkForUpdates();
   setInterval(checkForUpdates, 6 * 3600 * 1000);
+  // Visites entre ordinateurs : seulement si l'onglet « Amis » a déjà été ouvert une fois (inscription faite)
+  const account = readJson('online.json');
+  if (account && account.code && account.secret) online = { open: true, ...account };
+  setTimeout(syncOnline, 5000);
+  setInterval(syncOnline, Number(process.env.TG_SYNC) || 30000); // TG_SYNC : plus court pour les tests
 });
 
 app.on('before-quit', () => { for (const p of pets.values()) saveWindowPosition(p); });

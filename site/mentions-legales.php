@@ -53,6 +53,7 @@ header('Cache-Control: no-cache, must-revalidate');
       <li>GitHub, pour savoir s'il existe une nouvelle version et la télécharger.</li>
     </ul>
     <p>Les fichiers donnés à manger à l'animal ne sont ni ouverts, ni modifiés, ni supprimés, ni envoyés : seuls leur nom et leur taille sont lus.</p>
+    <p><strong>Visites entre amis</strong> (onglet « Amis » des réglages) : rien n'est envoyé tant que cet onglet n'a pas été ouvert. Ensuite, ce site (hébergé par IONOS) enregistre un code ami, le prénom indiqué dans les réglages, l'apparence de l'animal (prénom, espèce, couleur, accessoire), la liste des amis acceptés et l'heure du dernier passage (pour savoir si l'application est ouverte). Il n'y a pas de messages libres entre utilisateurs. Retirer un ami efface votre lien et vos visites ; pour effacer toutes vos données de visites, écrivez à l'adresse ci-dessous.</p>
     <p>Pour toute question sur vos données, ou pour exercer vos droits (accès, rectification, effacement), écrivez à <a href="mailto:didtech81500@gmail.com">didtech81500@gmail.com</a>. Vous pouvez aussi adresser une réclamation à la CNIL (<a href="https://www.cnil.fr/">www.cnil.fr</a>).</p>
 
     <h2>Propriété intellectuelle</h2>

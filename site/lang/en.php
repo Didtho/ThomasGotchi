@@ -34,8 +34,6 @@ return [
         'Catch the treats, the cup game, a yarn ball… and tricks it learns little by little.',
     'Fêtes et météo' => 'Holidays and weather',
     'Plusieurs compagnons' => 'Several companions',
-    'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.' =>
-        'Up to 5 pets that become friends, play tag, groom each other and play-fight.',
     'Il te parle' => 'It talks to you',
     'Gratuit, sans pub' => 'Free, no ads',
     'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).' =>
@@ -108,7 +106,6 @@ return [
     'À refaire après chaque nouvelle version téléchargée.' => 'Do it again after each new version you download.',
     'Sur Mac, une petite manipulation est nécessaire la première fois : <a href="#installer">voir comment</a>.' => 'On a Mac, a small extra step is needed the first time: <a href="#installer">see how</a>.',
     'Comment le nourrir sur Mac ?' => 'How do I feed it on a Mac?',
-    'Sur Mac, un fichier glissé sur l\'animal ne lui parvient pas encore. Clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… » et choisis un ou plusieurs fichiers. Tu peux aussi glisser les fichiers directement sur cette icône.' => 'On a Mac, a file dragged onto the pet doesn\'t reach it yet. Click the ThomasGotchi icon in the menu bar, at the top of the screen, then “Feed a file…” and pick one or more files. You can also drag files straight onto that icon.',
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'To feed it: ThomasGotchi icon in the menu bar → <em>Feed a file…</em>',
     'Clique sur un animal pour l\'entendre 🔊' => 'Click an animal to hear it 🔊',
     '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animals, each with its own personality, {c} coats, a cute or retro pixel style, and accessories to win.',
@@ -131,4 +128,8 @@ return [
     '(Notes de version en français.)' => '(Release notes in French.)',
     'Versions précédentes' => 'Earlier versions',
     'Mentions légales' => 'Legal notice',
+    'Jusqu\'à 5 animaux qui deviennent amis et jouent ensemble… et qui peuvent même rendre visite aux animaux de tes proches, sur leur ordinateur !' => 'Up to 5 pets that become friends and play together… and can even visit your loved ones\' pets, on their computer!',
+    'Glisse un fichier sur lui, comme sur Windows. Si ça ne marche pas sur ton Mac, clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… ». Tu peux aussi glisser les fichiers directement sur cette icône.' => 'Drag a file onto it, just like on Windows. If that doesn\'t work on your Mac, click the ThomasGotchi icon in the menu bar at the top of the screen, then “Feed a file…”. You can also drag files straight onto that icon.',
+    'Comment mon animal peut-il rendre visite à un ami ?' => 'How can my pet visit a friend?',
+    'Dans ses réglages, onglet « Amis », tu trouves ton code ami. Donne-le à un proche : il le tape chez lui, et tu acceptes sa demande. Quand vos deux applications sont ouvertes, vos animaux se rendent visite une ou deux fois par jour, ou quand tu cliques sur 🚪 : le tien quitte ton écran, apparaît chez ton ami, joue avec ses animaux puis revient.' => 'In its settings, “Friends” tab, you\'ll find your friend code. Give it to someone close: they type it in, and you accept their request. When both apps are open, your pets visit each other once or twice a day, or when you click 🚪: yours leaves your screen, appears at your friend\'s, plays with their pets and comes back.',
 ];

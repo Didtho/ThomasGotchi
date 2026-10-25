@@ -71,7 +71,7 @@ let yarnInfo = null; // pelote de laine sortie : { x (par rapport à la fenêtre
 // ---------- Utilitaires ----------
 
 function save() {
-  if (state) desk.save(state);
+  if (state && !desk.guest) desk.save(state); // un invité ne sauvegarde rien chez l'hôte
 }
 
 function say(text, ms = 3800) {
@@ -178,7 +178,7 @@ function buildView(now) {
     facing,
     lookX,
     lookY,
-    walking: !!walking,
+    walking: !!walking || visitWalk !== null,
     running: !!walking && walking.speed > 3,
     hop: !!Pet.trait(state).hop, // lapin : il sautille en marchant
     ailment: state.ailment || null, // petit ennui en cours : il se voit (nez rouge, puces…)
@@ -238,8 +238,36 @@ function frame(now) {
 
 function canWander(allowedAnim) {
   return state && !state.dead && !state.sleeping && !state.paused && !dnd && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
-    !dragging && panel.classList.contains('hidden') && !modalIsOpen();
+    !dragging && panel.classList.contains('hidden') && !modalIsOpen() && visitWalk === null && !visitAway;
 }
+
+// ---------- Visites entre ordinateurs (voir main.js) ----------
+// visitWalk : sens de la marche pendant qu'il sort de l'écran ou y entre (la fenêtre glisse, lui ne fait que marcher)
+let visitWalk = null;
+let visitAway = false; // parti en visite chez un ami : il ne fait plus rien ici en attendant son retour
+desk.onVisit((ev) => {
+  if (ev.type === 'walk') {
+    visitWalk = ev.dir ? ev.dir : null;
+    if (ev.dir) { walking = null; facing = ev.dir; } else facing = 0;
+  } else if (ev.type === 'leave') {
+    visitAway = true;
+    walking = null;
+    panel.classList.add('hidden');
+    closeModal();
+    say(t('Je vais rendre visite à {owner} ! 👋', { owner: ev.owner }), 2500);
+  } else if (ev.type === 'home') {
+    visitAway = false;
+    state.fun = Math.min(100, state.fun + 15);
+    play('jump', 800);
+    say(ev.played ? t('Me revoilà ! J\'ai joué avec {played} chez {owner} 🎉', ev) : t('Me revoilà ! C\'était bien chez {owner} 🏠', ev), 6000);
+    save();
+  } else if (ev.type === 'arrive' && desk.guest) {
+    play('jump', 800);
+    say(t('Coucou, c\'est {name} de {owner} ! 👋', { name: state.name, owner: desk.guest.owner }), 5000);
+  } else if (ev.type === 'bye' && desk.guest) {
+    say('Au revoir, à bientôt ! 👋', 2500);
+  }
+});
 
 // Petits numéros quand il ne marche pas : saut, roulade, étirement, regard autour de lui
 const WANDER_TRICKS = [
@@ -626,6 +654,8 @@ function logic() {
   }
 
   for (const ev of events) {
+    // Parti en visite : ses besoins, il les a faits chez l'ami (pas de crotte sur un bureau vide)
+    if (visitAway && (ev === 'poop' || ev === 'pee')) { state.poops = Math.max(0, state.poops - 1); continue; }
     if (ev === 'wake') { play('stretch', 1500); say('Bien dormi ! ☀️'); }
     if (ev === 'collapse') say(Pet.g(state, 'Trop fatigué… je m\'endors…', 'Trop fatiguée… je m\'endors…'));
     if (ev === 'pee') { addPoop(Math.random() < 0.5 ? -1 : 1, 'pee'); Sound.play('pee'); say('Oups… pipi 💦'); }
@@ -714,7 +744,7 @@ function updatePanel() {
 function showPanel() {
   clearTimeout(hideTimer);
   hideTimer = null;
-  if (!state || state.dead || modalIsOpen()) return;
+  if (!state || state.dead || modalIsOpen() || desk.guest || visitAway) return; // pas de panneau pour un invité
   if (panel.classList.contains('hidden')) {
     updatePanel();
     panel.classList.remove('hidden');
@@ -1115,6 +1145,7 @@ $('new-ok').addEventListener('click', () => {
 $('new-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('new-ok').click(); });
 
 async function openSettings() {
+  if (desk.guest) return; // un invité n'a pas de réglages ici
   if (!state || state.dead) return;
   const card = $('modal-settings');
   $('set-name').value = state.name;
@@ -1153,7 +1184,79 @@ function showSettingsTab(name) {
   for (const b of document.querySelectorAll('#modal-settings .tabs button')) b.classList.toggle('on', b.dataset.tab === name);
   for (const p of document.querySelectorAll('#modal-settings .tab-page')) p.classList.toggle('on', p.dataset.page === name);
 }
-for (const b of document.querySelectorAll('#modal-settings .tabs button')) b.addEventListener('click', () => showSettingsTab(b.dataset.tab));
+for (const b of document.querySelectorAll('#modal-settings .tabs button')) {
+  b.addEventListener('click', () => {
+    showSettingsTab(b.dataset.tab);
+    if (b.dataset.tab === 'amis') loadFriends(); // l'inscription aux visites ne se fait qu'ici, à la première ouverture
+  });
+}
+
+// ---------- Onglet « Amis » : code ami, demandes, visites ----------
+function renderFriends(data) {
+  if (!data || data.error) {
+    $('fr-code').textContent = '—';
+    $('fr-msg').textContent = t('Pas de connexion pour le moment.');
+    return;
+  }
+  $('fr-code').textContent = data.code || '—';
+  $('fr-open').checked = data.open !== false;
+  const list = $('fr-list');
+  list.textContent = '';
+  for (const f of data.friends || []) {
+    const row = document.createElement('div');
+    row.className = 'friend';
+    const who = document.createElement('span');
+    const pet = f.pet && f.pet.name ? ` (${f.pet.name})` : '';
+    who.textContent = (f.status === 'ok' ? (f.online ? '🟢 ' : '⚪ ') : '✉️ ') + (f.owner || f.code) + pet;
+    row.appendChild(who);
+    const button = (label, title, onClick) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      if (title) b.title = t(title);
+      b.addEventListener('click', onClick);
+      row.appendChild(b);
+    };
+    if (f.status === 'received') button(t('Accepter'), null, async () => renderFriends(await desk.online.accept(f.code)));
+    else if (f.status === 'sent') { const s = document.createElement('em'); s.textContent = t('en attente'); row.appendChild(s); }
+    else if (f.online) button('🚪', 'Envoyer en visite', () => sendVisit(f));
+    button('✕', 'Retirer cet ami', async () => { if (confirm(t('Retirer {name} de tes amis ?', { name: f.owner || f.code }))) renderFriends(await desk.online.remove(f.code)); });
+    list.appendChild(row);
+  }
+  if (!(data.friends || []).length) list.textContent = t('Pas encore d\'amis.');
+}
+
+async function loadFriends() {
+  $('fr-msg').textContent = '';
+  renderFriends(await desk.online.get());
+}
+
+async function sendVisit(f) {
+  const r = await desk.online.visit(f.code);
+  if (r && r.error) {
+    $('fr-msg').textContent = r.error === 'absent' ? t('{name} n\'est pas là en ce moment.', { name: f.owner || f.code })
+      : t('Pas possible pour le moment (il doit être réveillé et en forme).');
+  }
+}
+
+$('fr-add').addEventListener('click', async () => {
+  const code = $('fr-input').value.trim().toUpperCase();
+  if (!code) return;
+  const r = await desk.online.add(code);
+  $('fr-msg').textContent = r.error === 'code' ? t('Ce code n\'existe pas.') : r.error === 'soi' ? t('C\'est ton propre code !')
+    : r.error ? t('Pas de connexion pour le moment.') : r.status === 'ok' ? t('Vous êtes amis ! 🎉') : t('Demande envoyée : il reste à l\'accepter de son côté.');
+  if (!r.error) $('fr-input').value = '';
+  renderFriends(r);
+});
+$('fr-copy').addEventListener('click', () => {
+  const code = $('fr-code').textContent;
+  if (code && code !== '—' && code !== '…') navigator.clipboard.writeText(code).then(() => { $('fr-msg').textContent = t('Code copié !'); });
+});
+$('fr-open').addEventListener('change', async (e) => renderFriends(await desk.online.open(e.target.checked)));
+// Nouvelles toutes les 30 s (amis qui arrivent, demandes reçues) : la liste se met à jour si l'onglet est ouvert
+desk.onOnline((data) => {
+  const page = document.querySelector('#modal-settings .tab-page[data-page=amis]');
+  if (modalIsOpen() && page && page.classList.contains('on')) renderFriends(data);
+});
 
 // Anniversaire du maître : jour et mois (les mois s'affichent dans la langue de l'interface)
 function fillBirthday() {
@@ -1406,6 +1509,16 @@ window.addEventListener('beforeunload', save);
 translatePage();
 
 (async function start() {
+  // Animal venu en visite d'un autre ordinateur : rien n'est chargé ni sauvegardé ici
+  if (desk.guest) {
+    const g = desk.guest, pet = g.pet || {};
+    state = Pet.create(pet.name || '?', pet.style || 'cute', pet.color || 'rose', pet.species || 'chat');
+    Object.assign(state, { gender: pet.gender || 'm', accessory: pet.accessory || null, hatchAt: Date.now() - 30 * 86400000,
+      hunger: 90, thirst: 90, energy: 90, fun: 90, clean: 90, health: 100 });
+    applyStyle(state.style);
+    requestAnimationFrame(frame);
+    return;
+  }
   const saved = await desk.load();
   if (saved && saved.version === 1) {
     state = saved;

@@ -27,6 +27,18 @@ contextBridge.exposeInMainWorld('desk', {
   status: (alert) => ipcRenderer.send('pet-status', alert), // besoin à signaler sur l'icône (ou null)
   savePhoto: (dataUrl, name) => ipcRenderer.invoke('save-photo', dataUrl, name),
   owl: () => ipcRenderer.invoke('owl'), // soirée magique : un hibou traverse l'écran ; répond quand il passe au-dessus
+  // Visites entre ordinateurs : invité venu d'ailleurs (sinon null), amis, départs et retours
+  guest: ipcRenderer.sendSync('get-guest'),
+  online: {
+    get: () => ipcRenderer.invoke('online-get'),
+    add: (code) => ipcRenderer.invoke('online-add', code),
+    accept: (code) => ipcRenderer.invoke('online-accept', code),
+    remove: (code) => ipcRenderer.invoke('online-remove', code),
+    open: (on) => ipcRenderer.invoke('online-open', on),
+    visit: (code) => ipcRenderer.invoke('online-visit', code),
+  },
+  onOnline: (cb) => ipcRenderer.on('online', (_e, data) => cb(data)),
+  onVisit: (cb) => ipcRenderer.on('visit', (_e, ev) => cb(ev)),
   onHiddenTop: (cb) => ipcRenderer.on('hidden-top', (_e, px) => cb(px)),
   onFeedFiles: (cb) => ipcRenderer.on('feed-files', (_e, meals) => cb(meals)),
   poopAdd: (id, side, style, kind, edge) => ipcRenderer.invoke('poop-add', id, side, style, kind, edge),

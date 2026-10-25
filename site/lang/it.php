@@ -34,8 +34,6 @@ return [
         'Acchiappa i dolcetti, il gioco dei bicchieri, il gomitolo… e trucchi che impara a poco a poco.',
     'Fêtes et météo' => 'Feste e meteo',
     'Plusieurs compagnons' => 'Più compagni',
-    'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.' =>
-        'Fino a 5 animali che diventano amici, giocano a acchiapparella, si puliscono a vicenda e fanno la lotta per gioco.',
     'Il te parle' => 'Ti parla',
     'Gratuit, sans pub' => 'Gratis, senza pubblicità',
     'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).' =>
@@ -108,7 +106,6 @@ return [
     'À refaire après chaque nouvelle version téléchargée.' => 'Da ripetere dopo ogni nuova versione scaricata.',
     'Sur Mac, une petite manipulation est nécessaire la première fois : <a href="#installer">voir comment</a>.' => 'Su Mac serve un piccolo passaggio la prima volta: <a href="#installer">ecco come</a>.',
     'Comment le nourrir sur Mac ?' => 'Come gli do da mangiare su Mac?',
-    'Sur Mac, un fichier glissé sur l\'animal ne lui parvient pas encore. Clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… » et choisis un ou plusieurs fichiers. Tu peux aussi glisser les fichiers directement sur cette icône.' => 'Su Mac, un file trascinato sull\'animale non gli arriva ancora. Fai clic sull\'icona di ThomasGotchi nella barra dei menu, in alto sullo schermo, poi su «Dare un file da mangiare…» e scegli uno o più file. Puoi anche trascinare i file direttamente su quell\'icona.',
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'Per dargli da mangiare: icona di ThomasGotchi nella barra dei menu → <em>Dare un file da mangiare…</em>',
     'Clique sur un animal pour l\'entendre 🔊' => 'Clicca su un animale per sentirlo 🔊',
     '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animali, ognuno con il suo carattere, {c} mantelli, uno stile carino o pixel rétro, e accessori da vincere.',
@@ -131,4 +128,8 @@ return [
     '(Notes de version en français.)' => '(Note di versione in francese.)',
     'Versions précédentes' => 'Versioni precedenti',
     'Mentions légales' => 'Note legali',
+    'Jusqu\'à 5 animaux qui deviennent amis et jouent ensemble… et qui peuvent même rendre visite aux animaux de tes proches, sur leur ordinateur !' => 'Fino a 5 animali che diventano amici e giocano insieme… e possono perfino far visita agli animali dei tuoi cari, sul loro computer!',
+    'Glisse un fichier sur lui, comme sur Windows. Si ça ne marche pas sur ton Mac, clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… ». Tu peux aussi glisser les fichiers directement sur cette icône.' => 'Trascina un file su di lui, come su Windows. Se sul tuo Mac non funziona, fai clic sull\'icona di ThomasGotchi nella barra dei menu, in alto sullo schermo, poi su «Dare un file da mangiare…». Puoi anche trascinare i file direttamente su quell\'icona.',
+    'Comment mon animal peut-il rendre visite à un ami ?' => 'Come può il mio animale far visita a un amico?',
+    'Dans ses réglages, onglet « Amis », tu trouves ton code ami. Donne-le à un proche : il le tape chez lui, et tu acceptes sa demande. Quand vos deux applications sont ouvertes, vos animaux se rendent visite une ou deux fois par jour, ou quand tu cliques sur 🚪 : le tien quitte ton écran, apparaît chez ton ami, joue avec ses animaux puis revient.' => 'Nelle sue impostazioni, scheda «Amici», trovi il tuo codice amico. Dallo a una persona cara: lo digita sul suo computer e tu accetti la sua richiesta. Quando le due app sono aperte, i vostri animali si fanno visita una o due volte al giorno, o quando fai clic su 🚪: il tuo esce dal tuo schermo, appare dal tuo amico, gioca con i suoi animali e poi torna.',
 ];

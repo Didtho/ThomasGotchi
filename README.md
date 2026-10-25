@@ -27,6 +27,10 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
 - 📸 **Photo souvenir** (menu de l'icône) : une jolie image de l'animal, enregistrée dans Images › ThomasGotchi.
 - **Plusieurs animaux** (jusqu'à 5) : ils deviennent copains puis meilleurs amis, jouent à chat, se rendent visite,
   se font la toilette et se chamaillent.
+- 🚪 **Visites entre ordinateurs** (onglet « Amis » des réglages) : chacun a un code ami ; une fois l'amitié acceptée des
+  deux côtés, quand les deux applications sont ouvertes, votre animal part vraiment en visite : il quitte votre écran,
+  apparaît chez votre ami (« Coucou, c'est Simba de Didier ! »), joue avec ses animaux, puis revient. Une ou deux
+  visites par jour, ou à la demande. Seuls passent le prénom du maître et l'apparence de l'animal.
 - 🧶 **Pelote de laine** et 🥣 **gamelle** (menu de l'icône) : il court après la pelote, va manger et boire tout seul.
 - 🗣️ **Voix** : il dit ton prénom avec la voix de l'ordinateur, et te souhaite ton **anniversaire** (gâteau, chanson
   et cadeau) si tu indiques ta date dans les réglages.

@@ -20,6 +20,13 @@ avec un site de présentation en PHP. L'utilisateur parle français : répondre 
   s'en sert pour animer les animaux du site, jouer leur cri et mettre le site aux couleurs des fêtes (bannière, couleurs,
   accessoire de saison, d'après `seasons.js`). Ne pas modifier `site/engine/` à la main.
 - Caractère des espèces : table `TRAITS` de `src/pet.js` (effets dans `pet.js`, `app.js`, `draw.js`), repris sur le site.
+- Visites entre ordinateurs : service `site/api/visits.php` (tables `tg_players`, `tg_friends`, `tg_visits`, créées
+  toutes seules dans la base du site) ; côté application, section « Visites entre ordinateurs » de `main.js`
+  (invités = fenêtres d'animaux avec `desk.guest`, sans sauvegarde) et onglet « Amis » des réglages.
+  Tests à deux sur un seul PC : deux `--user-data-dir`, avec `TG_API=http://localhost/thomasgotchi/api/visits.php`,
+  `TG_SYNC=3000` (échanges toutes les 3 s) et `TG_VISIT_LENGTH=20000` (visite de 20 s).
+- **Installateur** : `build.files` de `package.json` liste ce qui est embarqué ; tout nouveau fichier à la racine
+  (comme un `preload-*.js`) doit y figurer, sinon il manque dans l'application installée (mais pas en développement).
 - `scripts/` : icône, images du site, vérification des traductions.
 
 ## Commandes

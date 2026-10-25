@@ -72,6 +72,7 @@
         <button data-tab="animal" class="on"><i>🐾</i>Animal</button>
         <button data-tab="style"><i>🎨</i>Style</button>
         <button data-tab="toi"><i>🙂</i>Toi</button>
+        <button data-tab="amis"><i>👥</i>Amis</button>
         <button data-tab="options"><i>⚙️</i>Options</button>
       </div>
       <div class="tab-pages">
@@ -120,6 +121,18 @@
             <button data-value="es">Español</button>
             <button data-value="it">Italiano</button>
           </div>
+        </div>
+        <div class="tab-page" data-page="amis">
+          <div class="label">Ton code ami</div>
+          <div class="friend-code"><b id="fr-code">…</b><button id="fr-copy" title="Copier le code">📋</button></div>
+          <div class="hint">Donne-le à un proche : il le tape chez lui, puis tu acceptes sa demande. Vos animaux pourront se rendre visite.</div>
+          <div class="friend-add">
+            <input id="fr-input" maxlength="9" placeholder="Code d'un ami">
+            <button id="fr-add">Ajouter</button>
+          </div>
+          <div id="fr-msg" class="hint"></div>
+          <div id="fr-list"></div>
+          <label class="check"><input type="checkbox" id="fr-open"> Accepter les visites</label>
         </div>
         <div class="tab-page" data-page="options">
           <div class="label">Rythme de vie</div>

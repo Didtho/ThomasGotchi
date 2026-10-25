@@ -198,6 +198,16 @@ html, body {
 .tab-page.on { visibility: visible; }
 .tab-page > .row2:first-of-type { margin-top: 8px; }
 .bday { display: flex; gap: 6px; margin-top: 2px; }
+/* Onglet « Amis » */
+.friend-code { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 2px; }
+.friend-code b { font-size: 17px; letter-spacing: 1px; }
+.friend-code button, .friend-add button, .friend button { font: inherit; font-weight: 600; padding: 3px 7px; background: #fff3f7; border: 1.5px solid #3b2a3a; border-radius: 8px; cursor: pointer; }
+.friend-add { display: flex; gap: 5px; }
+.friend-add input { flex: 1; min-width: 0; text-transform: uppercase; }
+#fr-list { margin: 4px 0 6px; font-size: 12px; }
+.friend { display: flex; align-items: center; gap: 4px; padding: 3px 0; border-bottom: 1px dashed rgba(59,42,58,.2); }
+.friend span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.friend em { font-size: 11px; opacity: .7; }
 .bday select { flex: 1; font: inherit; padding: 2px 4px; border: 1.5px solid #3b2a3a; border-radius: 8px; background: #fff; }
 #modal-settings > .row { margin-top: 8px; }
 button.primary { background: #ffb3c9 !important; }
