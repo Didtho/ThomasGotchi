@@ -1051,6 +1051,39 @@ ipcMain.on('decor', (e, kind) => {
   updateDecor();
 });
 
+// ---- Soirée magique : un hibou traverse l'écran au-dessus de l'animal et lâche une lettre ----
+// La réponse arrive quand il passe au-dessus de lui (false s'il n'a pas pu voler : animal caché, etc.)
+ipcMain.handle('owl', (e) => new Promise((resolve) => {
+  const p = petOf(e.sender);
+  if (!alive(p) || hiddenByUser || !p.win.isVisible()) return resolve(false);
+  const b = p.win.getBounds();
+  const wa = screen.getDisplayMatching(b).workArea;
+  const OW = 90, OH = 80;
+  const target = b.x + W / 2 - OW / 2;
+  const dir = target - wa.x > wa.x + wa.width - target ? 1 : -1; // il arrive du côté le plus éloigné
+  let x = dir > 0 ? wa.x - OW : wa.x + wa.width;
+  const baseY = Math.max(wa.y + 10, b.y + p.expandUp + FEET - 260);
+  const owl = new BrowserWindow({
+    width: OW, height: OH, x, y: baseY, transparent: true, frame: false, resizable: false, movable: false,
+    focusable: false, skipTaskbar: true, hasShadow: false, alwaysOnTop: true, enableLargerThanScreen: true,
+    backgroundColor: '#00000000', webPreferences: { contextIsolation: true, nodeIntegration: false },
+  });
+  owl.setAlwaysOnTop(true, PET_LEVEL);
+  owl.setIgnoreMouseEvents(true);
+  owl.loadFile(path.join(__dirname, 'src', 'owl.html'), { query: { dir: String(dir) } });
+  let passed = false, n = 0;
+  const timer = setInterval(() => {
+    if (owl.isDestroyed()) { clearInterval(timer); if (!passed) resolve(false); return; }
+    x += dir * 10;
+    n++;
+    owl.setBounds({ x: Math.round(x), y: Math.round(baseY + Math.sin(n / 8) * 12), width: OW, height: OH });
+    // L'animal a pu marcher entre-temps : on vise sa position du moment
+    const aim = alive(p) ? p.win.getBounds().x + W / 2 - OW / 2 : target;
+    if (!passed && (dir > 0 ? x >= aim : x <= aim)) { passed = true; resolve(true); }
+    if (x < wa.x - OW - 10 || x > wa.x + wa.width + 10) { clearInterval(timer); owl.destroy(); if (!passed) resolve(false); }
+  }, 16);
+}));
+
 // ---- Gamelle : partagée par tous les animaux, posée en bas de l'écran ----
 
 const FURN = { bowl: { w: 84, h: 50 } };

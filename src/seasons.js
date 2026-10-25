@@ -24,6 +24,12 @@ const Seasons = (() => {
       return { id: 'nouvelan', key: `nouvelan-${newYear}`, decor: 'fireworks',
         greeting: t('Bonne année {year} ! 🎆', { year: newYear }), greetToday: md(d) !== 1231 };
     }
+    // Soirée magique : les 25 et 26 décembre à partir de 18 h, après la journée de Noël (chapeau, baguette,
+    // étincelles, et un hibou qui apporte une lettre)
+    if (between(d, 1225, 1226) && d.getHours() >= 18) {
+      return { id: 'magie', key: `magie-${year}-${md(d)}`, decor: 'snow', magic: true, letter: true,
+        greeting: 'Ce soir, c\'est une soirée magique ! ✨🪄', greetToday: true };
+    }
     if (between(d, 1201, 1226)) {
       return { id: 'noel', key: `noel-${year}`, decor: 'snow',
         greeting: 'Joyeux Noël ! 🎄', greetToday: between(d, 1224, 1225), gift: between(d, 1224, 1225) };

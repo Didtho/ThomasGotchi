@@ -33,8 +33,6 @@ return [
     'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.' =>
         'Catch the treats, the cup game, a yarn ball… and tricks it learns little by little.',
     'Fêtes et météo' => 'Holidays and weather',
-    'Halloween, Noël, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.' =>
-        'Halloween, Christmas, New Year, Easter… and the real weather in your city, with umbrella and scarf.',
     'Plusieurs compagnons' => 'Several companions',
     'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.' =>
         'Up to 5 pets that become friends, play tag, groom each other and play-fight.',
@@ -116,4 +114,5 @@ return [
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'To feed it: ThomasGotchi icon in the menu bar → <em>Feed a file…</em>',
     'Clique sur un animal pour l\'entendre 🔊' => 'Click an animal to hear it 🔊',
     '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animals, each with its own personality, {c} coats, a cute or retro pixel style, and accessories to win.',
+    'Halloween, Noël et sa soirée magique, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Christmas and its magical evening, New Year, Easter… and the real weather in your city, with umbrella and scarf.',
 ];

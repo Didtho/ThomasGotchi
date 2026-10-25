@@ -394,6 +394,15 @@
     'Sportive': 'Deportista',
     'Tu es là{owner} ! Youpi ! 🎉': '¡Estás aquí{owner}! ¡Yupi! 🎉',
     'Va voir tout ce qui bouge, même la souris.': 'Va a ver todo lo que se mueve, hasta el ratón.',
+    '« Ce soir, la magie est partout ! » ✨': '«¡Esta noche, la magia está en todas partes!» ✨',
+    '« Les hiboux ont parlé : tu es formidable ! » 🦉': '«Los búhos lo han dicho: ¡eres genial!» 🦉',
+    '« Une étoile filante veille sur toi. » 🌠': '«Una estrella fugaz vela por ti.» 🌠',
+    'Ce soir, c\'est une soirée magique ! ✨🪄': '¡Esta noche es una noche mágica! ✨🪄',
+    'Ce soir, les hiboux sont à l\'honneur ! 🦉✨': '¡Esta noche, los búhos son los protagonistas! 🦉✨',
+    'Chapeau de magicien': 'Sombrero de mago',
+    'être là pour la soirée magique des 25 et 26 décembre': 'estar ahí en la noche mágica del 25 y 26 de diciembre',
+    'Oh ! Un hibou m\'apporte une lettre ! 🦉✉️': '¡Oh! ¡Un búho me trae una carta! 🦉✉️',
+    'Une lettre magique ! Elle contient… un chapeau de magicien 🪄✨': '¡Una carta mágica! Contiene… un sombrero de mago 🪄✨',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;

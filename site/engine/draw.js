@@ -384,9 +384,70 @@ function drawAccessory(ctx, kind, cx, g, v) {
     ctx.stroke();
     ellipse(ctx, 0, -r * 0.88, r * 0.1, r * 0.1, '#ff6f91', INK, 1.5);
     ctx.restore();
+  } else if (kind === 'magicien') {
+    // Chapeau de magicien : pointu, bleu nuit, semé d'étoiles, la pointe un peu penchée
+    const y = headCy - headRy * 0.7;
+    ctx.save();
+    ctx.translate(cx, y);
+    ctx.rotate(0.1);
+    ellipse(ctx, 0, 0, headRx * 0.95, r * 0.13, '#2f3f9e', INK, 2);
+    ctx.beginPath();
+    ctx.moveTo(-headRx * 0.5, -r * 0.05);
+    ctx.quadraticCurveTo(-headRx * 0.15, -r * 0.75, -headRx * 0.35, -r * 1.1);
+    ctx.quadraticCurveTo(headRx * 0.2, -r * 0.65, headRx * 0.5, -r * 0.05);
+    ctx.closePath();
+    ctx.fillStyle = '#3b55c4';
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffd84a';
+    for (const [sx, sy, s] of [[-0.12, -0.35, 1], [0.18, -0.2, 0.8], [-0.22, -0.7, 0.7]]) {
+      const px = sx * headRx * 2, py = sy * r, k = r * 0.07 * s;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? k * 0.45 : k;
+        ctx.lineTo(px + Math.cos(a) * rr, py + Math.sin(a) * rr);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
   } else if (kind === 'noel') {
     // Même coupe que le bonnet de nuit, qui épouse la tête, en rouge avec revers et pompon blancs
     drawNightcap(ctx, cx, g, v.t, v.species, '#e03a4e', false);
+  }
+}
+
+// Soirée magique : une petite baguette tenue contre le corps ; son étoile scintille, et lance des étincelles pendant un câlin
+function drawWand(ctx, cx, g, v) {
+  const { r, bodyRx, bodyCy } = g;
+  const x0 = cx + bodyRx * 0.75, y0 = bodyCy + r * 0.1;
+  const x1 = x0 + r * 0.45, y1 = y0 - r * 0.6;
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = INK;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#6b4a2f';
+  ctx.stroke();
+  const glow = 0.6 + Math.sin(v.t * 6) * 0.4;
+  ctx.globalAlpha = glow;
+  ellipse(ctx, x1, y1, r * 0.09, r * 0.09, '#ffe98a');
+  ctx.globalAlpha = 1;
+  ellipse(ctx, x1, y1, r * 0.045, r * 0.045, '#fff');
+  if (v.anim === 'love') {
+    for (let i = 0; i < 6; i++) {
+      const k = (v.animT * 1.4 + i / 6) % 1;
+      const a = i * 1.1;
+      ctx.globalAlpha = 1 - k;
+      ctx.fillStyle = i % 2 ? '#ffd84a' : '#ff9fc6';
+      const px = x1 + Math.cos(a) * k * r * 0.9, py = y1 + Math.sin(a) * k * r * 0.9 - k * 10;
+      ctx.fillRect(px - 1.5, py - 4, 3, 8);
+      ctx.fillRect(px - 4, py - 1.5, 8, 3);
+    }
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -725,8 +786,30 @@ function drawCreature(ctx, v) {
     ellipse(ctx, wx, wy, r * 0.17, r * 0.21, pawColor(species, coat) || body, INK, 2.5);
   }
   // Les chapeaux laissent la place au bonnet de nuit quand il dort
-  const hat = ['couronne', 'sorciere', 'noel', 'fete'].includes(v.accessory);
+  const hat = ['couronne', 'sorciere', 'noel', 'fete', 'magicien'].includes(v.accessory);
   if (v.accessory && v.mood !== 'dead' && !(hat && v.nightcap)) drawAccessory(ctx, v.accessory, cx, g, v);
+  if (v.magic && v.mood !== 'dead' && v.mood !== 'sleep') {
+    // Soirée magique : lunettes rondes (en plus de son accessoire) et baguette
+    if (v.accessory !== 'lunettes') drawAccessory(ctx, 'lunettes', cx, g, v);
+    // Petite marque en éclair sur le front, en biais
+    const { r, headRx, headRy, headCy } = g;
+    const s = r * 0.1, bx = cx - headRx * 0.3, by = headCy - r * 0.36; // entre le bord du chapeau et les lunettes
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(0.35);
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.5, -s);
+    ctx.lineTo(s * 0.35, -s * 0.15);
+    ctx.lineTo(-s * 0.3, s * 0.1);
+    ctx.lineTo(s * 0.5, s);
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'miter';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#b8344a';
+    ctx.stroke();
+    ctx.restore();
+    drawWand(ctx, cx, g, v);
+  }
   if (v.nightcap) drawNightcap(ctx, cx, g, v.t, species);
   if (v.gear && v.mood !== 'dead') drawWeatherGear(ctx, v.gear, cx, g, v);
 
@@ -805,6 +888,18 @@ function drawEffects(ctx, v, cx, cy, rx, ry, mouthY) {
       ctx.globalAlpha = 1 - k;
       ctx.font = `bold ${10 + k * 10}px sans-serif`;
       ctx.fillText('Z', cx + rx * 0.6 + k * 26, cy - ry * 0.6 - k * 40);
+    }
+    ctx.globalAlpha = 1;
+  }
+  if (v.magic && v.mood !== 'dead') {
+    // Soirée magique : quelques étincelles dorées qui flottent et scintillent autour de lui
+    for (let i = 0; i < 5; i++) {
+      const a = i * 1.26 + t * 0.4;
+      const px = cx + Math.cos(a) * rx * 1.5, py = cy + Math.sin(a * 1.3) * ry * 0.9 - ry * 0.2;
+      ctx.globalAlpha = Math.max(0, Math.sin(t * 2 + i * 1.7)) * 0.9;
+      ctx.fillStyle = '#ffd84a';
+      ctx.fillRect(px - 1, py - 3.5, 2, 7);
+      ctx.fillRect(px - 3.5, py - 1, 7, 2);
     }
     ctx.globalAlpha = 1;
   }

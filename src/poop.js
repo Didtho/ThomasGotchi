@@ -43,8 +43,8 @@ function draw(now) {
     return;
   }
 
-  if (kind === 'gift' || kind === 'egg') {
-    if (kind === 'gift') drawGift(t); else drawEgg(t);
+  if (kind === 'gift' || kind === 'egg' || kind === 'letter') {
+    if (kind === 'gift') drawGift(t); else if (kind === 'letter') drawLetter(t); else drawEgg(t);
     setTimeout(() => requestAnimationFrame(draw), 60);
     return;
   }
@@ -156,6 +156,28 @@ function drawGift(t) {
   ctx.strokeRect(10, y - 30, 36, 7);
   ellipse(23, y - 34, 6, 4, '#ffd84a', INK, 1.8);
   ellipse(33, y - 34, 6, 4, '#ffd84a', INK, 1.8);
+}
+
+// Lettre de la soirée magique, avec son cachet rouge ; une petite étoile scintille dessus
+function drawLetter(t) {
+  const y = 50 - Math.abs(Math.sin(t * 2.5)) * 2;
+  ellipse(28, 53, 16, 3, 'rgba(0,0,0,.15)');
+  ctx.fillStyle = '#fffaf0';
+  ctx.fillRect(10, y - 22, 36, 22);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = INK;
+  ctx.strokeRect(10, y - 22, 36, 22);
+  ctx.beginPath();
+  ctx.moveTo(10, y - 22);
+  ctx.lineTo(28, y - 9);
+  ctx.lineTo(46, y - 22);
+  ctx.stroke();
+  ellipse(28, y - 9, 4.5, 4.5, '#d8384a', INK, 1.5);
+  ctx.globalAlpha = 0.5 + Math.sin(t * 5) * 0.5;
+  ctx.fillStyle = '#ffd84a';
+  ctx.fillRect(41, y - 31, 2, 8);
+  ctx.fillRect(38, y - 28, 8, 2);
+  ctx.globalAlpha = 1;
 }
 
 // Œuf en chocolat emballé, qui brille un peu

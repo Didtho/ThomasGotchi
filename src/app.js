@@ -185,6 +185,7 @@ function buildView(now) {
     nightcap: state.sleeping && bedTime(),
     accessory: state.accessory,
     decor: festivity ? festivity.decor : null,
+    magic: !!(festivity && festivity.magic), // soirée magique : baguette et étincelles
     weather: weather ? weather.condition : null,
     isDay: weather ? weather.isDay : !isNight(),
     gear: weatherGear(mood),
@@ -467,9 +468,22 @@ function celebrate() {
     state.fun = Math.min(100, state.fun + 10);
     play('jump', 800);
     Sound.play('win');
-    say(f.greeting, 6000);
+    // Soirée magique : le hibou est tout fier, c'est son grand soir
+    const proudOwl = f.magic && state.species === 'hibou';
+    if (proudOwl) state.fun = Math.min(100, state.fun + 10);
+    say(proudOwl ? t('Ce soir, les hiboux sont à l\'honneur ! 🦉✨') : f.greeting, 6000);
     checkUnlocks();
     save();
+  }
+  if (f.letter && !state.greeted.includes(f.key + '-lettre')) {
+    // Un hibou traverse l'écran et dépose une lettre à côté de lui
+    state.greeted.push(f.key + '-lettre');
+    save();
+    setTimeout(() => desk.owl().then((arrived) => {
+      if (!arrived || !state) return;
+      addTreat('letter');
+      say('Oh ! Un hibou m\'apporte une lettre ! 🦉✉️', 5000);
+    }), 9000);
   }
   if (f.gift && !state.greeted.includes(f.key + '-cadeau')) {
     state.greeted.push(f.key + '-cadeau');
@@ -507,6 +521,17 @@ function openTreat(spot) {
       say(t('Un cadeau ! C\'est… {icon} {name} ! Merci !', { icon: prize.icon, name: t(prize.name) }), 6000);
     } else {
       say('Un cadeau ! J\'adore, merci ! 🎁💕', 5000);
+    }
+  } else if (spot.kind === 'letter') {
+    // Lettre de la soirée magique : un chapeau de magicien, puis de gentils messages
+    state.fun = Math.min(100, state.fun + 20);
+    play('love', 1600);
+    if (state.accessory !== 'magicien') {
+      if (!state.unlocked.includes('magicien')) state.unlocked.push('magicien');
+      state.accessory = 'magicien';
+      say('Une lettre magique ! Elle contient… un chapeau de magicien 🪄✨', 6000);
+    } else {
+      say(pick(['« Ce soir, la magie est partout ! » ✨', '« Une étoile filante veille sur toi. » 🌠', '« Les hiboux ont parlé : tu es formidable ! » 🦉']), 6000);
     }
   } else {
     state.fun = Math.min(100, state.fun + 8);

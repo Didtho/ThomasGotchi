@@ -33,8 +33,6 @@ return [
     'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.' =>
         'Atrapa las golosinas, el juego de los vasos, el ovillo de lana… y trucos que aprende poco a poco.',
     'Fêtes et météo' => 'Fiestas y tiempo',
-    'Halloween, Noël, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.' =>
-        'Halloween, Navidad, Año Nuevo, Pascua… y el tiempo real de tu ciudad, con paraguas y bufanda.',
     'Plusieurs compagnons' => 'Varios compañeros',
     'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.' =>
         'Hasta 5 mascotas que se hacen amigas, juegan al pilla-pilla, se asean y se pelean de broma.',
@@ -116,4 +114,5 @@ return [
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'Para darle de comer: icono de ThomasGotchi en la barra de menús → <em>Dar un archivo de comer…</em>',
     'Clique sur un animal pour l\'entendre 🔊' => 'Haz clic en un animal para oírlo 🔊',
     '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animales, cada uno con su carácter, {c} pelajes, un estilo mono o píxel retro, y accesorios que ganar.',
+    'Halloween, Noël et sa soirée magique, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Navidad y su noche mágica, Año Nuevo, Pascua… y el tiempo real de tu ciudad, con paraguas y bufanda.',
 ];

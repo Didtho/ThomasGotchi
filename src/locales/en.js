@@ -394,6 +394,15 @@
     'Sportive': 'Sporty',
     'Tu es là{owner} ! Youpi ! 🎉': 'You\'re here{owner}! Yay! 🎉',
     'Va voir tout ce qui bouge, même la souris.': 'Goes to check out anything that moves, even the mouse pointer.',
+    '« Ce soir, la magie est partout ! » ✨': '“Tonight, magic is everywhere!” ✨',
+    '« Les hiboux ont parlé : tu es formidable ! » 🦉': '“The owls have spoken: you\'re wonderful!” 🦉',
+    '« Une étoile filante veille sur toi. » 🌠': '“A shooting star is watching over you.” 🌠',
+    'Ce soir, c\'est une soirée magique ! ✨🪄': 'Tonight is a magical evening! ✨🪄',
+    'Ce soir, les hiboux sont à l\'honneur ! 🦉✨': 'Tonight, owls are the stars of the show! 🦉✨',
+    'Chapeau de magicien': 'Wizard hat',
+    'être là pour la soirée magique des 25 et 26 décembre': 'be there for the magical evening on December 25 and 26',
+    'Oh ! Un hibou m\'apporte une lettre ! 🦉✉️': 'Oh! An owl is bringing me a letter! 🦉✉️',
+    'Une lettre magique ! Elle contient… un chapeau de magicien 🪄✨': 'A magic letter! Inside there\'s… a wizard hat 🪄✨',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;
