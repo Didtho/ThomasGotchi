@@ -1,6 +1,6 @@
 {
   "name": "thomasgotchi",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "Un petit être virtuel façon Tamagotchi qui vit sur le bureau (Windows et Mac)",
   "main": "main.js",
   "author": "ThomasGotchi",

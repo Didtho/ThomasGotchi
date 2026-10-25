@@ -479,6 +479,11 @@
     'Vous êtes amis ! 🎉': 'Siete amici! 🎉',
     'Me revoilà ! J\'ai bien mangé chez {owner} 😋': 'Eccomi! Ho mangiato benissimo da {owner} 😋',
     'Me revoilà ! J\'ai joué avec {played} et bien mangé chez {owner} 😋': 'Eccomi! Ho giocato con {played} e mangiato benissimo da {owner} 😋',
+    'Zzz… je dors, on ira plus tard 😴': 'Zzz… sto dormendo, andremo più tardi 😴',
+    'Je ne me sens pas assez bien pour sortir… 🤒': 'Non mi sento abbastanza bene per uscire… 🤒',
+    'Je suis déjà en visite !': 'Sono già in visita!',
+    '{name} reçoit déjà quelqu\'un, on essaiera plus tard.': '{name} ha già un ospite, riproveremo più tardi.',
+    'Pas possible pour le moment.': 'Non è possibile al momento.',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).it = L;

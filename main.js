@@ -1498,10 +1498,17 @@ async function syncOnline() {
 }
 
 // Un animal peut partir en visite s'il est éveillé, en forme et pas déjà occupé
-function canVisit(p) {
+const canVisit = (p) => !visitBlocker(p);
+// Raison qui l'empêche de partir (affichée dans l'onglet « Amis »), ou null
+function visitBlocker(p) {
   const s = p && p.lastState;
-  return alive(p) && !p.away && !p.sliding && p.win.isVisible() && !p.expandUp && !p.expandDown && !p.dragTimer
-    && s && !s.dead && !s.sleeping && !s.paused && !s.ailment && Date.now() >= s.hatchAt && (s.health || 100) >= 45;
+  if (!alive(p) || !s || s.dead) return 'occupe';
+  if (p.away) return 'parti';
+  if (Date.now() < s.hatchAt) return 'oeuf';
+  if (s.sleeping || s.paused) return 'dort';
+  if (s.ailment || (s.health || 100) < 45) return 'malade';
+  if (p.sliding || !p.win.isVisible() || p.expandUp || p.expandDown || p.dragTimer) return 'occupe';
+  return null;
 }
 
 // Visites spontanées : une ou deux par jour au plus, quand un ami a son application ouverte
@@ -1517,7 +1524,9 @@ function maybeVisit() {
 }
 
 async function startVisit(p, code) {
-  if (!online || !canVisit(p)) return { error: 'occupe' };
+  if (!online) return { error: 'reseau' };
+  const blocked = visitBlocker(p);
+  if (blocked) return { error: blocked };
   const r = await api({ action: 'visit-start', secret: online.secret, code, ...petCard(p) });
   if (r.error) return r;
   visitsToday.count++;

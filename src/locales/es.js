@@ -479,6 +479,11 @@
     'Vous êtes amis ! 🎉': '¡Sois amigos! 🎉',
     'Me revoilà ! J\'ai bien mangé chez {owner} 😋': '¡Ya estoy aquí! He comido muy bien en casa de {owner} 😋',
     'Me revoilà ! J\'ai joué avec {played} et bien mangé chez {owner} 😋': '¡Ya estoy aquí! He jugado con {played} y he comido muy bien en casa de {owner} 😋',
+    'Zzz… je dors, on ira plus tard 😴': 'Zzz… estoy durmiendo, iremos luego 😴',
+    'Je ne me sens pas assez bien pour sortir… 🤒': 'No me encuentro bien para salir… 🤒',
+    'Je suis déjà en visite !': '¡Ya estoy de visita!',
+    '{name} reçoit déjà quelqu\'un, on essaiera plus tard.': '{name} ya tiene una visita, lo intentaremos luego.',
+    'Pas possible pour le moment.': 'No es posible por ahora.',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;

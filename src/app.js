@@ -1238,12 +1238,23 @@ async function loadFriends() {
   renderFriends(await desk.online.get());
 }
 
+// « Envoyer en visite » : les réglages se ferment d'abord (sa fenêtre doit retrouver sa taille pour qu'il parte)
 async function sendVisit(f) {
+  closeModal();
+  await new Promise((r) => setTimeout(r, 400));
   const r = await desk.online.visit(f.code);
-  if (r && r.error) {
-    $('fr-msg').textContent = r.error === 'absent' ? t('{name} n\'est pas là en ce moment.', { name: f.owner || f.code })
-      : t('Pas possible pour le moment (il doit être réveillé et en forme).');
-  }
+  if (!r || !r.error) return;
+  const name = f.owner || f.code;
+  const why = {
+    absent: t('{name} n\'est pas là en ce moment.', { name }),
+    dort: t('Zzz… je dors, on ira plus tard 😴'),
+    malade: t('Je ne me sens pas assez bien pour sortir… 🤒'),
+    oeuf: t('Toc toc… 🥚'),
+    parti: t('Je suis déjà en visite !'),
+    occupe: t('{name} reçoit déjà quelqu\'un, on essaiera plus tard.', { name }),
+    reseau: t('Pas de connexion pour le moment.'),
+  }[r.error] || t('Pas possible pour le moment.');
+  say(why, 4500);
 }
 
 $('fr-add').addEventListener('click', async () => {
