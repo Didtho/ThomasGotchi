@@ -11,7 +11,8 @@ function view(species, color, extra = {}) {
 }
 
 // crop : zone de la scène (240 x 300) à garder ; scale : agrandissement pour une image nette
-function renderPng(v, crop = { x: 0, y: 0, w: 240, h: 300 }, scale = 2) {
+// (x4 : reste net sur les écrans haute densité et dans les grandes cartes du site)
+function renderPng(v, crop = { x: 0, y: 0, w: 240, h: 300 }, scale = 4) {
   const canvas = document.createElement('canvas');
   canvas.width = crop.w * scale;
   canvas.height = crop.h * scale;
