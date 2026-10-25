@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification, dialog, powerMonitor } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification, dialog, powerMonitor, clipboard } = require('electron');
+const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -216,6 +217,7 @@ function feedFiles(p, files) {
       return { name: path.basename(f), size: st.size, isDir: st.isDirectory() };
     } catch { return null; }
   }).filter(Boolean);
+  diag(`[${p.name || p.id}] ${meals.length} fichier(s) donné(s) à manger hors glisser-déposer`);
   if (!meals.length) return;
   p.win.show();
   p.win.webContents.send('feed-files', meals);
@@ -224,6 +226,32 @@ function feedFiles(p, files) {
 async function chooseFood(p) {
   const r = await dialog.showOpenDialog({ title: tr('Donner un fichier à manger'), properties: ['openFile', 'multiSelections'] });
   if (!r.canceled) feedFiles(p, r.filePaths);
+}
+
+// ---- Journal de diagnostic : ce qui se passe quand on glisse un fichier (utile sur Mac, où le dépôt se perd).
+// Gardé en mémoire seulement (400 dernières lignes), copié depuis le menu de l'icône pour être envoyé.
+const diagLines = [];
+
+function diag(text) {
+  const d = new Date();
+  diagLines.push(d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0') + ' ' + text);
+  if (diagLines.length > 400) diagLines.shift();
+}
+
+ipcMain.on('diag', (e, text) => {
+  const p = petOf(e.sender);
+  diag(`[${p ? p.name || p.id : '?'}] ${String(text).slice(0, 300)}`);
+});
+
+function copyDiag() {
+  const head = [
+    `ThomasGotchi ${app.getVersion()} · ${process.platform} ${os.release()} · Electron ${process.versions.electron}`,
+    ...screen.getAllDisplays().map((d) => `écran ${JSON.stringify(d.bounds)} zone ${JSON.stringify(d.workArea)} x${d.scaleFactor}`),
+    ...[...pets.values()].filter(alive).map((p) => `animal ${p.name || p.id} : ${JSON.stringify(p.win.getBounds())} ignore=${p.ignoring} visible=${p.win.isVisible()}`),
+    `fenêtres repérées : ${windowRects.size}`,
+  ];
+  clipboard.writeText([...head, '', ...diagLines].join('\n'));
+  notify(tr('Diagnostic copié : colle-le dans un message pour l\'envoyer.'));
 }
 
 const siteUrl = () => 'https://thomasgotchi.mirimix.fr/' + (currentLang() === 'fr' ? '' : currentLang() + '/');
@@ -268,6 +296,7 @@ function buildTrayMenu() {
     { label: tr('🏖️ Pause vacances (tous)'), type: 'checkbox', checked: allPaused, click: (item) => setAllPaused(item.checked) },
     { label: tr('Importer un animal…'), enabled: list.length < MAX_PETS, click: importPet },
     updateMenuItem(),
+    { label: tr('Copier le diagnostic 🩺'), click: copyDiag },
     { type: 'separator' },
     {
       label: tr('Lancer au démarrage'), type: 'checkbox', checked: login,
@@ -286,6 +315,7 @@ function createTray() {
   if (!isMac) tray.on('click', toggleVisible);
   // Mac : des fichiers déposés sur l'icône de la barre des menus sont donnés à manger au premier animal visible
   tray.on('drop-files', (e, files) => {
+    diag(`${files.length} fichier(s) déposé(s) sur l'icône`);
     const p = [...pets.values()].find((x) => alive(x) && x.win.isVisible()) || [...pets.values()].find(alive);
     feedFiles(p, files);
   });
@@ -298,6 +328,7 @@ ipcMain.on('set-ignore', (e, ignore) => {
   const p = petOf(e.sender);
   if (!p || ignore === p.ignoring) return;
   p.ignoring = ignore;
+  diag(`[${p.name || p.id}] la fenêtre ${ignore ? 'laisse passer la souris' : 'capte la souris'}`);
   p.win.setIgnoreMouseEvents(ignore, { forward: true });
 });
 
@@ -1131,6 +1162,11 @@ function sendCursor() {
   for (const p of pets.values()) {
     if (!alive(p) || !p.win.isVisible()) continue;
     const b = p.win.getBounds();
+    const inside = c.x >= b.x && c.x < b.x + b.width && c.y >= b.y && c.y < b.y + b.height;
+    if (inside !== !!p.cursorInside) {
+      p.cursorInside = inside;
+      diag(`[${p.name || p.id}] souris ${inside ? 'entre dans' : 'sort de'} sa fenêtre (${c.x}, ${c.y})`);
+    }
     p.win.webContents.send('cursor', { x: c.x - b.x, y: c.y - b.y });
   }
 }

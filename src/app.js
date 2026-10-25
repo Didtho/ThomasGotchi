@@ -745,8 +745,12 @@ async function restorePoops() {
 
 // ---------- Glisser-déposer de fichiers = nourriture ----------
 
+// Chaque étape est notée dans le journal de diagnostic (menu de l'icône) pour comprendre où un dépôt se perd
+let dragOverSeen = false;
+
 document.addEventListener('dragenter', (e) => {
   e.preventDefault();
+  desk.diag(`fichier glissé au-dessus (dragenter, types : ${[...e.dataTransfer.types].join(', ') || 'aucun'})`);
   desk.setIgnore(false);
   if (state && !state.dead && !state.sleeping) hungryLook = true;
 });
@@ -754,14 +758,17 @@ document.addEventListener('dragenter', (e) => {
 document.addEventListener('dragover', (e) => {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'copy'; // le fichier d'origine n'est jamais déplacé ni supprimé
+  if (!dragOverSeen) { dragOverSeen = true; desk.diag(`dragover (${e.clientX}, ${e.clientY})`); }
 });
 
 document.addEventListener('dragleave', (e) => {
-  if (!e.relatedTarget) hungryLook = false;
+  if (!e.relatedTarget) { hungryLook = false; dragOverSeen = false; desk.diag('le fichier ressort de la fenêtre (dragleave)'); }
 });
 
 document.addEventListener('drop', (e) => {
   e.preventDefault();
+  dragOverSeen = false;
+  desk.diag(`dépôt reçu (drop) : ${e.dataTransfer.files.length} fichier(s), ${e.dataTransfer.items.length} élément(s)`);
   hungryLook = false;
   if (!state) return;
   const meals = [];
@@ -1064,11 +1071,15 @@ desk.onDnd((on) => {
   if (on) walking = null;
 });
 
+let cursorOnPet = false;
+
 desk.onCursor((pos) => {
   cursor = pos;
   // Sur Mac, pendant qu'on fait glisser un fichier, la fenêtre ne reçoit aucun mouvement de souris : sans ça,
   // elle laisserait passer le fichier jusqu'au bureau au lieu de le donner à manger
-  if (!dragging && overPet(pos.x, pos.y)) desk.setIgnore(false);
+  const onPet = overPet(pos.x, pos.y);
+  if (onPet !== cursorOnPet) { cursorOnPet = onPet; desk.diag(onPet ? `souris sur l'animal (${pos.x}, ${pos.y})` : 'souris hors de l\'animal'); }
+  if (!dragging && onPet) desk.setIgnore(false);
   // L'animal a pu s'éloigner de la souris sans qu'elle bouge (marche, chute, fenêtre déplacée) : on vérifie ici
   if (!panel.classList.contains('hidden') && !modalIsOpen() && !dragging && !overInteractive(pos.x, pos.y)) {
     desk.setIgnore(true);

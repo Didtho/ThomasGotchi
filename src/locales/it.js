@@ -332,6 +332,8 @@
     'Donner un fichier à manger…': 'Dare un file da mangiare…',
     'Site internet 🌐': 'Sito web 🌐',
     'Donne-moi à manger depuis le menu de l\'icône, en haut de l\'écran 🍽️': 'Dammi da mangiare dal menu dell\'icona, in alto sullo schermo 🍽️',
+    'Copier le diagnostic 🩺': 'Copia la diagnostica 🩺',
+    'Diagnostic copié : colle-le dans un message pour l\'envoyer.': 'Diagnostica copiata: incollala in un messaggio per inviarla.',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).it = L;
