@@ -541,6 +541,20 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.10.0",
+   "date": "2026-10-25",
+   "items": [
+    "Pense-bête (menu de l'icône) : un rappel aujourd'hui, demain, un autre jour ou tous les jours ; à l'heure dite, l'animal vient le dire dans une bulle (notification s'il est caché)",
+    "Panier pour dormir : il va s'y coucher le soir et y faire la sieste quand il est fatigué",
+    "Plante à arroser : elle pousse chaque jour jusqu'à fleurir si on l'arrose, et l'animal vient la renifler",
+    "Bilan de la semaine dans le carnet (temps ensemble, repas, câlins, jeux, visites…), comparé à la semaine d'avant",
+    "Promenade à deux entre amis : l'animal de l'ami raccompagne le vôtre et ils arrivent ensemble",
+    "Nouveau mini-jeu : le jeu des paires",
+    "Attrape les friandises : chute plus lente, et même vitesse sur tous les écrans (trop rapide sur les écrans 120-144 Hz)",
+    "Taille grande ou très grande : l'animal trouve bien la gamelle"
+   ]
+  },
+  {
    "version": "2.9.1",
    "date": "2026-10-25",
    "items": [
@@ -873,14 +887,6 @@
     "Calendrier des fêtes : Halloween, Noël, Nouvel An, Saint-Valentin, Pâques, Journée du chat, anniversaire",
     "Cadeau de Noël à ouvrir et chasse aux œufs de Pâques sur le bureau",
     "Chapeau de fête à gagner au Nouvel An"
-   ]
-  },
-  {
-   "version": "1.3.3",
-   "date": "2026-10-24",
-   "items": [
-    "Nouveau bonnet de nuit qui coiffe la tête",
-    "Plus de crotte ni de pipi pendant le sommeil : il se retient jusqu'au réveil"
    ]
   }
  ]

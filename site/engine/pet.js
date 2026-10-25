@@ -601,3 +601,29 @@ Pet.checkTrophies = (s) => {
   for (const tr of fresh) s.trophies.push(tr.id);
   return fresh;
 };
+
+// ---------- Bilan de la semaine ----------
+// On garde les compteurs au début de la semaine (lundi 0 h) : le bilan est la différence avec aujourd'hui.
+// s.week = { start, base, minutes } (semaine en cours), s.lastWeek = { start, meals, hugs, …, minutes }
+const WEEK_KEYS = ['meals', 'hugs', 'poopsCleaned', 'gamesWon', 'visits', 'guests', 'photos', 'cures'];
+const counters = (s) => Object.fromEntries(WEEK_KEYS.map((k) => [k, (k === 'meals' ? s.meals : s.stats[k]) || 0]));
+Pet.weekStart = (now = Date.now()) => {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // retour au lundi
+  return d.getTime();
+};
+Pet.weekNow = (s) => {
+  if (!s.week) return null;
+  const now = counters(s);
+  return { ...Object.fromEntries(WEEK_KEYS.map((k) => [k, Math.max(0, now[k] - (s.week.base[k] || 0))])), minutes: s.week.minutes || 0 };
+};
+// À appeler chaque minute passée ensemble : compte le temps, et change de semaine le lundi (vrai si un bilan vient d'être fait)
+Pet.weekTick = (s, now = Date.now()) => {
+  const start = Pet.weekStart(now);
+  if (!s.week) { s.week = { start, base: counters(s), minutes: 0 }; return false; }
+  if (s.week.start === start) { s.week.minutes = (s.week.minutes || 0) + 1; return false; }
+  s.lastWeek = { start: s.week.start, ...Pet.weekNow(s) };
+  s.week = { start, base: counters(s), minutes: 0 };
+  return true;
+};
