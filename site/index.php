@@ -122,9 +122,6 @@ $jsonLd = [
   <script type="application/ld+json"><?= json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
   <link rel="icon" href="<?= $asset('img/icon.png') ?>">
   <link rel="apple-touch-icon" href="<?= $asset('img/icon.png') ?>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= $asset('style.css') ?>">
 </head>
 <body>

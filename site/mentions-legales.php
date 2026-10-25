@@ -12,9 +12,6 @@ header('Cache-Control: no-cache, must-revalidate');
   <title>Mentions légales — ThomasGotchi</title>
   <meta name="robots" content="noindex">
   <link rel="icon" href="<?= $asset('img/icon.png') ?>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= $asset('style.css') ?>">
 </head>
 <body>
@@ -32,7 +29,7 @@ header('Cache-Control: no-cache, must-revalidate');
       Contact : <a href="mailto:didtech81500@gmail.com">didtech81500@gmail.com</a><br>
       Site : <a href="https://www.didtech.fr/">www.didtech.fr</a>
     </p>
-    <p>Directeur de la publication : le représentant légal de DidTech.</p>
+    <p>Directeur de la publication : Didier THOMAS.</p>
 
     <h2>Hébergement</h2>
     <p>
@@ -47,7 +44,7 @@ header('Cache-Control: no-cache, must-revalidate');
     <ul>
       <li>Le compteur de téléchargements enregistre seulement le nombre de téléchargements par jour et par système (Windows ou Mac). Aucune adresse IP ni aucune donnée personnelle n'est conservée.</li>
       <li>Un petit cookie (<code>tg_lang</code>) retient la langue choisie, pendant un an. Il ne sert à rien d'autre.</li>
-      <li>Les polices de caractères sont fournies par Google Fonts : votre navigateur contacte les serveurs de Google pour les charger.</li>
+      <li>Les polices de caractères (Fredoka et Nunito, sous licence libre SIL Open Font License) sont hébergées sur ce site : aucun service extérieur n'est contacté pour les afficher.</li>
       <li>La démo jouable fonctionne entièrement dans votre navigateur : les fichiers que vous lui donnez ne sont jamais envoyés, seuls leur nom et leur taille sont lus sur place.</li>
     </ul>
     <p><strong>Dans l'application</strong> : votre animal et vos réglages restent sur votre ordinateur. L'application contacte seulement :</p>
