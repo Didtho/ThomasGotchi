@@ -541,6 +541,13 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.9.1",
+   "date": "2026-10-25",
+   "items": [
+    "Réglages, onglet Amis : un long prénom ne fait plus déborder la carte (boutons et onglets coupés à droite)"
+   ]
+  },
+  {
    "version": "2.9.0",
    "date": "2026-10-25",
    "items": [
@@ -874,13 +881,6 @@
    "items": [
     "Nouveau bonnet de nuit qui coiffe la tête",
     "Plus de crotte ni de pipi pendant le sommeil : il se retient jusqu'au réveil"
-   ]
-  },
-  {
-   "version": "1.3.2",
-   "date": "2026-10-24",
-   "items": [
-    "Fabrication plus robuste (nouvel essai automatique, Windows et Mac indépendants)"
    ]
   }
  ]
