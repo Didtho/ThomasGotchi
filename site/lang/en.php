@@ -130,4 +130,5 @@ return [
     'L\'application s\'améliore souvent, et se met à jour toute seule.' => 'The app improves often, and updates itself.',
     '(Notes de version en français.)' => '(Release notes in French.)',
     'Versions précédentes' => 'Earlier versions',
+    'Mentions légales' => 'Legal notice',
 ];
