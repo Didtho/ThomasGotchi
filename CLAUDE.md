@@ -50,6 +50,10 @@ Electron, sinon il démarre comme Node (`Remove-Item Env:ELECTRON_RUN_AS_NODE`).
   `git tag vX.Y.Z && git push origin main && git push origin vX.Y.Z`. GitHub Actions fabrique le `.exe` et le
   `.dmg` et les publie (Releases) ; les PC se mettent à jour tout seuls. Suivre la fabrication via l'API publique
   (`api.github.com/repos/Didtho/ThomasGotchi/actions/runs`).
+- **Après chaque version publiée, sans attendre qu'on le demande** : une fois la fabrication réussie, lancer
+  `npm run site-assets` **au premier plan** (en vérifiant que la section « Nouveautés » de `site/data/app.json`
+  commence bien par la nouvelle version), committer, redéployer WAMP puis le site en ligne (`npm run deploy-site`),
+  et vider le cache de version (WAMP : `cache/release.json` ; en ligne : il se renouvelle en 10 minutes).
 - **Site toujours à jour avec l'application** : après chaque ajout, `npm run site-assets`, adapter les textes de
   `site/index.php` (et `site/lang/*.php`), puis redéployer sur WAMP :
   `robocopy site C:\wamp64\www\thomasgotchi /MIR /XD cache` et vérifier http://localhost/thomasgotchi/.
@@ -60,8 +64,8 @@ Electron, sinon il démarre comme Node (`Remove-Item Env:ELECTRON_RUN_AS_NODE`).
   `$asset('chemin')` (dans `site/index.php`), qui ajoute `?v=<date de modification>` ; ne jamais écrire
   l'adresse en dur, sinon les navigateurs gardent l'ancienne version.
 - **Crédit** : le site est signé « une création DidTech » (lien https://www.didtech.fr/), pas « par Didtho ».
-- **Mise en ligne chez IONOS** (https://thomasgotchi.mirimix.fr/, PHP + MariaDB, SFTP) seulement quand
-  l'utilisateur le décidera : `npm run deploy-site` (`-- --list` pour voir les dossiers du serveur). Les accès
+- **Site en ligne chez IONOS** (https://thomasgotchi.mirimix.fr/, PHP + MariaDB, SFTP) : le redéployer avec
+  `npm run deploy-site` à chaque changement du site (`-- --list` pour voir les dossiers du serveur). Les accès
   sont dans `deploy.local.json` (racine, exclu de GitHub) ; le script crée `inc/config.local.php` directement
   sur le serveur. **Aucun accès (serveur, identifiant, mot de passe, nom de base) ne doit jamais aller sur
   GitHub ni dans un commit** : vérifier `git diff --cached` avant chaque commit qui touche au déploiement.
