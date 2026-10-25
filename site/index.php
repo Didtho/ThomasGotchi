@@ -151,6 +151,7 @@ $jsonLd = [
           <span class="os">🍎</span> <?= $h(tt('Télécharger pour Mac')) ?>
         </a>
       </div>
+      <p class="install-hint"><?= tt('Sur Mac, une petite manipulation est nécessaire la première fois : <a href="#installer">voir comment</a>.') ?></p>
       <?php if ($downloads > 0): ?>
         <p class="counter"><?= $h(tt($downloads > 1 ? 'Déjà {n} téléchargements !' : 'Déjà {n} téléchargement !', ['n' => number_format($downloads, 0, ',', ' ')])) ?></p>
       <?php endif; ?>
@@ -227,7 +228,7 @@ $jsonLd = [
   <section class="section tinted" id="installer">
     <h2><?= $h(tt('Installer ThomasGotchi')) ?></h2>
     <div class="install">
-      <article class="install-card">
+      <article class="install-card" data-os="windows">
         <h3>⊞ Windows</h3>
         <ol>
           <li><?= tt('Télécharge le fichier <strong>.exe</strong> ci-dessus.') ?></li>
@@ -236,15 +237,27 @@ $jsonLd = [
         </ol>
         <p class="note"><?= $h(tt('Les nouvelles versions s\'installent ensuite toutes seules.')) ?></p>
       </article>
-      <article class="install-card">
+      <article class="install-card" data-os="mac">
         <h3>🍎 Mac</h3>
         <ol>
           <li><?= tt('Télécharge le fichier <strong>.dmg</strong> et ouvre-le.') ?></li>
           <li><?= tt('Glisse ThomasGotchi dans le dossier <strong>Applications</strong>.') ?></li>
-          <li><?= tt('La première fois : fais un <strong>clic droit</strong> sur l\'application et choisis <em>Ouvrir</em>. macOS affiche alors un avertissement : confirme avec le bouton <em>Ouvrir</em>.') ?></li>
+          <li><?= tt('Ouvre-la une première fois : macOS affiche un avertissement et refuse de la lancer. C\'est normal, voir l\'encadré ci-dessous.') ?></li>
         </ol>
-        <p class="note"><?= $h(tt('Si macOS indique que l\'application est « endommagée », ouvre le Terminal et tape :')) ?><br><code>xattr -cr /Applications/ThomasGotchi.app</code></p>
+        <p class="note"><?= $h(tt('L\'application te prévient quand une nouvelle version est disponible.')) ?></p>
       </article>
+    </div>
+    <!-- Avertissement de macOS (Gatekeeper) : l'application n'est pas signée par Apple -->
+    <div class="mac-warning">
+      <h3><?= $h(tt('⚠️ L\'avertissement de macOS')) ?></h3>
+      <p><?= $h(tt('ThomasGotchi n\'est pas signé par Apple, car cela demande un abonnement payant. L\'application n\'est pas dangereuse : macOS ne la connaît simplement pas. Pour l\'autoriser, une seule fois :')) ?></p>
+      <ol>
+        <li><?= tt('Ouvre <strong>Réglages Système</strong> → <strong>Confidentialité et sécurité</strong>.') ?></li>
+        <li><?= tt('Descends jusqu\'au message sur ThomasGotchi, clique sur <em>Ouvrir quand même</em> et confirme avec ton mot de passe.') ?></li>
+      </ol>
+      <p><?= tt('Autre solution, valable aussi si macOS dit que l\'application est « endommagée » : ouvre le <strong>Terminal</strong> et tape cette commande, qui retire le blocage.') ?></p>
+      <code>xattr -cr /Applications/ThomasGotchi.app</code>
+      <p class="note"><?= $h(tt('À refaire après chaque nouvelle version téléchargée.')) ?></p>
     </div>
   </section>
 
@@ -274,6 +287,18 @@ $jsonLd = [
       first.parentNode.prepend(first);
       document.querySelectorAll('.downloads .btn').forEach((b) => { if (b !== first) b.classList.add('alt'); });
     }
+    // Après un clic sur « Télécharger », le téléchargement démarre et la page descend jusqu'aux conseils
+    // d'installation du bon système (sur Mac : l'encadré pour passer l'avertissement d'Apple)
+    document.querySelectorAll('.downloads [data-os]').forEach((btn) => btn.addEventListener('click', () => {
+      const os = btn.dataset.os;
+      const target = os === 'mac' ? document.querySelector('.mac-warning') : document.querySelector('.install-card[data-os="windows"]');
+      setTimeout(() => {
+        document.querySelector('#installer').scrollIntoView({ behavior: 'smooth' });
+        document.querySelectorAll('.install-card, .mac-warning').forEach((el) => el.classList.remove('highlight'));
+        document.querySelector(`.install-card[data-os="${os}"]`).classList.add('highlight');
+        if (target) target.classList.add('highlight');
+      }, 400);
+    }));
     // Le choix de langue est retenu (on ne redirige plus selon le navigateur)
     document.querySelectorAll('.langs a').forEach((a) => a.addEventListener('click', () => {
       document.cookie = 'tg_lang=' + a.dataset.lang + '; path=/; max-age=31536000; SameSite=Lax';

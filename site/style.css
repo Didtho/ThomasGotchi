@@ -204,6 +204,29 @@ img { max-width: 100%; }
 .install-card ol { margin: 0; padding-left: 22px; }
 .install-card li { margin-bottom: 8px; }
 .note { margin: 14px 0 0; padding: 10px 14px; font-size: 15px; background: var(--cream); border-radius: 12px; }
+/* Conseils d'installation mis en valeur juste après un clic sur « Télécharger » */
+.install-hint { margin: 10px 0 0; font-size: 15px; color: var(--ink-soft); }
+.highlight { animation: highlight 1.2s ease 2; }
+@keyframes highlight {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 69, 109, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(232, 69, 109, .35); }
+}
+
+/* Encadré : avertissement de macOS et comment le lever */
+.mac-warning {
+  max-width: 860px;
+  margin: 24px auto 0;
+  padding: 20px 24px;
+  background: #fff8e1;
+  border: 3px dashed #e8b84a;
+  border-radius: var(--radius);
+}
+.mac-warning h3 { margin: 0 0 8px; font-size: 22px; }
+.mac-warning p { margin: 8px 0; }
+.mac-warning ol { margin: 0; padding-left: 22px; }
+.mac-warning li { margin-bottom: 6px; }
+.mac-warning code { display: inline-block; margin: 2px 0 4px; padding: 8px 12px; font-size: 15px; user-select: all; }
+.mac-warning .note { background: #fff; }
 code { padding: 2px 6px; font-size: 14px; background: #fff; border: 1px solid rgba(59, 42, 58, .2); border-radius: 6px; word-break: break-all; }
 
 .faq { max-width: 780px; margin: 0 auto; }

@@ -385,24 +385,14 @@ function drawAccessory(ctx, kind, cx, g, v) {
     ellipse(ctx, 0, -r * 0.88, r * 0.1, r * 0.1, '#ff6f91', INK, 1.5);
     ctx.restore();
   } else if (kind === 'noel') {
-    const baseY = headCy - headRy * 0.62;
-    const sway = Math.sin(v.t * 1.5) * 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - headRx * 0.62, baseY + 4);
-    ctx.quadraticCurveTo(cx + headRx * 0.1, baseY - r * 1.0, cx + headRx * 0.9 + sway, baseY - r * 0.2);
-    ctx.quadraticCurveTo(cx + headRx * 0.3, baseY - r * 0.3, cx + headRx * 0.62, baseY + 4);
-    ctx.closePath();
-    ctx.fillStyle = '#e03a4e';
-    ctx.fill();
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
-    ellipse(ctx, cx, baseY + 3, headRx * 0.66, r * 0.12, '#fff', INK, 2);
-    ellipse(ctx, cx + headRx * 0.9 + sway, baseY - r * 0.2, r * 0.13, r * 0.13, '#fff', INK, 2);
+    // Même coupe que le bonnet de nuit, qui épouse la tête, en rouge avec revers et pompon blancs
+    drawNightcap(ctx, cx, g, v.t, v.species, '#e03a4e', false);
   }
 }
 
 // Bonnet de nuit quand il dort le soir : il coiffe le haut de la tête et sa pointe retombe sur le côté
-function drawNightcap(ctx, cx, g, t, species) {
+// (sert aussi au bonnet de Noël, avec une autre couleur et sans étoiles)
+function drawNightcap(ctx, cx, g, t, species, cap = '#6f8fe8', stars = true) {
   const { r, headRx, headRy, headCy } = g;
   const sway = Math.sin(t * 1.2) * 2;
   // Le lapin le porte entre ses longues oreilles ; chat et ourson ont les oreilles dessous
@@ -420,7 +410,7 @@ function drawNightcap(ctx, cx, g, t, species) {
   ctx.quadraticCurveTo(cx + headRx * 0.75, top - r * 0.15, rx, ry);
   ctx.ellipse(cx, headCy, headRx * 1.04, headRy * 1.04, 0, a2, a1, true);
   ctx.closePath();
-  ctx.fillStyle = '#6f8fe8';
+  ctx.fillStyle = cap;
   ctx.fill();
   ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
@@ -428,7 +418,7 @@ function drawNightcap(ctx, cx, g, t, species) {
   ctx.stroke();
   // Petites étoiles sur le tissu
   ctx.fillStyle = 'rgba(255,255,255,.7)';
-  for (const [dx, dy] of [[-0.25, -0.25], [0.2, -0.45], [0.55, -0.2]]) {
+  if (stars) for (const [dx, dy] of [[-0.25, -0.25], [0.2, -0.45], [0.55, -0.2]]) {
     ctx.beginPath();
     ctx.arc(cx + dx * headRx, top + dy * r, 1.8, 0, Math.PI * 2);
     ctx.fill();

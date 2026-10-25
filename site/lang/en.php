@@ -72,10 +72,6 @@ return [
     'Les nouvelles versions s\'installent ensuite toutes seules.' => 'New versions then install by themselves.',
     'Télécharge le fichier <strong>.dmg</strong> et ouvre-le.' => 'Download the <strong>.dmg</strong> file and open it.',
     'Glisse ThomasGotchi dans le dossier <strong>Applications</strong>.' => 'Drag ThomasGotchi into the <strong>Applications</strong> folder.',
-    'La première fois : fais un <strong>clic droit</strong> sur l\'application et choisis <em>Ouvrir</em>. macOS affiche alors un avertissement : confirme avec le bouton <em>Ouvrir</em>.' =>
-        'The first time: <strong>right-click</strong> the app and choose <em>Open</em>. macOS then shows a warning: confirm with the <em>Open</em> button.',
-    'Si macOS indique que l\'application est « endommagée », ouvre le Terminal et tape :' =>
-        'If macOS says the app is "damaged", open the Terminal and type:',
 
     'Questions fréquentes' => 'Frequently asked questions',
     'Est-ce vraiment gratuit ?' => 'Is it really free?',
@@ -108,4 +104,13 @@ return [
     'Le roux de la maison : pelage orange rayé et bouille ronde.' => 'The ginger of the house: striped orange coat and a round little face.',
     'Une tigrée grise aux rayures bien dessinées.' => 'A grey tabby with neatly drawn stripes.',
     'Noire et blanche, avec son petit masque.' => 'Black and white, with her little mask.',
+    'Ouvre-la une première fois : macOS affiche un avertissement et refuse de la lancer. C\'est normal, voir l\'encadré ci-dessous.' => 'Open it once: macOS shows a warning and refuses to launch it. That\'s normal, see the box below.',
+    'L\'application te prévient quand une nouvelle version est disponible.' => 'The app lets you know when a new version is available.',
+    '⚠️ L\'avertissement de macOS' => '⚠️ The macOS warning',
+    'ThomasGotchi n\'est pas signé par Apple, car cela demande un abonnement payant. L\'application n\'est pas dangereuse : macOS ne la connaît simplement pas. Pour l\'autoriser, une seule fois :' => 'ThomasGotchi isn\'t signed by Apple, because that requires a paid subscription. The app isn\'t dangerous: macOS simply doesn\'t know it. To allow it, just once:',
+    'Ouvre <strong>Réglages Système</strong> → <strong>Confidentialité et sécurité</strong>.' => 'Open <strong>System Settings</strong> → <strong>Privacy &amp; Security</strong>.',
+    'Descends jusqu\'au message sur ThomasGotchi, clique sur <em>Ouvrir quand même</em> et confirme avec ton mot de passe.' => 'Scroll down to the message about ThomasGotchi, click <em>Open Anyway</em> and confirm with your password.',
+    'Autre solution, valable aussi si macOS dit que l\'application est « endommagée » : ouvre le <strong>Terminal</strong> et tape cette commande, qui retire le blocage.' => 'Another way, which also works if macOS says the app is “damaged”: open <strong>Terminal</strong> and type this command, which removes the block.',
+    'À refaire après chaque nouvelle version téléchargée.' => 'Do it again after each new version you download.',
+    'Sur Mac, une petite manipulation est nécessaire la première fois : <a href="#installer">voir comment</a>.' => 'On a Mac, a small extra step is needed the first time: <a href="#installer">see how</a>.',
 ];
