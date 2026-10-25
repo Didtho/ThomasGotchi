@@ -1,6 +1,6 @@
 <?php
 // Dernière version publiée sur GitHub (numéro, liens de téléchargement Windows / Mac).
-// Mise en cache une heure dans cache/release.json pour ne pas interroger GitHub à chaque visite.
+// Mise en cache 10 minutes dans cache/release.json pour ne pas interroger GitHub à chaque visite.
 
 const TG_REPO = 'Didtho/ThomasGotchi';
 const TG_RELEASES = 'https://github.com/' . TG_REPO . '/releases/latest';
@@ -9,7 +9,7 @@ function tg_latest_release(): array
 {
     $cacheFile = __DIR__ . '/../cache/release.json';
     $cached = is_file($cacheFile) ? json_decode((string) file_get_contents($cacheFile), true) : null;
-    if ($cached && time() - filemtime($cacheFile) < 3600) {
+    if ($cached && time() - filemtime($cacheFile) < 600) {
         return $cached;
     }
 
