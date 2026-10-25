@@ -282,6 +282,12 @@ button.danger { background: #ffe0e0 !important; }
 .cup.up .peek { opacity: 1; transform: translate(-50%, 34px); }
 .journal-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed rgba(59,42,58,.2); font-size: 11.5px; }
 .journal-row b { font-weight: 600; }
+/* Carnet : étagère des trophées et album photo */
+.trophies { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 4px; }
+.trophies span { font-size: 20px; filter: grayscale(1); opacity: .3; cursor: help; }
+.trophies span.won { filter: none; opacity: 1; }
+.album { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 2px 0 4px; font-size: 11px; opacity: .9; }
+.album img { width: 100%; border: 1.5px solid #3b2a3a; border-radius: 6px; cursor: zoom-in; }
 .journal-sub { margin: 6px 0 2px; font-weight: 700; font-size: 11.5px; }
 .theme-pixel #catch-area, .theme-pixel .game-list button { border-radius: 0; border-width: 2px; background: #9bbc0f; }
 .version { margin: 5px 0 0; font-size: 10px; text-align: right; opacity: .55; }

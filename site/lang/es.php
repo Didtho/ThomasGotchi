@@ -30,8 +30,6 @@ return [
     'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.' =>
         'Pasea, pasa de una pantalla a otra y se sube a tus ventanas: ¡si las cierras, se cae! Incluso hace sus necesidades en el escritorio.',
     'Jeux et tours' => 'Juegos y trucos',
-    'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.' =>
-        'Atrapa las golosinas, el juego de los vasos, el ovillo de lana… y trucos que aprende poco a poco.',
     'Fêtes et météo' => 'Fiestas y tiempo',
     'Plusieurs compagnons' => 'Varios compañeros',
     'Il te parle' => 'Te habla',
@@ -75,8 +73,6 @@ return [
     'Le temps continue de passer : pense à t\'occuper de lui ! Pour partir en vacances, active la « pause vacances » : il ne vieillit pas et n\'a ni faim ni soif.' =>
         'El tiempo sigue pasando: ¡acuérdate de cuidarlo! Si te vas de vacaciones, activa la «pausa vacaciones»: no envejece y no tiene hambre ni sed.',
     'Il prend beaucoup de place ou de ressources ?' => '¿Ocupa mucho espacio o recursos?',
-    'Non : il reste discret, les clics passent à travers lui, et le mode « ne pas déranger » le rend muet et immobile pendant une réunion ou un film.' =>
-        'No: es discreto, los clics lo atraviesan, y el modo «no molestar» lo deja callado e inmóvil durante una reunión o una película.',
     'Mes données sont-elles envoyées quelque part ?' => '¿Se envían mis datos a algún sitio?',
     'Non. Ton animal est sauvegardé uniquement sur ton ordinateur. Seule la météo interroge un service public (avec le nom de ta ville), et l\'application vérifie s\'il existe une nouvelle version.' =>
         'No. Tu mascota se guarda solo en tu ordenador. Solo el tiempo consulta un servicio público (con el nombre de tu ciudad), y la aplicación comprueba si hay una nueva versión.',
@@ -132,4 +128,11 @@ return [
     'Glisse un fichier sur lui, comme sur Windows. Si ça ne marche pas sur ton Mac, clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… ». Tu peux aussi glisser les fichiers directement sur cette icône.' => 'Arrastra un archivo sobre él, como en Windows. Si no funciona en tu Mac, haz clic en el icono de ThomasGotchi en la barra de menús, arriba de la pantalla, y luego en «Dar un archivo de comer…». También puedes arrastrar los archivos directamente sobre ese icono.',
     'Comment mon animal peut-il rendre visite à un ami ?' => '¿Cómo puede mi mascota visitar a un amigo?',
     'Dans ses réglages, onglet « Amis », tu trouves ton code ami. Donne-le à un proche : il le tape chez lui, et tu acceptes sa demande. Quand vos deux applications sont ouvertes, vos animaux se rendent visite une ou deux fois par jour, ou quand tu cliques sur 🚪 : le tien quitte ton écran, apparaît chez ton ami, joue avec ses animaux puis revient. Ton ami peut même lui donner un fichier à manger : il rentre rassasié !' => 'En sus ajustes, pestaña «Amigos», encontrarás tu código de amigo. Dáselo a alguien cercano: lo escribe en su ordenador y tú aceptas su solicitud. Cuando las dos aplicaciones están abiertas, vuestras mascotas se visitan una o dos veces al día, o cuando haces clic en 🚪: la tuya sale de tu pantalla, aparece en casa de tu amigo, juega con sus mascotas y vuelve. Tu amigo incluso puede darle un archivo de comer: ¡vuelve con la barriga llena!',
+    'Attrape les friandises, jeu des gobelets, pelote de laine… des tours qu\'il apprend petit à petit, et des trophées à gagner.' => 'Atrapa las golosinas, juego de los vasos, ovillo de lana… trucos que aprende poco a poco y trofeos que ganar.',
+    'Non : il reste discret, les clics passent à travers lui, il se cache tout seul quand une application passe en plein écran (présentation, vidéo, jeu), et Ctrl+Alt+T (Cmd+Option+T sur Mac) le cache ou le fait revenir d\'un coup.' => 'No: es discreto, los clics lo atraviesan, se esconde solo cuando una aplicación pasa a pantalla completa (presentación, vídeo, juego), y Ctrl+Alt+T (Cmd+Opción+T en Mac) lo esconde o lo hace volver de golpe.',
+    'Un projet gratuit, fait avec le cœur 💖' => 'Un proyecto gratuito, hecho con cariño 💖',
+    'ThomasGotchi est gratuit, sans publicité, et le restera. Si ton compagnon te fait sourire, tu peux soutenir son développement : cela aide à ajouter des animaux, des fêtes et des surprises, et à garder le projet vivant.' => 'ThomasGotchi es gratuito, sin publicidad, y lo seguirá siendo. Si tu compañero te hace sonreír, puedes apoyar su desarrollo: ayuda a añadir animales, fiestas y sorpresas, y a mantener vivo el proyecto.',
+    'Faire un don avec PayPal' => 'Donar con PayPal',
+    'Merci à celles et ceux qui l\'ont déjà fait !' => '¡Gracias a quienes ya lo han hecho!',
+    'Soutenir' => 'Apoyar',
 ];

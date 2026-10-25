@@ -24,7 +24,12 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
 - 📖 **Carnet** : âge, plat préféré, câlins, souvenirs des anciens compagnons.
 - 🎁 **Accessoires** à gagner : nœud papillon, lunettes, fleur, couronne, chapeau de sorcière, bonnet de Noël,
   chapeau de fête (et le chapeau de magicien, en édition unique pour la soirée magique de décembre 2026).
-- 📸 **Photo souvenir** (menu de l'icône) : une jolie image de l'animal, enregistrée dans Images › ThomasGotchi.
+- 📸 **Photo souvenir** (menu de l'icône) : une jolie image de l'animal, enregistrée dans Images › ThomasGotchi
+  et rangée dans l'**album** du carnet (un clic l'ouvre en grand).
+- 🏆 **Trophées** (14, dans le carnet) : premier repas, fin gourmet, une semaine ensemble, petit docteur,
+  grand voyageur, maison accueillante, star des photos…
+- 🖥️ **Discret** : il se cache tout seul quand une application passe en plein écran (présentation, vidéo, jeu) et
+  revient après ; **Ctrl+Alt+T** (Cmd+Option+T sur Mac) cache ou fait revenir tous les animaux d'un coup.
 - **Plusieurs animaux** (jusqu'à 5) : ils deviennent copains puis meilleurs amis, jouent à chat, se rendent visite,
   se font la toilette et se chamaillent.
 - 🚪 **Visites entre ordinateurs** (onglet « Amis » des réglages) : chacun a un code ami ; une fois l'amitié acceptée des

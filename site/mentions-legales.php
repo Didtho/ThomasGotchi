@@ -45,6 +45,7 @@ header('Cache-Control: no-cache, must-revalidate');
       <li>Le compteur de téléchargements enregistre seulement le nombre de téléchargements par jour et par système (Windows ou Mac). Aucune adresse IP ni aucune donnée personnelle n'est conservée.</li>
       <li>Un petit cookie (<code>tg_lang</code>) retient la langue choisie, pendant un an. Il ne sert à rien d'autre.</li>
       <li>Les polices de caractères (Fredoka et Nunito, sous licence libre SIL Open Font License) sont hébergées sur ce site : aucun service extérieur n'est contacté pour les afficher.</li>
+      <li>Les dons passent par PayPal (bouton « Faire un don ») : ce site ne voit et ne garde aucune donnée de paiement.</li>
       <li>La démo jouable fonctionne entièrement dans votre navigateur : les fichiers que vous lui donnez ne sont jamais envoyés, seuls leur nom et leur taille sont lus sur place.</li>
     </ul>
     <p><strong>Dans l'application</strong> : votre animal et vos réglages restent sur votre ordinateur. L'application contacte seulement :</p>

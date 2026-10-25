@@ -30,8 +30,6 @@ return [
     'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.' =>
         'It strolls around, moves from one screen to another and climbs onto your windows: close them and it falls! It even does its business on the desktop.',
     'Jeux et tours' => 'Games and tricks',
-    'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.' =>
-        'Catch the treats, the cup game, a yarn ball… and tricks it learns little by little.',
     'Fêtes et météo' => 'Holidays and weather',
     'Plusieurs compagnons' => 'Several companions',
     'Il te parle' => 'It talks to you',
@@ -75,8 +73,6 @@ return [
     'Le temps continue de passer : pense à t\'occuper de lui ! Pour partir en vacances, active la « pause vacances » : il ne vieillit pas et n\'a ni faim ni soif.' =>
         'Time keeps passing: remember to take care of it! When you go on holiday, turn on the "holiday pause": it doesn\'t age and isn\'t hungry or thirsty.',
     'Il prend beaucoup de place ou de ressources ?' => 'Does it take up a lot of space or resources?',
-    'Non : il reste discret, les clics passent à travers lui, et le mode « ne pas déranger » le rend muet et immobile pendant une réunion ou un film.' =>
-        'No: it stays discreet, clicks go right through it, and "do not disturb" mode makes it silent and still during a meeting or a movie.',
     'Mes données sont-elles envoyées quelque part ?' => 'Is my data sent anywhere?',
     'Non. Ton animal est sauvegardé uniquement sur ton ordinateur. Seule la météo interroge un service public (avec le nom de ta ville), et l\'application vérifie s\'il existe une nouvelle version.' =>
         'No. Your pet is saved only on your computer. Only the weather queries a public service (with your city name), and the app checks whether a new version exists.',
@@ -132,4 +128,11 @@ return [
     'Glisse un fichier sur lui, comme sur Windows. Si ça ne marche pas sur ton Mac, clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… ». Tu peux aussi glisser les fichiers directement sur cette icône.' => 'Drag a file onto it, just like on Windows. If that doesn\'t work on your Mac, click the ThomasGotchi icon in the menu bar at the top of the screen, then “Feed a file…”. You can also drag files straight onto that icon.',
     'Comment mon animal peut-il rendre visite à un ami ?' => 'How can my pet visit a friend?',
     'Dans ses réglages, onglet « Amis », tu trouves ton code ami. Donne-le à un proche : il le tape chez lui, et tu acceptes sa demande. Quand vos deux applications sont ouvertes, vos animaux se rendent visite une ou deux fois par jour, ou quand tu cliques sur 🚪 : le tien quitte ton écran, apparaît chez ton ami, joue avec ses animaux puis revient. Ton ami peut même lui donner un fichier à manger : il rentre rassasié !' => 'In its settings, “Friends” tab, you\'ll find your friend code. Give it to someone close: they type it in, and you accept their request. When both apps are open, your pets visit each other once or twice a day, or when you click 🚪: yours leaves your screen, appears at your friend\'s, plays with their pets and comes back. Your friend can even feed it a file: it comes home full!',
+    'Attrape les friandises, jeu des gobelets, pelote de laine… des tours qu\'il apprend petit à petit, et des trophées à gagner.' => 'Catch the treats, cups game, ball of yarn… tricks it learns little by little, and trophies to win.',
+    'Non : il reste discret, les clics passent à travers lui, il se cache tout seul quand une application passe en plein écran (présentation, vidéo, jeu), et Ctrl+Alt+T (Cmd+Option+T sur Mac) le cache ou le fait revenir d\'un coup.' => 'No: it stays discreet, clicks go through it, it hides by itself when an app goes full screen (presentation, video, game), and Ctrl+Alt+T (Cmd+Option+T on a Mac) hides it or brings it back at once.',
+    'Un projet gratuit, fait avec le cœur 💖' => 'A free project, made with love 💖',
+    'ThomasGotchi est gratuit, sans publicité, et le restera. Si ton compagnon te fait sourire, tu peux soutenir son développement : cela aide à ajouter des animaux, des fêtes et des surprises, et à garder le projet vivant.' => 'ThomasGotchi is free, ad-free, and will stay that way. If your companion makes you smile, you can support its development: it helps add pets, holidays and surprises, and keeps the project alive.',
+    'Faire un don avec PayPal' => 'Donate with PayPal',
+    'Merci à celles et ceux qui l\'ont déjà fait !' => 'Thank you to everyone who already has!',
+    'Soutenir' => 'Support',
 ];

@@ -22,7 +22,7 @@ $features = [
     ['🍽️', 'Il mange tes fichiers', 'Glisse une image, un PDF ou une vidéo sur lui : il se régale. Rassure-toi, tes fichiers ne sont jamais effacés.'],
     ['💖', 'Prends soin de lui', 'Faim, soif, sommeil, propreté, câlins… Ses besoins se lisent sur son visage. Sans soins, il tombe malade.'],
     ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.'],
-    ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.'],
+    ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, pelote de laine… des tours qu\'il apprend petit à petit, et des trophées à gagner.'],
     ['🎃', 'Fêtes et météo', 'Halloween, Noël et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.'],
     ['💞', 'Plusieurs compagnons', 'Jusqu\'à 5 animaux qui deviennent amis et jouent ensemble… et qui peuvent même rendre visite aux animaux de tes proches, sur leur ordinateur !'],
     ['🗣️', 'Il te parle', 'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.'],
@@ -49,11 +49,10 @@ $moments = [
 
 $faq = [
     ['Est-ce vraiment gratuit ?', 'Oui, entièrement : pas d\'abonnement, pas de publicité, pas de compte à créer.'],
-    ['Comment le nourrir sur Mac ?', 'Glisse un fichier sur lui, comme sur Windows. Si ça ne marche pas sur ton Mac, clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… ». Tu peux aussi glisser les fichiers directement sur cette icône.'],
     ['Comment mon animal peut-il rendre visite à un ami ?', 'Dans ses réglages, onglet « Amis », tu trouves ton code ami. Donne-le à un proche : il le tape chez lui, et tu acceptes sa demande. Quand vos deux applications sont ouvertes, vos animaux se rendent visite une ou deux fois par jour, ou quand tu cliques sur 🚪 : le tien quitte ton écran, apparaît chez ton ami, joue avec ses animaux puis revient. Ton ami peut même lui donner un fichier à manger : il rentre rassasié !'],
     ['Les fichiers que je lui donne à manger sont-ils supprimés ?', 'Non, jamais. Il regarde seulement leur nom et leur taille pour savoir ce qu\'il mange. Le fichier reste exactement là où il était.'],
     ['Que devient-il quand l\'ordinateur est éteint ?', 'Le temps continue de passer : pense à t\'occuper de lui ! Pour partir en vacances, active la « pause vacances » : il ne vieillit pas et n\'a ni faim ni soif.'],
-    ['Il prend beaucoup de place ou de ressources ?', 'Non : il reste discret, les clics passent à travers lui, et le mode « ne pas déranger » le rend muet et immobile pendant une réunion ou un film.'],
+    ['Il prend beaucoup de place ou de ressources ?', 'Non : il reste discret, les clics passent à travers lui, il se cache tout seul quand une application passe en plein écran (présentation, vidéo, jeu), et Ctrl+Alt+T (Cmd+Option+T sur Mac) le cache ou le fait revenir d\'un coup.'],
     ['Mes données sont-elles envoyées quelque part ?', 'Non. Ton animal est sauvegardé uniquement sur ton ordinateur. Seule la météo interroge un service public (avec le nom de ta ville), et l\'application vérifie s\'il existe une nouvelle version.'],
     ['Comment le donner à quelqu\'un ou le changer d\'ordinateur ?', 'Dans ses réglages, « Exporter » crée un petit fichier. Sur l\'autre ordinateur, « Importer un animal » dans le menu de l\'icône le fait revivre.'],
     ['Dans quelles langues existe-t-il ?', 'En français, anglais, espagnol et italien. Il choisit tout seul la langue de ton ordinateur, et tu peux la changer dans ses réglages.'],
@@ -66,6 +65,7 @@ $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root
 
 // Référencement : adresses complètes du site en ligne, description et fiche lue par les moteurs de recherche
 const TG_SITE_URL = 'https://thomasgotchi.mirimix.fr/';
+const TG_DONATE = 'https://www.paypal.com/donate/?hosted_button_id=63HDAV7NYT3QC'; // bouton de don PayPal de DidTech
 $absUrl = fn(string $code): string => TG_SITE_URL . ($code === 'fr' ? '' : $code . '/');
 $title = tt('ThomasGotchi — un Tamagotchi gratuit sur ton bureau (Windows et Mac)');
 $description = tt('ThomasGotchi : un animal virtuel façon Tamagotchi qui vit sur le bureau de ton ordinateur (Windows et Mac). {n} animaux à adopter, nourrir et faire jouer. Gratuit et sans publicité.', ['n' => count($animals)]);
@@ -272,7 +272,6 @@ $jsonLd = [
           <li><?= tt('Télécharge le fichier <strong>.dmg</strong> et ouvre-le.') ?></li>
           <li><?= tt('Glisse ThomasGotchi dans le dossier <strong>Applications</strong>.') ?></li>
           <li><?= tt('Ouvre-la une première fois : macOS affiche un avertissement et refuse de la lancer. C\'est normal, voir l\'encadré ci-dessous.') ?></li>
-          <li><?= tt('Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>') ?></li>
         </ol>
         <p class="note"><?= $h(tt('L\'application te prévient quand une nouvelle version est disponible.')) ?></p>
       </article>
@@ -310,6 +309,16 @@ $jsonLd = [
   </section>
   <?php endif; ?>
 
+  <!-- Soutenir le projet : don PayPal (même principe que sur jukebox-cab.fr) -->
+  <section class="section soutien" id="soutenir">
+    <div class="soutien-card">
+      <h2><?= $h(tt('Un projet gratuit, fait avec le cœur 💖')) ?></h2>
+      <p><?= $h(tt('ThomasGotchi est gratuit, sans publicité, et le restera. Si ton compagnon te fait sourire, tu peux soutenir son développement : cela aide à ajouter des animaux, des fêtes et des surprises, et à garder le projet vivant.')) ?></p>
+      <a class="btn" href="<?= $h(TG_DONATE) ?>" target="_blank" rel="noopener"><?= $h(tt('Faire un don avec PayPal')) ?></a>
+      <p class="soutien-merci"><?= $h(tt('Merci à celles et ceux qui l\'ont déjà fait !')) ?></p>
+    </div>
+  </section>
+
   <section class="section" id="faq">
     <h2><?= $h(tt('Questions fréquentes')) ?></h2>
     <div class="faq">
@@ -324,7 +333,7 @@ $jsonLd = [
 
   <footer class="bottom">
     <img src="<?= $asset('img/icon.png') ?>" alt="" width="32" height="32">
-    <p><?= $h(tt('ThomasGotchi · une création')) ?> <a href="https://www.didtech.fr/">DidTech</a> · <a href="https://github.com/<?= $h(TG_REPO) ?>"><?= $h(tt('code source')) ?></a> · <a href="<?= $root ?>mentions-legales.php"><?= $h(tt('Mentions légales')) ?></a></p>
+    <p><?= $h(tt('ThomasGotchi · une création')) ?> <a href="https://www.didtech.fr/">DidTech</a> · <a href="https://github.com/<?= $h(TG_REPO) ?>"><?= $h(tt('code source')) ?></a> · <a href="#soutenir"><?= $h(tt('Soutenir')) ?></a> · <a href="<?= $root ?>mentions-legales.php"><?= $h(tt('Mentions légales')) ?></a></p>
   </footer>
 
   <!-- Moteur de dessin et bruitages de l'application : animaux animés et cris dans la liste des animaux -->

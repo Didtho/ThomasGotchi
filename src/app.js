@@ -255,8 +255,12 @@ desk.onVisit((ev) => {
     panel.classList.add('hidden');
     closeModal();
     say(t('Je vais rendre visite à {owner} ! 👋', { owner: ev.owner }), 2500);
+  } else if (ev.type === 'hosted' && !desk.guest) {
+    state.stats.guests = (state.stats.guests || 0) + 1; // un visiteur est venu (trophée « Maison accueillante »)
+    save();
   } else if (ev.type === 'home') {
     visitAway = false;
+    state.stats.visits = (state.stats.visits || 0) + 1; // trophée « Grand voyageur »
     state.fun = Math.min(100, state.fun + 15);
     play('jump', 800);
     if (ev.ate > 0) {
@@ -641,7 +645,6 @@ function dayRhythm() {
 
 // ---------- Logique (toutes les secondes) ----------
 
-let feedTipAt = 0; // dernier rappel « comment me nourrir » (Mac)
 let lastAlert; // dernier besoin signalé à l'icône de la barre des tâches (indéfini : rien d'envoyé encore)
 
 function logic() {
@@ -691,13 +694,6 @@ function logic() {
       say('Aouuuuh ! 🌕', 3500);
       save();
     }
-  }
-
-  // Sur Mac, un fichier glissé sur l'animal ne lui arrive pas : quand il a faim, il rappelle comment le nourrir
-  if (desk.isMac && state.hunger < 40 && !state.sleeping && !state.dead && !Pet.isEgg(state) && !dnd
-      && Date.now() - feedTipAt > 20 * 60000) {
-    feedTipAt = Date.now();
-    say('Donne-moi à manger depuis le menu de l\'icône, en haut de l\'écran 🍽️', 6000);
   }
 
   // Petit ronflement de temps en temps
@@ -985,6 +981,13 @@ function checkUnlocks() {
     if (!state.accessory) state.accessory = a.id;
     Sound.play('win');
     say(t('Cadeau ! {icon} {name} débloqué !', { icon: a.icon, name: t(a.name) }), 5000);
+    save();
+  }
+  if (desk.guest) return; // un invité ne gagne rien chez l'hôte
+  for (const tr of Pet.checkTrophies(state)) {
+    Sound.play('win');
+    play('jump', 800);
+    say(t('Trophée gagné : {icon} {name} ! (dans le carnet)', { icon: tr.icon, name: t(tr.name) }), 5500);
     save();
   }
 }
@@ -1332,7 +1335,18 @@ function takePhoto() {
   c.fillStyle = '#c2447a';
   c.font = '600 22px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
   c.fillText(new Date().toLocaleDateString(I18N.lang, { day: 'numeric', month: 'long', year: 'numeric' }) + ' · ThomasGotchi', W / 2, 758);
-  desk.savePhoto(card.toDataURL('image/png'), state.name);
+  desk.savePhoto(card.toDataURL('image/png'), state.name).then((file) => {
+    if (!file || !state) return;
+    // Album du carnet : une petite vignette (24 photos au plus) et le chemin de la photo en grand
+    const thumb = document.createElement('canvas');
+    thumb.width = 120;
+    thumb.height = 156;
+    thumb.getContext('2d').drawImage(card, 0, 0, 120, 156);
+    state.photos = [...(state.photos || []), { file, at: Date.now(), thumb: thumb.toDataURL('image/jpeg', 0.75) }].slice(-24);
+    state.stats.photos = (state.stats.photos || 0) + 1;
+    save();
+    checkUnlocks();
+  });
   play('love', 1400);
   say(Pet.g(state, 'Clic ! Je suis beau, non ? 📸', 'Clic ! Je suis belle, non ? 📸'), 3500);
 }

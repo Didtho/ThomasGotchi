@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('desk', {
   dropBox: (box) => ipcRenderer.send('drop-box', box),
   status: (alert) => ipcRenderer.send('pet-status', alert), // besoin à signaler sur l'icône (ou null)
   savePhoto: (dataUrl, name) => ipcRenderer.invoke('save-photo', dataUrl, name),
+  openPhoto: (file) => ipcRenderer.invoke('open-photo', file),
   owl: () => ipcRenderer.invoke('owl'), // soirée magique : un hibou traverse l'écran ; répond quand il passe au-dessus
   // Visites entre ordinateurs : invité venu d'ailleurs (sinon null), amis, départs et retours
   guest: ipcRenderer.sendSync('get-guest'),

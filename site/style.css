@@ -329,6 +329,22 @@ code { padding: 2px 6px; font-size: 14px; background: #fff; border: 1px solid rg
 }
 .bottom p { margin: 0; }
 
+/* Soutenir le projet (don PayPal) */
+.soutien-card {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  text-align: center;
+  background: var(--card);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.soutien-card h2 { margin-top: 0; }
+.soutien-card p { color: var(--ink-soft); line-height: 1.6; }
+.soutien-card .btn { margin-top: 6px; }
+.soutien-merci { margin: 14px 0 0; font-size: 14px; }
+
 /* Page des mentions légales */
 .legal { max-width: 780px; margin: 0 auto; }
 .legal h1 { font-size: 36px; margin: 0 0 18px; }

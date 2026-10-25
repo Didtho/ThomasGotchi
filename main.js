@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification, dialog, powerMonitor, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell, net, Notification, dialog, powerMonitor, clipboard, globalShortcut } = require('electron');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -295,16 +295,49 @@ function objectWindows() {
   return list.filter((w) => w && !w.isDestroyed());
 }
 
-function toggleVisible() {
-  const show = !anyVisible();
-  hiddenByUser = !show;
+const HIDE_SHORTCUT = 'CommandOrControl+Alt+T'; // tout cacher / tout afficher
+
+// Cachés par une application en plein écran (voir checkFullscreen) : ils reviennent quand elle se termine
+let autoHidden = false;
+let autoHideSetting = true; // réglage « Se cacher en plein écran » (menu de l'icône, settings.json)
+const allHidden = () => hiddenByUser || autoHidden;
+
+function setAllVisible(show) {
   for (const p of [...pets.values(), ...guests.values()]) {
     if (!alive(p) || p.away) continue; // parti en visite : il reste absent
-    if (show) p.win.show(); else p.win.hide();
+    if (show) p.win.showInactive(); else p.win.hide();
   }
   for (const w of objectWindows()) if (show) w.showInactive(); else w.hide();
   if (show) keepOnTop();
   buildTrayMenu();
+}
+
+// Menu de l'icône et raccourci clavier (Ctrl+Alt+T, Cmd+Option+T sur Mac)
+function toggleVisible() {
+  const show = !anyVisible();
+  hiddenByUser = !show;
+  if (show) autoHidden = false;
+  setAllVisible(show);
+}
+
+// Discrétion : une application en plein écran (présentation, vidéo, jeu) cache les animaux le temps qu'elle dure.
+// front : la grande fenêtre la plus en avant (hors ThomasGotchi) ; une fenêtre seulement agrandie ne compte pas.
+let lastFront = '';
+function checkFullscreen(front) {
+  const key = front ? `${Math.round(front.x1)},${Math.round(front.y1)} → ${Math.round(front.x2)},${Math.round(front.y2)}` : 'aucune';
+  if (key !== lastFront) { lastFront = key; diag('fenêtre au premier plan : ' + key); }
+  if (!autoHideSetting) return;
+  const full = !!front && screen.getAllDisplays().some(({ bounds: d }) =>
+    front.x1 <= d.x + 1 && front.y1 <= d.y + 1 && front.x2 >= d.x + d.width - 1 && front.y2 >= d.y + d.height - 1);
+  if (full && !autoHidden && !hiddenByUser) {
+    autoHidden = true;
+    diag('application en plein écran : animaux cachés');
+    setAllVisible(false);
+  } else if (!full && autoHidden) {
+    autoHidden = false;
+    diag('fin du plein écran : animaux de retour');
+    if (!hiddenByUser) setAllVisible(true);
+  }
 }
 
 // Nourrir avec des fichiers choisis dans une fenêtre, ou déposés sur l'icône (Mac) :
@@ -390,7 +423,7 @@ function buildTrayMenu() {
     { label: `ThomasGotchi v${app.getVersion()}`, enabled: false },
     { label: tr('Site internet 🌐'), click: () => shell.openExternal(siteUrl()) },
     { type: 'separator' },
-    { label: tr(anyVisible() ? 'Cacher' : 'Afficher'), click: toggleVisible },
+    { label: tr(anyVisible() ? 'Cacher' : 'Afficher'), click: toggleVisible, accelerator: HIDE_SHORTCUT, registerAccelerator: false },
     {
       label: tr('Ramener au coin de l\'écran'),
       click: () => {
@@ -408,6 +441,14 @@ function buildTrayMenu() {
     { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture, click: () => (furniture ? removeFurniture() : spawnFurniture()) },
     { type: 'separator' },
     { label: tr('🔕 Ne pas déranger'), type: 'checkbox', checked: dnd, click: (item) => setDnd(item.checked) },
+    {
+      label: tr('🖥️ Se cacher en plein écran'), type: 'checkbox', checked: autoHideSetting,
+      click: (item) => {
+        autoHideSetting = item.checked;
+        if (!autoHideSetting && autoHidden) { autoHidden = false; if (!hiddenByUser) setAllVisible(true); }
+        saveSettings();
+      },
+    },
     { label: tr('🏖️ Pause vacances (tous)'), type: 'checkbox', checked: allPaused, click: (item) => setAllPaused(item.checked) },
     { label: tr('Importer un animal…'), enabled: list.length < MAX_PETS, click: importPet },
     updateMenuItem(),
@@ -471,6 +512,15 @@ ipcMain.handle('save-photo', (e, dataUrl, name) => {
   fs.writeFileSync(file, Buffer.from(dataUrl.split(',')[1], 'base64'));
   notify(tr('Photo enregistrée dans Images › ThomasGotchi'), () => shell.showItemInFolder(file));
   return file;
+});
+
+// Album du carnet : ouvrir une photo en grand (seulement celles du dossier Images > ThomasGotchi)
+ipcMain.handle('open-photo', (_e, file) => {
+  const dir = path.join(app.getPath('pictures'), 'ThomasGotchi');
+  const full = path.resolve(String(file || ''));
+  if (!full.startsWith(dir + path.sep) || !fs.existsSync(full)) return false;
+  shell.openPath(full);
+  return true;
 });
 
 function createTray() {
@@ -581,6 +631,8 @@ function updatePlatforms(raw) {
     for (const [a, b] of spans) if (b - a >= 60 && w.y1 > 150) list.push({ h: w.h, x1: a, x2: b, y: w.y1 });
   });
   platforms = list;
+  // Plein écran : on regarde la première grande fenêtre (les petites, toujours devant, comme les gadgets, ne comptent pas)
+  checkFullscreen(rects.find((r) => (r.x2 - r.x1) * (r.y2 - r.y1) > 250000));
   checkSupports();
 }
 
@@ -904,7 +956,7 @@ function createPoop(owner, id, x, y, style, kind, edge) {
     hasShadow: false,
     focusable: false,
     alwaysOnTop: true,
-    show: !hiddenByUser,
+    show: !allHidden(),
     backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload-poop.js'),
@@ -1007,7 +1059,7 @@ function spawnYarn() {
     hasShadow: false,
     focusable: false,
     alwaysOnTop: true,
-    show: !hiddenByUser,
+    show: !allHidden(),
     backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload-yarn.js'),
@@ -1121,7 +1173,7 @@ function updateDecor() {
   win.once('ready-to-show', () => {
     if (win.isDestroyed()) return;
     win.setBackgroundColor('#00000000');
-    if (!hiddenByUser) win.showInactive();
+    if (!allHidden()) win.showInactive();
   });
   win.loadFile(path.join(__dirname, 'src', 'decor.html'), { query: { kind } });
   decor = { win, kind };
@@ -1195,7 +1247,7 @@ function createFurnitureWindow(kind, x) {
     x: Math.round(Math.min(Math.max(x - w / 2, wa.x), wa.x + wa.width - w)),
     y: wa.y + wa.height - h,
     transparent: true, frame: false, resizable: false, maximizable: false, minimizable: false, fullscreenable: false,
-    skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true, show: !hiddenByUser, backgroundColor: '#00000000',
+    skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true, show: !allHidden(), backgroundColor: '#00000000',
     webPreferences: { preload: path.join(__dirname, 'preload-furniture.js'), contextIsolation: true, nodeIntegration: false },
   });
   win.setAlwaysOnTop(true, 'floating');
@@ -1336,7 +1388,7 @@ function sendToPets(channel, value) {
 }
 
 function saveSettings() {
-  try { writeJson('settings.json', { dnd, city, lang: langSetting }); } catch { /* sans gravité */ }
+  try { writeJson('settings.json', { dnd, city, lang: langSetting, autoHide: autoHideSetting }); } catch { /* sans gravité */ }
 }
 
 ipcMain.on('get-lang', (e) => { e.returnValue = { setting: langSetting, lang: currentLang() }; });
@@ -1513,7 +1565,7 @@ function visitBlocker(p) {
 
 // Visites spontanées : une ou deux par jour au plus, quand un ami a son application ouverte
 function maybeVisit() {
-  if (!online || !online.open || dnd || hiddenByUser) return;
+  if (!online || !online.open || dnd || allHidden()) return;
   const day = new Date().toDateString();
   if (visitsToday.day !== day) visitsToday = { day, count: 0 };
   if (visitsToday.count >= 2 || Math.random() > 1 / 60) return;
@@ -1606,7 +1658,7 @@ function comeHome(v) {
 // Un animal d'un ami arrive en visite : une fenêtre d'animal « invité », sans sauvegarde ni réglages
 function receiveGuest(v) {
   if (guests.has(v.id)) return;
-  if (dnd || hiddenByUser || guests.size >= 1) {
+  if (dnd || allHidden() || guests.size >= 1) {
     api({ action: 'visit-end', secret: online.secret, id: v.id, played: '' }); // pas le moment : il rentre aussitôt
     return;
   }
@@ -1632,6 +1684,7 @@ function receiveGuest(v) {
     api({ action: 'visit-arrived', secret: online.secret, id: v.id });
     diag(`visite de ${v.pet.name || '?'} (${v.owner})`);
     slideIn(g, side, wa, () => win.webContents.send('visit', { type: 'arrive' }));
+    sendToPets('visit', { type: 'hosted' }); // les animaux de la maison comptent leurs visiteurs
     g.leaveTimer = setTimeout(() => guestLeave(g), VISIT_LENGTH);
   });
 }
@@ -1918,6 +1971,9 @@ app.whenReady().then(() => {
   if (furn && furn.on) spawnFurniture(furn);
   const settings = readJson('settings.json') || {};
   dnd = !!settings.dnd;
+  autoHideSetting = settings.autoHide !== false;
+  // Raccourci clavier pour tout cacher / tout afficher, même quand ThomasGotchi n'est pas au premier plan
+  try { globalShortcut.register(HIDE_SHORTCUT, toggleVisible); } catch { /* raccourci déjà pris par une autre application */ }
   if (typeof settings.city === 'string') city = settings.city;
   if (typeof settings.lang === 'string') langSetting = settings.lang;
   buildTrayMenu();
@@ -1935,4 +1991,4 @@ app.whenReady().then(() => {
 
 app.on('before-quit', () => { for (const p of pets.values()) saveWindowPosition(p); });
 app.on('window-all-closed', () => app.quit());
-app.on('will-quit', () => { appQuitting = true; if (watcher) watcher.kill(); });
+app.on('will-quit', () => { appQuitting = true; globalShortcut.unregisterAll(); if (watcher) watcher.kill(); });

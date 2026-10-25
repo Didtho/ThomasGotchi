@@ -275,6 +275,42 @@ function openJournal() {
   const next = Pet.accessoriesFor(s).find((a) => !s.unlocked.includes(a.id));
   if (next) addRow('Prochain cadeau', next.icon + ' ' + t(next.hint));
 
+  const addSub = (text) => {
+    const sub = document.createElement('div');
+    sub.className = 'journal-sub';
+    sub.textContent = text;
+    body.appendChild(sub);
+  };
+
+  // Trophées : ceux gagnés en couleur, les autres grisés (l'astuce s'affiche au survol)
+  const won = s.trophies || [];
+  addSub(t('Trophées ({n} / {total})', { n: won.length, total: Pet.TROPHIES.length }));
+  const shelf = document.createElement('div');
+  shelf.className = 'trophies';
+  for (const tr of Pet.TROPHIES) {
+    const cup = document.createElement('span');
+    const has = won.includes(tr.id);
+    cup.textContent = tr.icon;
+    cup.className = has ? 'won' : '';
+    cup.title = has ? t(tr.name) : `${t(tr.name)} : ${t(tr.hint)}`;
+    shelf.appendChild(cup);
+  }
+  body.appendChild(shelf);
+
+  // Album : les photos souvenir (menu de l'icône) ; un clic ouvre la photo en grand
+  addSub(t('Album photo'));
+  const album = document.createElement('div');
+  album.className = 'album';
+  for (const ph of [...(s.photos || [])].reverse()) {
+    const img = document.createElement('img');
+    img.src = ph.thumb;
+    img.title = new Date(ph.at).toLocaleDateString(I18N.lang, { day: 'numeric', month: 'long', year: 'numeric' });
+    img.addEventListener('click', () => desk.openPhoto(ph.file));
+    album.appendChild(img);
+  }
+  if (!(s.photos || []).length) album.textContent = t('Pas encore de photo : « Prendre une photo 📸 » dans le menu de l\'icône.');
+  body.appendChild(album);
+
   if (friends.length) {
     const sub = document.createElement('div');
     sub.className = 'journal-sub';
