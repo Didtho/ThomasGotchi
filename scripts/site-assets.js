@@ -15,6 +15,12 @@ app.whenReady().then(async () => {
     fs.writeFileSync(path.join(dir, name + '.png'), Buffer.from(dataUrl.split(',')[1], 'base64'));
   }
   fs.copyFileSync(path.join(__dirname, '..', 'assets', 'icon.png'), path.join(dir, 'icon.png'));
+  // Moteur de dessin et bruitages de l'application, pour les animaux animés du site (site/animals.js)
+  const engine = path.join(__dirname, '..', 'site', 'engine');
+  fs.mkdirSync(engine, { recursive: true });
+  for (const f of ['i18n.js', 'pet.js', 'draw.js', 'species.js', 'sound.js']) {
+    fs.copyFileSync(path.join(__dirname, '..', 'src', f), path.join(engine, f));
+  }
   const data = await win.webContents.executeJavaScript('window.appData()');
   fs.mkdirSync(path.join(__dirname, '..', 'site', 'data'), { recursive: true });
   fs.writeFileSync(path.join(__dirname, '..', 'site', 'data', 'app.json'), JSON.stringify(data, null, 1));

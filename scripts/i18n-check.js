@@ -45,6 +45,10 @@ for (const f of jsFiles) {
     // Besoins renvoyés par Pet.need
     const need = src.slice(src.indexOf('  need(s) {'), src.indexOf('  // ---- Actions ----'));
     each(need, rx(String.raw`return\s+` + STR), [1, 2]);
+    // Caractères des espèces : noms (masculin, féminin) et descriptions
+    const traits = src.slice(src.indexOf('const TRAITS = {'), src.indexOf('// Modèles prêts à adopter'));
+    each(traits, rx(String.raw`name:\s*\[\s*` + STR + String.raw`\s*,\s*` + STR), [1, 2, 3, 4], true);
+    each(traits, rx(String.raw`desc:\s*` + STR), [1, 2], true);
     // Repas « repu » accordé au féminin
     for (const m of src.matchAll(/'([^']*\brepu\b[^']*)'/g)) add(m[1].replace(/\brepu\b/, 'repue'));
   }

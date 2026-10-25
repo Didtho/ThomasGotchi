@@ -2,89 +2,540 @@
  "species": [
   {
    "id": "chat",
-   "name": "Chat"
+   "name": "Chat",
+   "color": "#ffb3c9"
   },
   {
    "id": "lapin",
-   "name": "Lapin"
+   "name": "Lapin",
+   "color": "#a9d4ff"
   },
   {
    "id": "ours",
-   "name": "Ourson"
+   "name": "Ourson",
+   "color": "#ffe17a"
   },
   {
    "id": "chien",
-   "name": "Chien"
+   "name": "Chien",
+   "color": "#b07a52"
   },
   {
    "id": "renard",
-   "name": "Renard"
+   "name": "Renard",
+   "color": "#f08a3c"
   },
   {
    "id": "panda",
-   "name": "Panda"
+   "name": "Panda",
+   "color": "#f7f4fb"
   },
   {
    "id": "pingouin",
-   "name": "Pingouin"
+   "name": "Pingouin",
+   "color": "#f7f4fb"
   },
   {
    "id": "hamster",
-   "name": "Hamster"
+   "name": "Hamster",
+   "color": "#f0c27b"
   },
   {
    "id": "koala",
-   "name": "Koala"
+   "name": "Koala",
+   "color": "#bdb9c4"
   },
   {
    "id": "grenouille",
-   "name": "Grenouille"
+   "name": "Grenouille",
+   "color": "#8fd16a"
   },
   {
    "id": "licorne",
-   "name": "Licorne"
+   "name": "Licorne",
+   "color": "#f7f4fb"
   },
   {
    "id": "dragon",
-   "name": "Dragon"
+   "name": "Dragon",
+   "color": "#8fd16a"
   },
   {
    "id": "loup",
-   "name": "Loup"
+   "name": "Loup",
+   "color": "#8d8a99"
   },
   {
    "id": "lion",
-   "name": "Lion"
+   "name": "Lion",
+   "color": "#f0c27b"
   },
   {
    "id": "tigre",
-   "name": "Tigre"
+   "name": "Tigre",
+   "color": "#f08a3c"
   },
   {
    "id": "cochon",
-   "name": "Cochon"
+   "name": "Cochon",
+   "color": "#ffb3c9"
   },
   {
    "id": "mouton",
-   "name": "Mouton"
+   "name": "Mouton",
+   "color": "#bdb9c4"
   },
   {
    "id": "souris",
-   "name": "Souris"
+   "name": "Souris",
+   "color": "#bdb9c4"
   },
   {
    "id": "hibou",
-   "name": "Hibou"
+   "name": "Hibou",
+   "color": "#b07a52"
   },
   {
    "id": "singe",
-   "name": "Singe"
+   "name": "Singe",
+   "color": "#b07a52"
   },
   {
    "id": "raton",
-   "name": "Raton laveur"
+   "name": "Raton laveur",
+   "color": "#8d8a99"
   }
  ],
+ "traits": {
+  "fr": {
+   "chat": {
+    "icon": "😴",
+    "name": "Roi de la sieste",
+    "desc": "Fait de longues siestes et se fatigue plus vite."
+   },
+   "lapin": {
+    "icon": "🐇",
+    "name": "Sauteur",
+    "desc": "Se déplace en sautillant."
+   },
+   "ours": {
+    "icon": "🍯",
+    "name": "Gourmand",
+    "desc": "A faim plus souvent, mais chaque repas lui fait très plaisir."
+   },
+   "chien": {
+    "icon": "🎉",
+    "name": "Fidèle",
+    "desc": "Fait la fête à ton retour et s'ennuie vite sans toi."
+   },
+   "renard": {
+    "icon": "🔎",
+    "name": "Curieux",
+    "desc": "Va voir tout ce qui bouge, même la souris."
+   },
+   "panda": {
+    "icon": "💤",
+    "name": "Gros dormeur",
+    "desc": "Se fatigue vite et adore dormir."
+   },
+   "pingouin": {
+    "icon": "❄️",
+    "name": "Ami du froid",
+    "desc": "Adore le froid et la neige, mais a vite chaud en été."
+   },
+   "hamster": {
+    "icon": "🏃",
+    "name": "Infatigable",
+    "desc": "Bouge sans arrêt et se fatigue moins vite."
+   },
+   "koala": {
+    "icon": "🌿",
+    "name": "Paisible",
+    "desc": "Bouge peu et prend son temps."
+   },
+   "grenouille": {
+    "icon": "🌧️",
+    "name": "Ami de la pluie",
+    "desc": "Adore quand il pleut chez toi."
+   },
+   "licorne": {
+    "icon": "✨",
+    "name": "Artiste",
+    "desc": "Montre ses tours bien plus souvent."
+   },
+   "dragon": {
+    "icon": "🔥",
+    "name": "Cracheur de feu",
+    "desc": "Crache une petite flamme quand tu lui fais un câlin."
+   },
+   "loup": {
+    "icon": "🌕",
+    "name": "Hurleur",
+    "desc": "Hurle à la lune le soir."
+   },
+   "lion": {
+    "icon": "👑",
+    "name": "Fier",
+    "desc": "Adore les caresses : elles lui font encore plus plaisir."
+   },
+   "tigre": {
+    "icon": "⚡",
+    "name": "Sportif",
+    "desc": "Grimpe volontiers sur les fenêtres et bouge beaucoup."
+   },
+   "cochon": {
+    "icon": "🫧",
+    "name": "Pas très propre",
+    "desc": "Se salit plus vite… et ne s'en soucie pas !"
+   },
+   "mouton": {
+    "icon": "☁️",
+    "name": "Doux",
+    "desc": "A moins besoin de se dépenser."
+   },
+   "souris": {
+    "icon": "🧀",
+    "name": "Petit appétit",
+    "desc": "Mange peu : les repas tiennent plus longtemps."
+   },
+   "hibou": {
+    "icon": "🌙",
+    "name": "Noctambule",
+    "desc": "Se couche tard et se lève tard."
+   },
+   "singe": {
+    "icon": "🧗",
+    "name": "Grimpeur",
+    "desc": "Grimpe très souvent sur les fenêtres."
+   },
+   "raton": {
+    "icon": "🧼",
+    "name": "Maniaque",
+    "desc": "Se lave souvent les pattes : reste propre plus longtemps."
+   }
+  },
+  "en": {
+   "chat": {
+    "icon": "😴",
+    "name": "King of naps",
+    "desc": "Takes long naps and tires more quickly."
+   },
+   "lapin": {
+    "icon": "🐇",
+    "name": "Hopper",
+    "desc": "Gets around by hopping."
+   },
+   "ours": {
+    "icon": "🍯",
+    "name": "Foodie",
+    "desc": "Gets hungry more often, but every meal is a real treat."
+   },
+   "chien": {
+    "icon": "🎉",
+    "name": "Loyal",
+    "desc": "Throws a party when you come back and gets bored quickly without you."
+   },
+   "renard": {
+    "icon": "🔎",
+    "name": "Curious",
+    "desc": "Goes to check out anything that moves, even the mouse pointer."
+   },
+   "panda": {
+    "icon": "💤",
+    "name": "Sleepyhead",
+    "desc": "Tires quickly and loves sleeping."
+   },
+   "pingouin": {
+    "icon": "❄️",
+    "name": "Cold lover",
+    "desc": "Loves the cold and snow, but gets hot quickly in summer."
+   },
+   "hamster": {
+    "icon": "🏃",
+    "name": "Tireless",
+    "desc": "Always on the move and tires more slowly."
+   },
+   "koala": {
+    "icon": "🌿",
+    "name": "Peaceful",
+    "desc": "Moves little and takes its time."
+   },
+   "grenouille": {
+    "icon": "🌧️",
+    "name": "Rain lover",
+    "desc": "Loves it when it rains where you live."
+   },
+   "licorne": {
+    "icon": "✨",
+    "name": "Show-off",
+    "desc": "Shows off its tricks much more often."
+   },
+   "dragon": {
+    "icon": "🔥",
+    "name": "Fire breather",
+    "desc": "Breathes a little flame when you give it a cuddle."
+   },
+   "loup": {
+    "icon": "🌕",
+    "name": "Howler",
+    "desc": "Howls at the moon in the evening."
+   },
+   "lion": {
+    "icon": "👑",
+    "name": "Proud",
+    "desc": "Loves cuddles: they make it even happier."
+   },
+   "tigre": {
+    "icon": "⚡",
+    "name": "Sporty",
+    "desc": "Happily climbs onto windows and moves around a lot."
+   },
+   "cochon": {
+    "icon": "🫧",
+    "name": "A bit messy",
+    "desc": "Gets dirty faster… and doesn't care one bit!"
+   },
+   "mouton": {
+    "icon": "☁️",
+    "name": "Gentle",
+    "desc": "Needs less exercise to stay happy."
+   },
+   "souris": {
+    "icon": "🧀",
+    "name": "Light eater",
+    "desc": "Eats little: meals last longer."
+   },
+   "hibou": {
+    "icon": "🌙",
+    "name": "Night owl",
+    "desc": "Goes to bed late and gets up late."
+   },
+   "singe": {
+    "icon": "🧗",
+    "name": "Climber",
+    "desc": "Climbs onto windows very often."
+   },
+   "raton": {
+    "icon": "🧼",
+    "name": "Neat freak",
+    "desc": "Often washes its paws: stays clean longer."
+   }
+  },
+  "es": {
+   "chat": {
+    "icon": "😴",
+    "name": "Rey de la siesta",
+    "desc": "Duerme largas siestas y se cansa antes."
+   },
+   "lapin": {
+    "icon": "🐇",
+    "name": "Saltarín",
+    "desc": "Se desplaza dando saltitos."
+   },
+   "ours": {
+    "icon": "🍯",
+    "name": "Glotón",
+    "desc": "Tiene hambre más a menudo, pero cada comida le encanta."
+   },
+   "chien": {
+    "icon": "🎉",
+    "name": "Fiel",
+    "desc": "Hace fiesta cuando vuelves y se aburre enseguida sin ti."
+   },
+   "renard": {
+    "icon": "🔎",
+    "name": "Curioso",
+    "desc": "Va a ver todo lo que se mueve, hasta el ratón."
+   },
+   "panda": {
+    "icon": "💤",
+    "name": "Dormilón",
+    "desc": "Se cansa rápido y le encanta dormir."
+   },
+   "pingouin": {
+    "icon": "❄️",
+    "name": "Amigo del frío",
+    "desc": "Le encantan el frío y la nieve, pero en verano pasa calor enseguida."
+   },
+   "hamster": {
+    "icon": "🏃",
+    "name": "Incansable",
+    "desc": "No para de moverse y se cansa menos."
+   },
+   "koala": {
+    "icon": "🌿",
+    "name": "Tranquilo",
+    "desc": "Se mueve poco y se toma su tiempo."
+   },
+   "grenouille": {
+    "icon": "🌧️",
+    "name": "Amigo de la lluvia",
+    "desc": "Le encanta cuando llueve donde vives."
+   },
+   "licorne": {
+    "icon": "✨",
+    "name": "Artista",
+    "desc": "Enseña sus trucos mucho más a menudo."
+   },
+   "dragon": {
+    "icon": "🔥",
+    "name": "Escupefuego",
+    "desc": "Echa una llamita cuando le das un mimo."
+   },
+   "loup": {
+    "icon": "🌕",
+    "name": "Aullador",
+    "desc": "Aúlla a la luna por la noche."
+   },
+   "lion": {
+    "icon": "👑",
+    "name": "Orgulloso",
+    "desc": "Le encantan las caricias: le hacen aún más feliz."
+   },
+   "tigre": {
+    "icon": "⚡",
+    "name": "Deportista",
+    "desc": "Se sube a las ventanas con gusto y se mueve mucho."
+   },
+   "cochon": {
+    "icon": "🫧",
+    "name": "Poco limpio",
+    "desc": "Se ensucia antes… ¡y le da igual!"
+   },
+   "mouton": {
+    "icon": "☁️",
+    "name": "Dulce",
+    "desc": "Necesita menos actividad para estar contento."
+   },
+   "souris": {
+    "icon": "🧀",
+    "name": "Poco apetito",
+    "desc": "Come poco: las comidas le duran más."
+   },
+   "hibou": {
+    "icon": "🌙",
+    "name": "Noctámbulo",
+    "desc": "Se acuesta tarde y se levanta tarde."
+   },
+   "singe": {
+    "icon": "🧗",
+    "name": "Escalador",
+    "desc": "Se sube muy a menudo a las ventanas."
+   },
+   "raton": {
+    "icon": "🧼",
+    "name": "Maniático",
+    "desc": "Se lava a menudo las patas: se mantiene limpio más tiempo."
+   }
+  },
+  "it": {
+   "chat": {
+    "icon": "😴",
+    "name": "Re del pisolino",
+    "desc": "Fa lunghi pisolini e si stanca prima."
+   },
+   "lapin": {
+    "icon": "🐇",
+    "name": "Saltatore",
+    "desc": "Si sposta saltellando."
+   },
+   "ours": {
+    "icon": "🍯",
+    "name": "Goloso",
+    "desc": "Ha fame più spesso, ma ogni pasto lo rende felicissimo."
+   },
+   "chien": {
+    "icon": "🎉",
+    "name": "Fedele",
+    "desc": "Fa festa al tuo ritorno e si annoia presto senza di te."
+   },
+   "renard": {
+    "icon": "🔎",
+    "name": "Curioso",
+    "desc": "Va a vedere tutto ciò che si muove, anche il mouse."
+   },
+   "panda": {
+    "icon": "💤",
+    "name": "Dormiglione",
+    "desc": "Si stanca presto e adora dormire."
+   },
+   "pingouin": {
+    "icon": "❄️",
+    "name": "Amico del freddo",
+    "desc": "Adora il freddo e la neve, ma d'estate ha subito caldo."
+   },
+   "hamster": {
+    "icon": "🏃",
+    "name": "Instancabile",
+    "desc": "Non sta mai fermo e si stanca meno."
+   },
+   "koala": {
+    "icon": "🌿",
+    "name": "Tranquillo",
+    "desc": "Si muove poco e se la prende comoda."
+   },
+   "grenouille": {
+    "icon": "🌧️",
+    "name": "Amico della pioggia",
+    "desc": "Adora quando piove dalle tue parti."
+   },
+   "licorne": {
+    "icon": "✨",
+    "name": "Artista",
+    "desc": "Mostra i suoi numeri molto più spesso."
+   },
+   "dragon": {
+    "icon": "🔥",
+    "name": "Sputafuoco",
+    "desc": "Sputa una fiammella quando gli fai le coccole."
+   },
+   "loup": {
+    "icon": "🌕",
+    "name": "Ululatore",
+    "desc": "Ulula alla luna la sera."
+   },
+   "lion": {
+    "icon": "👑",
+    "name": "Fiero",
+    "desc": "Adora le coccole: lo rendono ancora più felice."
+   },
+   "tigre": {
+    "icon": "⚡",
+    "name": "Sportivo",
+    "desc": "Si arrampica volentieri sulle finestre e si muove molto."
+   },
+   "cochon": {
+    "icon": "🫧",
+    "name": "Poco pulito",
+    "desc": "Si sporca prima… e non gliene importa!"
+   },
+   "mouton": {
+    "icon": "☁️",
+    "name": "Dolce",
+    "desc": "Ha meno bisogno di sfogarsi."
+   },
+   "souris": {
+    "icon": "🧀",
+    "name": "Poco appetito",
+    "desc": "Mangia poco: i pasti durano di più."
+   },
+   "hibou": {
+    "icon": "🌙",
+    "name": "Nottambulo",
+    "desc": "Va a letto tardi e si alza tardi."
+   },
+   "singe": {
+    "icon": "🧗",
+    "name": "Scalatore",
+    "desc": "Si arrampica molto spesso sulle finestre."
+   },
+   "raton": {
+    "icon": "🧼",
+    "name": "Pignolo",
+    "desc": "Si lava spesso le zampe: resta pulito più a lungo."
+   }
+  }
+ },
  "coats": 19,
  "accessories": 7,
  "tricks": 5

@@ -79,6 +79,33 @@ const SPECIES = [
   { id: 'raton', name: 'Raton laveur', icon: '🦝', color: 'ardoise' },
 ];
 
+// Caractère propre à chaque espèce : un petit trait discret, affiché dans le panneau et présenté sur le site.
+// name : [masculin, féminin] ; rates : multiplicateurs des jauges ; climb : envie de grimper ; calm : balades plus
+// ou moins espacées ; bed : heures de coucher et de lever ; les autres options sont utilisées dans app.js et draw.js.
+const TRAITS = {
+  chat: { icon: '😴', name: ['Roi de la sieste', 'Reine de la sieste'], desc: 'Fait de longues siestes et se fatigue plus vite.', rates: { energy: 1.25 } },
+  lapin: { icon: '🐇', name: ['Sauteur', 'Sauteuse'], desc: 'Se déplace en sautillant.', hop: true },
+  ours: { icon: '🍯', name: ['Gourmand', 'Gourmande'], desc: 'A faim plus souvent, mais chaque repas lui fait très plaisir.', rates: { hunger: 1.25 }, feedFun: 6 },
+  chien: { icon: '🎉', name: ['Fidèle', 'Fidèle'], desc: 'Fait la fête à ton retour et s\'ennuie vite sans toi.', rates: { fun: 1.25 }, welcome: true },
+  renard: { icon: '🔎', name: ['Curieux', 'Curieuse'], desc: 'Va voir tout ce qui bouge, même la souris.', curious: true },
+  panda: { icon: '💤', name: ['Gros dormeur', 'Grosse dormeuse'], desc: 'Se fatigue vite et adore dormir.', rates: { energy: 1.35 }, calm: 1.4 },
+  pingouin: { icon: '❄️', name: ['Ami du froid', 'Amie du froid'], desc: 'Adore le froid et la neige, mais a vite chaud en été.', likes: 'cold' },
+  hamster: { icon: '🏃', name: ['Infatigable', 'Infatigable'], desc: 'Bouge sans arrêt et se fatigue moins vite.', rates: { energy: 0.8 }, calm: 0.6 },
+  koala: { icon: '🌿', name: ['Paisible', 'Paisible'], desc: 'Bouge peu et prend son temps.', calm: 2 },
+  grenouille: { icon: '🌧️', name: ['Ami de la pluie', 'Amie de la pluie'], desc: 'Adore quand il pleut chez toi.', likes: 'rain' },
+  licorne: { icon: '✨', name: ['Artiste', 'Artiste'], desc: 'Montre ses tours bien plus souvent.', showOff: true },
+  dragon: { icon: '🔥', name: ['Cracheur de feu', 'Cracheuse de feu'], desc: 'Crache une petite flamme quand tu lui fais un câlin.', flame: true },
+  loup: { icon: '🌕', name: ['Hurleur', 'Hurleuse'], desc: 'Hurle à la lune le soir.', howl: true },
+  lion: { icon: '👑', name: ['Fier', 'Fière'], desc: 'Adore les caresses : elles lui font encore plus plaisir.', petFun: 6 },
+  tigre: { icon: '⚡', name: ['Sportif', 'Sportive'], desc: 'Grimpe volontiers sur les fenêtres et bouge beaucoup.', climb: 1.6, calm: 0.8 },
+  cochon: { icon: '🫧', name: ['Pas très propre', 'Pas très propre'], desc: 'Se salit plus vite… et ne s\'en soucie pas !', rates: { clean: 1.4 } },
+  mouton: { icon: '☁️', name: ['Doux', 'Douce'], desc: 'A moins besoin de se dépenser.', rates: { fun: 0.75 }, calm: 1.3 },
+  souris: { icon: '🧀', name: ['Petit appétit', 'Petit appétit'], desc: 'Mange peu : les repas tiennent plus longtemps.', rates: { hunger: 0.75 } },
+  hibou: { icon: '🌙', name: ['Noctambule', 'Noctambule'], desc: 'Se couche tard et se lève tard.', bed: [2, 10] },
+  singe: { icon: '🧗', name: ['Grimpeur', 'Grimpeuse'], desc: 'Grimpe très souvent sur les fenêtres.', climb: 2.2 },
+  raton: { icon: '🧼', name: ['Maniaque', 'Maniaque'], desc: 'Se lave souvent les pattes : reste propre plus longtemps.', rates: { clean: 0.6 } },
+};
+
 // Modèles prêts à adopter (un clic remplit le prénom, le pelage et le genre)
 const PRESETS = [
   { name: 'Simba', species: 'chat', color: 'simba', gender: 'm', icon: '🧡' },
@@ -138,10 +165,22 @@ const Pet = {
   COATS,
   PRESETS,
   SPECIES,
+  TRAITS,
 
   // Accord au masculin ou au féminin selon le genre choisi
   g(s, masc, fem) {
     return s && s.gender === 'f' ? fem : masc;
+  },
+
+  // Caractère de son espèce (objet vide si l'espèce n'en a pas)
+  trait(s) {
+    return (s && TRAITS[s.species || 'chat']) || {};
+  },
+
+  // Nom du caractère, accordé et traduit, avec son icône : « 😴 Roi de la sieste »
+  traitLabel(s) {
+    const tr = Pet.trait(s);
+    return tr.name ? `${tr.icon} ${t(Pet.g(s, tr.name[0], tr.name[1]))}` : '';
   },
 
   // memorials : souvenirs des compagnons précédents, transmis d'un œuf à l'autre
@@ -244,11 +283,12 @@ const Pet = {
     if (Pet.isEgg(s, now)) return;
     const slow = s.sleeping ? 0.5 : 1;
     const k = PACES[s.pace] || 1; // les jauges baissent plus ou moins vite selon le rythme choisi
-    s.hunger = clamp(s.hunger - RATES.hunger * dtH * slow * k);
+    const m = Pet.trait(s).rates || {}; // son caractère : certaines jauges baissent plus ou moins vite
+    s.hunger = clamp(s.hunger - RATES.hunger * (m.hunger || 1) * dtH * slow * k);
     s.thirst = clamp(s.thirst - RATES.thirst * dtH * slow * k);
-    s.energy = clamp(s.energy + (s.sleeping ? RATES.energySleep : -RATES.energy * k) * dtH);
-    if (!s.sleeping) s.fun = clamp(s.fun - RATES.fun * dtH * k);
-    s.clean = clamp(s.clean - (RATES.clean + RATES.cleanPerPoop * s.poops) * dtH * k);
+    s.energy = clamp(s.energy + (s.sleeping ? RATES.energySleep : -RATES.energy * (m.energy || 1) * k) * dtH);
+    if (!s.sleeping) s.fun = clamp(s.fun - RATES.fun * (m.fun || 1) * dtH * k);
+    s.clean = clamp(s.clean - (RATES.clean * (m.clean || 1) + RATES.cleanPerPoop * s.poops) * dtH * k);
 
     // La nuit, il dort jusqu'au matin même une fois reposé (voir app.js)
     if (s.sleeping && s.energy >= 100 && !s.nightSleep) { s.sleeping = false; events.push('wake'); }

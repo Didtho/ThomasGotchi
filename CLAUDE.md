@@ -16,6 +16,9 @@ avec un site de présentation en PHP. L'utilisateur parle français : répondre 
   - `sound.js` (bruitages synthétisés), `seasons.js` (fêtes), `app.js` (boucle, souris, fenêtres),
     `games.js` (mini-jeux, carnet).
 - `site/` : site PHP (`index.php`, `lang/*.php`, `en|es|it/index.php`, `img/` et `data/app.json` générés).
+  `site/engine/` est une copie du moteur de dessin et des bruitages (faite par `npm run site-assets`) : `site/animals.js`
+  s'en sert pour animer les animaux du site et jouer leur cri. Ne pas modifier `site/engine/` à la main.
+- Caractère des espèces : table `TRAITS` de `src/pet.js` (effets dans `pet.js`, `app.js`, `draw.js`), repris sur le site.
 - `scripts/` : icône, images du site, vérification des traductions.
 
 ## Commandes

@@ -80,6 +80,8 @@ html, body {
   margin-bottom: 3px;
 }
 #pet-age { font-weight: 400; opacity: .7; }
+#pet-trait { margin: -2px 0 4px; font-size: 11px; opacity: .75; cursor: help; }
+#pet-trait:empty { display: none; }
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;

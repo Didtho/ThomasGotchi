@@ -15,6 +15,8 @@ $h = fn(string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 // Animaux et chiffres repris de l'application (générés par « npm run site-assets »)
 $app = json_decode((string) @file_get_contents(__DIR__ . '/data/app.json'), true) ?: ['species' => [], 'coats' => 0];
 $animals = array_column($app['species'], 'name', 'id');
+$colors = array_column($app['species'], 'color', 'id');
+$traits = $app['traits'][TG_CURRENT] ?? $app['traits']['fr'] ?? []; // caractère de chaque espèce, déjà traduit
 
 $features = [
     ['🍽️', 'Il mange tes fichiers', 'Glisse une image, un PDF ou une vidéo sur lui : il se régale. Rassure-toi, tes fichiers ne sont jamais effacés.'],
@@ -194,12 +196,13 @@ $jsonLd = [
 
   <section class="section tinted" id="animaux">
     <h2><?= $h(tt('Choisis ton compagnon')) ?></h2>
-    <p class="section-lead"><?= $h(tt('{n} animaux, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.', ['n' => count($animals), 'c' => (int) $app['coats']])) ?></p>
+    <p class="section-lead"><?= $h(tt('{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.', ['n' => count($animals), 'c' => (int) $app['coats']])) ?></p>
+    <p class="section-hint"><?= $h(tt('Clique sur un animal pour l\'entendre 🔊')) ?></p>
     <div class="animals">
-      <?php foreach ($animals as $id => $name): ?>
-        <figure class="animal">
+      <?php foreach ($animals as $id => $name): $trait = $traits[$id] ?? null; ?>
+        <figure class="animal" data-species="<?= $h($id) ?>" data-color="<?= $h($colors[$id] ?? '') ?>" tabindex="0"<?= $trait ? ' title="' . $h($trait['desc']) . '"' : '' ?>>
           <img src="<?= $h($asset('img/animal-' . $id . '.png')) ?>" alt="<?= $h(tt($name)) ?>" loading="lazy">
-          <figcaption><?= $h(tt($name)) ?></figcaption>
+          <figcaption><?= $h(tt($name)) ?><?php if ($trait): ?><small><?= $h($trait['icon'] . ' ' . $trait['name']) ?></small><?php endif; ?></figcaption>
         </figure>
       <?php endforeach; ?>
     </div>
@@ -282,6 +285,11 @@ $jsonLd = [
     <p><?= $h(tt('ThomasGotchi · une création')) ?> <a href="https://www.didtech.fr/">DidTech</a> · <a href="https://github.com/<?= $h(TG_REPO) ?>"><?= $h(tt('code source')) ?></a></p>
   </footer>
 
+  <!-- Moteur de dessin et bruitages de l'application : animaux animés et cris dans la liste des animaux -->
+  <?php foreach (['i18n', 'pet', 'draw', 'species', 'sound'] as $f): ?>
+    <script src="<?= $asset("engine/$f.js") ?>"></script>
+  <?php endforeach; ?>
+  <script src="<?= $asset('animals.js') ?>"></script>
   <script>
     // Met en avant le bouton correspondant à l'ordinateur du visiteur
     const isMac = /Mac/i.test(navigator.platform || navigator.userAgent);

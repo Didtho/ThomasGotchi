@@ -17,6 +17,7 @@
   <!-- Panneau qui apparaît au survol : jauges + actions -->
   <div id="panel" class="hit hidden">
     <div class="title"><span id="pet-name">???</span><span id="pet-age"></span></div>
+    <div id="pet-trait"></div>
     <div class="stats">
       <div class="stat" title="Faim"><span>🍔</span><div class="bar"><i id="bar-hunger"></i></div></div>
       <div class="stat" title="Soif"><span>💧</span><div class="bar"><i id="bar-thirst"></i></div></div>
@@ -48,6 +49,7 @@
       <div class="choices" id="presets"></div>
       <div class="label">Animal</div>
       <div class="choices wrap species" data-group="species"></div>
+      <div class="hint trait-hint"></div>
       <div class="label">Genre</div>
       <div class="choices" data-group="gender">
         <button data-value="m">♂ Il</button>
@@ -76,6 +78,7 @@
       </label>
       <div class="label">Animal</div>
       <div class="choices wrap species" data-group="species"></div>
+      <div class="hint trait-hint"></div>
       <div class="label">Genre</div>
       <div class="choices" data-group="gender">
         <button data-value="m">♂ Il</button>

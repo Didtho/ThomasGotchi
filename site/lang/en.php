@@ -46,8 +46,6 @@ return [
         'No account, no ads. It even works offline (except for the weather).',
 
     'Choisis ton compagnon' => 'Choose your companion',
-    '{n} animaux, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' =>
-        '{n} pets, {c} coats, a cute or retro pixel style, and accessories to win.',
     'Chat' => 'Cat', 'Lapin' => 'Rabbit', 'Ourson' => 'Bear cub', 'Chien' => 'Dog', 'Renard' => 'Fox', 'Panda' => 'Panda',
     'Pingouin' => 'Penguin', 'Hamster' => 'Hamster', 'Koala' => 'Koala', 'Grenouille' => 'Frog', 'Licorne' => 'Unicorn',
     'Dragon' => 'Dragon', 'Loup' => 'Wolf', 'Lion' => 'Lion', 'Tigre' => 'Tiger', 'Cochon' => 'Pig', 'Mouton' => 'Sheep',
@@ -116,4 +114,6 @@ return [
     'Comment le nourrir sur Mac ?' => 'How do I feed it on a Mac?',
     'Sur Mac, un fichier glissé sur l\'animal ne lui parvient pas encore. Clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… » et choisis un ou plusieurs fichiers. Tu peux aussi glisser les fichiers directement sur cette icône.' => 'On a Mac, a file dragged onto the pet doesn\'t reach it yet. Click the ThomasGotchi icon in the menu bar, at the top of the screen, then “Feed a file…” and pick one or more files. You can also drag files straight onto that icon.',
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'To feed it: ThomasGotchi icon in the menu bar → <em>Feed a file…</em>',
+    'Clique sur un animal pour l\'entendre 🔊' => 'Click an animal to hear it 🔊',
+    '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animals, each with its own personality, {c} coats, a cute or retro pixel style, and accessories to win.',
 ];

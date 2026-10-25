@@ -23,11 +23,14 @@ function renderPng(v, crop = { x: 0, y: 0, w: 240, h: 300 }, scale = 4) {
 }
 
 const PET = { x: 44, y: 140, w: 152, h: 160 }; // cadre serré autour d'un animal adulte
+// Cadre des cartes d'animaux du site : un peu de marge au-dessus pour les sauts et les cœurs (même cadre dans site/animals.js)
+const CARD = { x: 30, y: 100, w: 180, h: 200 };
 const DEFAULT_COLOR = { chat: 'rose', lapin: 'ciel', ours: 'citron', panda: 'blanc', pingouin: 'blanc' };
+const colorOf = (sp) => sp.color || DEFAULT_COLOR[sp.id] || 'rose';
 
 window.renderAll = () => {
   const out = {};
-  for (const sp of Pet.SPECIES) out['animal-' + sp.id] = renderPng(view(sp.id, sp.color || DEFAULT_COLOR[sp.id]), PET);
+  for (const sp of Pet.SPECIES) out['animal-' + sp.id] = renderPng(view(sp.id, colorOf(sp)), CARD);
   out['chat-simba'] = renderPng(view('chat', 'simba'), PET);
   out['chat-snoop'] = renderPng(view('chat', 'snoop'), PET);
   out['chat-grisette'] = renderPng(view('chat', 'grisette'), PET);
@@ -82,7 +85,14 @@ function renderShare() {
 
 // Données reprises par le site : liste des animaux, nombre de pelages et d'accessoires
 window.appData = () => ({
-  species: Pet.SPECIES.map((s) => ({ id: s.id, name: s.name })),
+  species: Pet.SPECIES.map((s) => ({ id: s.id, name: s.name, color: Pet.COLORS[colorOf(s)] || colorOf(s) })),
+  // Caractère de chaque espèce, traduit dans les quatre langues du site
+  traits: Object.fromEntries(['fr', 'en', 'es', 'it'].map((lang) => {
+    I18N.lang = lang;
+    const list = Object.fromEntries(Object.entries(Pet.TRAITS).map(([id, tr]) => [id, { icon: tr.icon, name: t(tr.name[0]), desc: t(tr.desc) }]));
+    I18N.lang = 'fr';
+    return [lang, list];
+  })),
   coats: Object.keys(Pet.COLORS).length,
   accessories: Pet.ACCESSORIES.length,
   tricks: Pet.TRICKS.length,

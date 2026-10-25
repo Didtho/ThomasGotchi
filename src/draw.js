@@ -572,6 +572,7 @@ function drawCreature(ctx, v) {
   // Marche : un petit rebond à chaque pas
   const stride = v.walking ? v.t * (v.running ? 22 : 12) : 0;
   if (v.walking) jump = Math.abs(Math.sin(stride)) * (v.running ? 5 : 2.5);
+  if (v.walking && v.hop) jump = Math.abs(Math.sin(stride * 0.5)) * 14; // le lapin avance par petits bonds
   if (a === 'jump') { const k = Math.min(1, at / 0.8); jump = Math.sin(k * Math.PI) * 48; squash = k < 0.12 || k > 0.88 ? 1.1 : 0.94; }
   if (a === 'roll') jump = Math.sin(Math.min(1, at / 0.9) * Math.PI) * 28;
   if (a === 'stretch') squash = 1 + Math.sin(Math.min(1, at / 1.5) * Math.PI) * 0.16;
@@ -806,6 +807,24 @@ function drawEffects(ctx, v, cx, cy, rx, ry, mouthY) {
       ctx.fillText('Z', cx + rx * 0.6 + k * 26, cy - ry * 0.6 - k * 40);
     }
     ctx.globalAlpha = 1;
+  }
+  if (v.flame && at < 1.1) {
+    // Le dragon crache une petite flamme sur le côté pendant un câlin
+    const side = v.facing || 1;
+    const k = Math.min(1, at / 0.25) * Math.max(0, 1 - Math.max(0, at - 0.7) / 0.4);
+    const fx = cx + side * (rx * 0.75), fy = mouthY;
+    const len = rx * 1.1 * k, flick = Math.sin(at * 40) * 2;
+    if (len > 1) {
+      for (const [col, w] of [['#ff7a2f', 1], ['#ffd84a', 0.55]]) {
+        ctx.beginPath();
+        ctx.moveTo(fx, fy - ry * 0.08 * w);
+        ctx.quadraticCurveTo(fx + side * len * 0.6, fy - ry * 0.22 * w + flick, fx + side * len, fy + flick);
+        ctx.quadraticCurveTo(fx + side * len * 0.6, fy + ry * 0.2 * w + flick, fx, fy + ry * 0.08 * w);
+        ctx.closePath();
+        ctx.fillStyle = col;
+        ctx.fill();
+      }
+    }
   }
   if (v.anim === 'love') {
     for (let i = 0; i < 3; i++) {

@@ -180,7 +180,9 @@ function buildView(now) {
     lookY,
     walking: !!walking,
     running: !!walking && walking.speed > 3,
-    nightcap: state.sleeping && isNight(),
+    hop: !!Pet.trait(state).hop, // lapin : il sautille en marchant
+    flame: !!Pet.trait(state).flame && anim === 'love', // dragon : petite flamme pendant un câlin
+    nightcap: state.sleeping && bedTime(),
     accessory: state.accessory,
     decor: festivity ? festivity.decor : null,
     weather: weather ? weather.condition : null,
@@ -290,7 +292,8 @@ function wander(now) {
     return;
   }
   if (now < nextWalkAt) return;
-  nextWalkAt = now + 3000 + Math.random() * 7000;
+  const trait = Pet.trait(state);
+  nextWalkAt = now + (3000 + Math.random() * 7000) * (trait.calm || 1); // les calmes se baladent moins souvent
   if (!canWander() || Math.random() > 0.85) return;
 
   // Curieux : la souris bouge près du sol à côté de lui, il va voir
@@ -302,8 +305,9 @@ function wander(now) {
     startWalk(buddy.x > 0 ? 1 : -1, Math.ceil((Math.abs(buddy.x) - 90) / 3), 3);
     return;
   }
-  if (roll > 0.7) {
+  if (roll > 1 - Math.min(0.6, 0.3 * (trait.climb || 1))) {
     // Saut sur une fenêtre au-dessus de lui (s'il y en a une à portée) ; sinon, une balade ordinaire
+    // (les grimpeurs le tentent plus souvent)
     desk.climb().then((r) => {
       if (r) {
         if (r.dir) facing = r.dir;
@@ -315,7 +319,7 @@ function wander(now) {
     });
     return;
   }
-  if (cursorNear && roll < 0.35) {
+  if (cursorNear && roll < (trait.curious ? 0.6 : 0.35)) {
     const dx = cursor.x - 120;
     startWalk(dx > 0 ? 1 : -1, Math.min(150, Math.abs(dx) / 2), 2);
   } else if (roll < 0.6) {
@@ -323,7 +327,7 @@ function wander(now) {
   } else if (roll < 0.72) {
     // Petite course
     startWalk(Math.random() < 0.5 ? -1 : 1, 30 + Math.floor(Math.random() * 40), 5);
-  } else if (state.tricks && state.tricks.length && Math.random() < 0.35) {
+  } else if (state.tricks && state.tricks.length && Math.random() < (trait.showOff ? 0.8 : 0.35)) {
     // Il montre spontanément un des tours qu'il a appris
     const r = Pet.doTrick(state, state.tricks[Math.floor(Math.random() * state.tricks.length)]);
     if (r.ok) play(r.anim, r.dur);
@@ -363,6 +367,17 @@ function reactToWeather(prev, w) {
     clouds: t('Ciel gris à {city}, {temp}°C ☁️', w),
     clear: w.isDay ? t('Grand soleil à {city}, {temp}°C ☀️', w) : t('Belle nuit étoilée à {city} ✨', w),
   }[w.condition];
+  // Caractère : la grenouille adore la pluie, le pingouin le froid (et supporte mal la chaleur)
+  const likes = Pet.trait(state).likes;
+  const rainy = w.condition === 'rain' || w.condition === 'storm';
+  const cold = w.temp <= 5 || w.condition === 'snow';
+  if ((likes === 'rain' && rainy) || (likes === 'cold' && cold)) {
+    play('dance', 2000);
+    state.fun = Math.min(100, state.fun + 10);
+    say(likes === 'rain' ? t('Il pleut à {city} ! J\'adore ça 💚', w) : t('Il fait froid à {city}… parfait ! ❄️😊', w), 5000);
+    return;
+  }
+  if (likes === 'cold' && w.temp >= 24) { say(t('{temp}°C à {city}… j\'ai bien trop chaud ! 🥵', w), 5000); return; }
   if (w.temp >= 30) say(t('Il fait {temp}°C à {city}, quelle chaleur ! 🥵', w), 5000);
   else if (w.temp <= 0) say(t('Brrr, {temp}°C à {city} ! Heureusement j\'ai mon écharpe 🧣', w), 5000);
   else if (msg) say(msg, 5000);
@@ -510,16 +525,24 @@ function isNight() {
   return h >= 22 || h < 7;
 }
 
+// Heures où il dort : de 22 h à 7 h, sauf caractère différent (le hibou noctambule se couche à 2 h, se lève à 10 h)
+const bedHours = () => Pet.trait(state).bed || [22, 7];
+function bedTime() {
+  const [bed, wake] = bedHours();
+  const h = new Date().getHours();
+  return bed > wake ? h >= bed || h < wake : h >= bed && h < wake;
+}
+
 // Identifiant de la nuit en cours (la date du soir), pour ne le coucher qu'une fois par nuit
 function nightKey() {
   const d = new Date();
-  if (d.getHours() < 7) d.setDate(d.getDate() - 1);
+  if (d.getHours() < bedHours()[1]) d.setDate(d.getDate() - 1);
   return d.toDateString();
 }
 
 function dayRhythm() {
   if (state.dead || Pet.isEgg(state)) return;
-  if (isNight()) {
+  if (bedTime()) {
     // Déjà endormi au moment du coucher : il passe la nuit entière à dormir
     if (state.sleeping && state.bedNight !== nightKey()) {
       state.bedNight = nightKey();
@@ -577,6 +600,17 @@ function logic() {
   }
   celebrate();
 
+  // Caractère : le loup hurle à la lune une fois par soir, entre 20 h et 22 h
+  if (Pet.trait(state).howl && !state.sleeping && !state.dead && !dnd && !Pet.isEgg(state)) {
+    const h = new Date().getHours();
+    if (h >= 20 && h < 22 && state.howlNight !== nightKey()) {
+      state.howlNight = nightKey();
+      Sound.play('voice', state.species);
+      say('Aouuuuh ! 🌕', 3500);
+      save();
+    }
+  }
+
   // Sur Mac, un fichier glissé sur l'animal ne lui arrive pas : quand il a faim, il rappelle comment le nourrir
   if (desk.isMac && state.hunger < 40 && !state.sleeping && !state.dead && !Pet.isEgg(state) && !dnd
       && Date.now() - feedTipAt > 20 * 60000) {
@@ -609,8 +643,18 @@ function logic() {
 
 // ---------- Panneau des jauges ----------
 
+// Caractère de l'espèce choisie, affiché sous la liste des animaux (nouvel œuf, réglages)
+function showTraitHint(card, species, gender) {
+  const el = card.querySelector('.trait-hint');
+  const tr = Pet.TRAITS[species || 'chat'];
+  if (el) el.textContent = tr ? `${tr.icon} ${t(gender === 'f' ? tr.name[1] : tr.name[0])} : ${t(tr.desc)}` : '';
+}
+
 function updatePanel() {
   $('pet-name').textContent = state.name + (state.paused ? ' 🏖️' : '') + (dnd ? ' 🔕' : '');
+  const trait = Pet.trait(state);
+  $('pet-trait').textContent = Pet.isEgg(state) ? '' : Pet.traitLabel(state);
+  $('pet-trait').title = trait.desc ? t(trait.desc) : '';
   $('pet-age').textContent = Pet.ageText(state) + (weather ? `  ${weather.condition === 'clear' && !weather.isDay ? '🌙' : WEATHER_ICONS[weather.condition] || ''} ${weather.temp}°` : '');
   for (const key of ['hunger', 'thirst', 'energy', 'fun', 'clean', 'health']) {
     const v = state[key];
@@ -737,6 +781,7 @@ function clickPet() {
   if (state.sleeping) { say('Zzz… chuuut…'); return; }
   const r = Pet.pet(state);
   if (r.ok) play('love', 1400);
+  if (r.ok && Pet.trait(state).petFun) state.fun = Math.min(100, state.fun + Pet.trait(state).petFun); // le lion adore ça
   if (r.ok && Math.random() < 0.12) speak(t('Je t\'aime{owner} !', { owner: owner() }));
 }
 
@@ -824,6 +869,7 @@ function eat(meals) {
       if (state.paused) return say('Je suis en vacances 🏖️');
       const r = Pet.feed(state, meal);
       if (r.ok) checkUnlocks();
+      if (r.ok && Pet.trait(state).feedFun) state.fun = Math.min(100, state.fun + Pet.trait(state).feedFun); // l'ourson gourmand
       if (r.msg) say(r.msg, 3500);
       if (r.ok) play(r.anim, 1800);
       if (!panel.classList.contains('hidden')) updatePanel();
@@ -972,15 +1018,17 @@ function openNew() {
   $('new-name').value = '';
   bindChoices(card.querySelector('[data-group=style]'), draft.style, (v) => { draft.style = v; applyStyle(v); });
   const bindDraft = () => {
+    showTraitHint(card, draft.species, draft.gender);
     bindChoices(card.querySelector('[data-group=species]'), draft.species, (v) => {
       draft.species = v;
+      showTraitHint(card, v, draft.gender);
       const sp = Pet.SPECIES.find((x) => x.id === v);
       if (sp && sp.color) {
         draft.color = sp.color;
         buildSwatches(card.querySelector('[data-group=color]'), draft.color, (c) => { draft.color = c; });
       }
     });
-    bindChoices(card.querySelector('[data-group=gender]'), draft.gender, (v) => { draft.gender = v; });
+    bindChoices(card.querySelector('[data-group=gender]'), draft.gender, (v) => { draft.gender = v; showTraitHint(card, draft.species, v); });
     buildSwatches(card.querySelector('[data-group=color]'), draft.color, (v) => { draft.color = v; });
   };
   bindDraft();
@@ -1025,8 +1073,9 @@ async function openSettings() {
   const card = $('modal-settings');
   $('set-name').value = state.name;
   bindChoices(card.querySelector('[data-group=style]'), state.style, (v) => { state.style = v; applyStyle(v); save(); });
-  bindChoices(card.querySelector('[data-group=species]'), state.species || 'chat', (v) => { state.species = v; save(); });
-  bindChoices(card.querySelector('[data-group=gender]'), state.gender || 'm', (v) => { state.gender = v; save(); });
+  showTraitHint(card, state.species || 'chat', state.gender);
+  bindChoices(card.querySelector('[data-group=species]'), state.species || 'chat', (v) => { state.species = v; showTraitHint(card, v, state.gender); save(); });
+  bindChoices(card.querySelector('[data-group=gender]'), state.gender || 'm', (v) => { state.gender = v; showTraitHint(card, state.species, v); save(); });
   bindChoices(card.querySelector('[data-group=pace]'), state.pace || 'normal', (v) => { state.pace = v; save(); });
   bindChoices(card.querySelector('[data-group=lang]'), langSetting, (v) => { langSetting = v; desk.setLang(v); });
   updatePauseButton();
@@ -1163,7 +1212,14 @@ desk.onWeather((w) => {
 // Ce que fait l'utilisateur sur l'ordinateur
 desk.onUserEvent((ev) => {
   if (!state || state.dead || state.sleeping || state.paused || Pet.isEgg(state) || modalIsOpen()) return;
-  if (ev.type === 'back') {
+  if (ev.type === 'back' && Pet.trait(state).welcome) {
+    // Le chien fidèle fait la fête
+    play('dance', 2200);
+    Sound.play('voice', state.species);
+    state.fun = Math.min(100, state.fun + 10);
+    say(t('Tu es là{owner} ! Youpi ! 🎉', { owner: owner() }), 4500);
+    speak(t('Te revoilà{owner} !', { owner: owner() }));
+  } else if (ev.type === 'back') {
     play('jump', 800);
     say(t('Te revoilà{owner} ! Tu m\'as manqué 💕', { owner: owner() }), 4500);
     speak(t('Te revoilà{owner} !', { owner: owner() }));

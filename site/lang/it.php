@@ -46,8 +46,6 @@ return [
         'Nessun account, nessuna pubblicità. Funziona anche senza connessione (tranne il meteo).',
 
     'Choisis ton compagnon' => 'Scegli il tuo compagno',
-    '{n} animaux, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' =>
-        '{n} animali, {c} mantelli, uno stile carino o pixel rétro, e accessori da vincere.',
     'Chat' => 'Gatto', 'Lapin' => 'Coniglio', 'Ourson' => 'Orsetto', 'Chien' => 'Cane', 'Renard' => 'Volpe', 'Panda' => 'Panda',
     'Pingouin' => 'Pinguino', 'Hamster' => 'Criceto', 'Koala' => 'Koala', 'Grenouille' => 'Rana', 'Licorne' => 'Unicorno',
     'Dragon' => 'Drago', 'Loup' => 'Lupo', 'Lion' => 'Leone', 'Tigre' => 'Tigre', 'Cochon' => 'Maialino', 'Mouton' => 'Pecora',
@@ -116,4 +114,6 @@ return [
     'Comment le nourrir sur Mac ?' => 'Come gli do da mangiare su Mac?',
     'Sur Mac, un fichier glissé sur l\'animal ne lui parvient pas encore. Clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… » et choisis un ou plusieurs fichiers. Tu peux aussi glisser les fichiers directement sur cette icône.' => 'Su Mac, un file trascinato sull\'animale non gli arriva ancora. Fai clic sull\'icona di ThomasGotchi nella barra dei menu, in alto sullo schermo, poi su «Dare un file da mangiare…» e scegli uno o più file. Puoi anche trascinare i file direttamente su quell\'icona.',
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'Per dargli da mangiare: icona di ThomasGotchi nella barra dei menu → <em>Dare un file da mangiare…</em>',
+    'Clique sur un animal pour l\'entendre 🔊' => 'Clicca su un animale per sentirlo 🔊',
+    '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animali, ognuno con il suo carattere, {c} mantelli, uno stile carino o pixel rétro, e accessori da vincere.',
 ];
