@@ -44,6 +44,9 @@ $faq = [
     ['Dans quelles langues existe-t-il ?', 'En français, anglais, espagnol et italien. Il choisit tout seul la langue de ton ordinateur, et tu peux la changer dans ses réglages.'],
 ];
 
+// Adresse d'un fichier du site avec sa date de modification (?v=…) : le navigateur recharge toujours la dernière version
+$asset = fn(string $file): string => $root . $file . '?v=' . (@filemtime(__DIR__ . '/' . $file) ?: '0');
+
 $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root . $code . '/');
 ?>
 <!doctype html>
@@ -56,15 +59,15 @@ $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root
   <?php foreach (TG_LANGS as $code => $label): ?>
     <link rel="alternate" hreflang="<?= $code ?>" href="<?= $h($langUrl($code)) ?>">
   <?php endforeach; ?>
-  <link rel="icon" href="<?= $root ?>img/icon.png">
+  <link rel="icon" href="<?= $asset('img/icon.png') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= $root ?>style.css">
+  <link rel="stylesheet" href="<?= $asset('style.css') ?>">
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="<?= $h($langUrl(TG_CURRENT)) ?>"><img src="<?= $root ?>img/icon.png" alt="" width="40" height="40"> ThomasGotchi</a>
+    <a class="brand" href="<?= $h($langUrl(TG_CURRENT)) ?>"><img src="<?= $asset('img/icon.png') ?>" alt="" width="40" height="40"> ThomasGotchi</a>
     <nav>
       <a href="#fonctions"><?= $h(tt('Fonctions')) ?></a>
       <a href="#animaux"><?= $h(tt('Animaux')) ?></a>
@@ -103,9 +106,9 @@ $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root
       <div class="window">
         <div class="window-bar"><i></i><i></i><i></i></div>
         <div class="window-body">
-          <img class="pet p1" src="<?= $root ?>img/chat-simba.png" alt="">
-          <img class="pet p2" src="<?= $root ?>img/animal-licorne.png" alt="">
-          <img class="pet p3" src="<?= $root ?>img/animal-renard.png" alt="">
+          <img class="pet p1" src="<?= $asset('img/chat-simba.png') ?>" alt="">
+          <img class="pet p2" src="<?= $asset('img/animal-licorne.png') ?>" alt="">
+          <img class="pet p3" src="<?= $asset('img/animal-renard.png') ?>" alt="">
           <span class="bubble"><?= $h(tt('Miam, un PDF ! 😋')) ?></span>
         </div>
       </div>
@@ -131,15 +134,15 @@ $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root
     <div class="animals">
       <?php foreach ($animals as $id => $name): ?>
         <figure class="animal">
-          <img src="<?= $root ?>img/animal-<?= $h($id) ?>.png" alt="<?= $h(tt($name)) ?>" loading="lazy">
+          <img src="<?= $h($asset('img/animal-' . $id . '.png')) ?>" alt="<?= $h(tt($name)) ?>" loading="lazy">
           <figcaption><?= $h(tt($name)) ?></figcaption>
         </figure>
       <?php endforeach; ?>
     </div>
     <div class="house-cats">
-      <img src="<?= $root ?>img/chat-simba.png" alt="Simba">
-      <img src="<?= $root ?>img/chat-snoop.png" alt="Snoop">
-      <img src="<?= $root ?>img/chat-grisette.png" alt="Grisette">
+      <img src="<?= $asset('img/chat-simba.png') ?>" alt="Simba">
+      <img src="<?= $asset('img/chat-snoop.png') ?>" alt="Snoop">
+      <img src="<?= $asset('img/chat-grisette.png') ?>" alt="Grisette">
       <p><?= tt('Et les modèles <strong>Simba</strong>, <strong>Snoop</strong> et <strong>Grisette</strong>, dessinés d\'après de vrais chats de la maison.') ?></p>
     </div>
   </section>
@@ -149,7 +152,7 @@ $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root
     <div class="moments">
       <?php foreach ($moments as [$img, $caption]): ?>
         <figure class="moment">
-          <img src="<?= $root ?>img/<?= $h($img) ?>.png" alt="<?= $h(tt($caption)) ?>" loading="lazy">
+          <img src="<?= $h($asset('img/' . $img . '.png')) ?>" alt="<?= $h(tt($caption)) ?>" loading="lazy">
           <figcaption><?= $h(tt($caption)) ?></figcaption>
         </figure>
       <?php endforeach; ?>
@@ -193,7 +196,7 @@ $langUrl = fn(string $code): string => ($code === 'fr' ? ($root ?: './') : $root
   </section>
 
   <footer class="bottom">
-    <img src="<?= $root ?>img/icon.png" alt="" width="32" height="32">
+    <img src="<?= $asset('img/icon.png') ?>" alt="" width="32" height="32">
     <p><?= $h(tt('ThomasGotchi · une création')) ?> <a href="https://www.didtech.fr/">DidTech</a> · <a href="https://github.com/<?= $h(TG_REPO) ?>"><?= $h(tt('code source')) ?></a></p>
   </footer>
 

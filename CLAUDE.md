@@ -43,6 +43,9 @@ Electron, sinon il démarre comme Node (`Remove-Item Env:ELECTRON_RUN_AS_NODE`).
   `site/index.php` (et `site/lang/*.php`), puis redéployer sur WAMP :
   `robocopy site C:\wamp64\www\thomasgotchi /MIR /XD cache` et vérifier http://localhost/thomasgotchi/.
   Supprimer `C:\wamp64\www\thomasgotchi\cache\release.json` pour afficher tout de suite une nouvelle version.
+- **Fichiers du site toujours rechargés** : toute feuille de style, script ou image du site s'insère avec
+  `$asset('chemin')` (dans `site/index.php`), qui ajoute `?v=<date de modification>` ; ne jamais écrire
+  l'adresse en dur, sinon les navigateurs gardent l'ancienne version.
 - **Crédit** : le site est signé « une création DidTech » (lien https://www.didtech.fr/), pas « par Didtho ».
 - **Mise en ligne chez IONOS** (PHP + MariaDB, FTP) seulement quand l'utilisateur le décidera ; ne jamais
   enregistrer d'identifiants FTP dans le dépôt.
