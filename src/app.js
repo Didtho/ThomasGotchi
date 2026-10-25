@@ -467,7 +467,13 @@ function celebrate() {
     state.greeted.push(f.key);
     state.fun = Math.min(100, state.fun + 10);
     play('jump', 800);
-    Sound.play('win');
+    // Anniversaire du maître : il chante « joyeux anniversaire » et le dit à voix haute
+    if (f.song) {
+      Sound.play('birthday');
+      setTimeout(() => speak(t('Joyeux anniversaire{owner} !', { owner: owner() })), 4500);
+    } else {
+      Sound.play('win');
+    }
     // Soirée magique : le hibou est tout fier, c'est son grand soir
     const proudOwl = f.magic && state.species === 'hibou';
     if (proudOwl) state.fun = Math.min(100, state.fun + 10);
@@ -594,6 +600,7 @@ function dayRhythm() {
 // ---------- Logique (toutes les secondes) ----------
 
 let feedTipAt = 0; // dernier rappel « comment me nourrir » (Mac)
+let lastAlert; // dernier besoin signalé à l'icône de la barre des tâches (indéfini : rien d'envoyé encore)
 
 function logic() {
   if (!state) return;
@@ -620,10 +627,15 @@ function logic() {
 
   dayRhythm();
   if (unlockTick % 60 === 1) {
-    festivity = Seasons.birthday(state) || Seasons.current();
+    festivity = Seasons.birthday(state) || ownerBirthday() || Seasons.current();
     desk.setDecor(festivity && !state.dead ? festivity.decor : null);
   }
   celebrate();
+
+  // Pastille sur l'icône de la barre des tâches quand il a besoin de quelque chose (voir main.js)
+  const alert = Pet.isEgg(state) || state.dead || state.paused ? null
+    : Pet.isSick(state) ? 'sick' : state.hunger < 25 ? 'hunger' : state.thirst < 25 ? 'thirst' : state.clean < 20 ? 'dirty' : null;
+  if (alert !== lastAlert) { lastAlert = alert; desk.status(alert); }
 
   // Caractère : le loup hurle à la lune une fois par soir, entre 20 h et 22 h
   if (Pet.trait(state).howl && !state.sleeping && !state.dead && !dnd && !Pet.isEgg(state)) {
@@ -1110,6 +1122,7 @@ async function openSettings() {
   $('set-sound').checked = state.sound !== false;
   $('set-voice').checked = state.voice !== false;
   $('set-owner').value = state.owner || '';
+  fillBirthday();
   $('set-city').value = await desk.getCity();
   $('set-version').textContent = `ThomasGotchi v${await desk.version()}`;
   const count = await desk.petCount();
@@ -1124,6 +1137,66 @@ $('set-name').addEventListener('input', () => {
 });
 $('set-login').addEventListener('change', (e) => desk.setLogin(e.target.checked));
 $('set-owner').addEventListener('input', () => { state.owner = $('set-owner').value.trim(); save(); });
+
+// Anniversaire du maître : jour et mois (les mois s'affichent dans la langue de l'interface)
+function fillBirthday() {
+  const day = $('set-bday-day'), month = $('set-bday-month');
+  if (day.options.length === 1) for (let d = 1; d <= 31; d++) day.add(new Option(String(d), String(d)));
+  month.length = 1;
+  for (let m = 1; m <= 12; m++) month.add(new Option(new Date(2000, m - 1, 1).toLocaleDateString(I18N.lang, { month: 'long' }), String(m)));
+  const [d, m] = (state.ownerBirthday || '').split('/');
+  day.value = d || '';
+  month.value = m || '';
+}
+for (const id of ['set-bday-day', 'set-bday-month']) {
+  $(id).addEventListener('change', () => {
+    const d = $('set-bday-day').value, m = $('set-bday-month').value;
+    state.ownerBirthday = d && m ? `${d}/${m}` : '';
+    save();
+  });
+}
+
+// Le jour de l'anniversaire du maître : gâteau, chanson et cadeau
+function ownerBirthday(d = new Date()) {
+  if (!state || !state.ownerBirthday || state.ownerBirthday !== `${d.getDate()}/${d.getMonth() + 1}`) return null;
+  return { id: 'anniv-maitre', key: `anniv-maitre-${d.getFullYear()}`, decor: 'cake', greetToday: true, song: true, gift: true,
+    greeting: t('Joyeux anniversaire{owner} ! 🎂🎉', { owner: owner() }) };
+}
+
+// Photo souvenir : une jolie carte avec l'animal (tenue et fête du moment comprises), son prénom et la date
+function takePhoto() {
+  if (!state || Pet.isEgg(state)) return;
+  const W = 600, H = 780, S = 2.8;
+  const card = document.createElement('canvas');
+  card.width = W;
+  card.height = H;
+  const c = card.getContext('2d');
+  const bg = c.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#fff0f6');
+  bg.addColorStop(1, '#ffd9e8');
+  c.fillStyle = bg;
+  c.fillRect(0, 0, W, H);
+  // L'animal est dessiné sur sa propre toile (le moteur efface sa zone), puis collé
+  const pet = document.createElement('canvas');
+  pet.width = 240 * S;
+  pet.height = 300 * S;
+  const pc = pet.getContext('2d');
+  pc.setTransform(S, 0, 0, S, 0, 0);
+  Draw.render(pc, buildView(performance.now()));
+  // Cadrage : on garde la scène sans le ciel vide du haut ni les bords
+  const crop = { x: 15 * S, y: 60 * S, w: 210 * S, h: 240 * S };
+  c.drawImage(pet, crop.x, crop.y, crop.w, crop.h, (W - crop.w) / 2, 0, crop.w, crop.h);
+  c.textAlign = 'center';
+  c.fillStyle = '#3b2a3a';
+  c.font = 'bold 44px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+  c.fillText(state.name, W / 2, 722);
+  c.fillStyle = '#c2447a';
+  c.font = '600 22px "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+  c.fillText(new Date().toLocaleDateString(I18N.lang, { day: 'numeric', month: 'long', year: 'numeric' }) + ' · ThomasGotchi', W / 2, 758);
+  desk.savePhoto(card.toDataURL('image/png'), state.name);
+  play('love', 1400);
+  say(Pet.g(state, 'Clic ! Je suis beau, non ? 📸', 'Clic ! Je suis belle, non ? 📸'), 3500);
+}
 $('set-city').addEventListener('change', () => desk.setCity($('set-city').value));
 $('set-voice').addEventListener('change', (e) => {
   state.voice = e.target.checked;
@@ -1163,6 +1236,7 @@ $('dead-ok').addEventListener('click', openNew);
 
 desk.onMenu((action) => {
   if (action === 'settings') openSettings();
+  if (action === 'photo') takePhoto();
   if (action === 'pause') setPause(true);
   if (action === 'resume') setPause(false);
 });
@@ -1188,6 +1262,9 @@ desk.onCursor((pos) => {
   const onPet = overPet(pos.x, pos.y);
   if (onPet !== cursorOnPet) { cursorOnPet = onPet; desk.diag(onPet ? `souris sur l'animal (${pos.x}, ${pos.y})` : 'souris hors de l\'animal'); }
   if (!zoneMode && !dragging && onPet) desk.setIgnore(false);
+  // Mac : la souris sur l'animal passe par la zone de dépôt, qui ne reçoit pas les survols quand l'application
+  // n'est pas au premier plan ; c'est donc la position de la souris qui fait apparaître le panneau
+  if (zoneMode && onPet && !dragging && !modalIsOpen() && state && panel.classList.contains('hidden')) showPanel();
   // L'animal a pu s'éloigner de la souris sans qu'elle bouge (marche, chute, fenêtre déplacée) : on vérifie ici
   if (!panel.classList.contains('hidden') && !modalIsOpen() && !dragging && !overInteractive(pos.x, pos.y)) {
     desk.setIgnore(true);

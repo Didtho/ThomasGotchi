@@ -23,6 +23,8 @@ contextBridge.exposeInMainWorld('desk', {
   onMenu: (cb) => ipcRenderer.on('menu', (_e, action) => cb(action)),
   diag: (text) => ipcRenderer.send('diag', text),
   dropBox: (box) => ipcRenderer.send('drop-box', box),
+  status: (alert) => ipcRenderer.send('pet-status', alert), // besoin à signaler sur l'icône (ou null)
+  savePhoto: (dataUrl, name) => ipcRenderer.invoke('save-photo', dataUrl, name),
   owl: () => ipcRenderer.invoke('owl'), // soirée magique : un hibou traverse l'écran ; répond quand il passe au-dessus
   onFeedFiles: (cb) => ipcRenderer.on('feed-files', (_e, meals) => cb(meals)),
   poopAdd: (id, side, style, kind, edge) => ipcRenderer.invoke('poop-add', id, side, style, kind, edge),

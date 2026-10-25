@@ -172,6 +172,9 @@ function createDropZone(p) {
   // d'écran » des animaux). Elle est donc sous la fenêtre de l'animal, qui laisse passer la souris sur son corps.
   zone.setAlwaysOnTop(true, 'floating');
   zone.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // Demandé explicitement : sur Mac, une fenêtre transparente laisse sinon passer la souris (et les fichiers)
+  // à travers ses zones presque transparentes — la zone ne recevait rien
+  zone.setIgnoreMouseEvents(false);
   zone.loadFile(path.join(__dirname, 'src', 'dropzone.html'));
   p.zone = zone;
   p.zoneBox = null; // silhouette de l'animal dans sa fenêtre : { x, y, w, h }
@@ -192,7 +195,10 @@ function syncDropZone(p) {
   const r = { x: Math.round(b.x + p.zoneBox.x), y: Math.round(b.y + p.zoneBox.y), width: Math.max(20, p.zoneBox.w), height: Math.max(20, p.zoneBox.h) };
   const c = zone.getBounds();
   if (c.x !== r.x || c.y !== r.y || c.width !== r.width || c.height !== r.height) zone.setBounds(r);
-  if (!zone.isVisible()) zone.showInactive();
+  if (!zone.isVisible()) {
+    zone.showInactive();
+    zone.setIgnoreMouseEvents(false);
+  }
 }
 
 const petOfZone = (sender) => [...pets.values()].find((p) => p.zone && !p.zone.isDestroyed() && p.zone.webContents === sender);
@@ -344,6 +350,12 @@ function copyDiag() {
 
 const siteUrl = () => 'https://thomasgotchi.mirimix.fr/' + (currentLang() === 'fr' ? '' : currentLang() + '/');
 
+function sendMenu(p, action) {
+  if (!alive(p)) return;
+  p.win.show();
+  p.win.webContents.send('menu', action);
+}
+
 function openSettings(p) {
   if (!alive(p)) return;
   p.win.show();
@@ -357,6 +369,9 @@ function buildTrayMenu() {
   const settings = list.length === 1
     ? { label: tr('Réglages…'), click: () => openSettings(list[0]) }
     : { label: tr('Réglages'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => openSettings(p) })) };
+  const photo = list.length === 1
+    ? { label: tr('Prendre une photo 📸'), click: () => sendMenu(list[0], 'photo') }
+    : { label: tr('Prendre une photo 📸'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => sendMenu(p, 'photo') })) };
   const food = list.length === 1
     ? { label: tr('Donner un fichier à manger…'), click: () => chooseFood(list[0]) }
     : { label: tr('Donner un fichier à manger'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => chooseFood(p) })) };
@@ -376,6 +391,7 @@ function buildTrayMenu() {
     },
     settings,
     food,
+    photo,
     { label: tr('Adopter un autre animal'), enabled: list.length < MAX_PETS, click: adoptPet },
     { label: tr(yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶'), click: toggleYarn },
     { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture, click: () => (furniture ? removeFurniture() : spawnFurniture()) },
@@ -395,10 +411,59 @@ function buildTrayMenu() {
   ]));
 }
 
+// Icône de la barre : normale, ou avec une pastille rouge quand un animal a besoin de quelque chose
+let trayIcons = null;
+function makeTrayIcons() {
+  const size = isMac ? 18 : 16, scale = 2, px = size * scale; // dessinée en double taille pour rester nette
+  const base = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png')).resize({ width: px, height: px, quality: 'best' });
+  const pixels = base.toBitmap(); // octets dans l'ordre bleu, vert, rouge, alpha
+  const normal = nativeImage.createFromBitmap(pixels, { width: px, height: px, scaleFactor: scale });
+  const dot = Buffer.from(pixels);
+  const r = px * 0.22, cx = px - r - 1, cy = px - r - 1;
+  for (let y = 0; y < px; y++) {
+    for (let x = 0; x < px; x++) {
+      const d = Math.hypot(x + 0.5 - cx, y + 0.5 - cy);
+      if (d > r + 1.5) continue;
+      const i = (y * px + x) * 4;
+      const [b, g, red] = d <= r ? [48, 59, 255] : [255, 255, 255]; // pastille rouge, liseré blanc
+      dot[i] = b; dot[i + 1] = g; dot[i + 2] = red; dot[i + 3] = 255;
+    }
+  }
+  return { normal, alert: nativeImage.createFromBitmap(dot, { width: px, height: px, scaleFactor: scale }) };
+}
+
+// Ce dont chaque animal a besoin, affiché dans l'infobulle de l'icône
+const ALERTS = { hunger: '{name} a faim 🍔', thirst: '{name} a soif 💧', sick: '{name} est malade 🤒', dirty: '{name} a besoin d\'un bain 🛁' };
+function updateTrayAlert() {
+  if (!tray) return;
+  const lines = [...pets.values()].filter((p) => alive(p) && p.alert).map((p) => tr(ALERTS[p.alert], { name: p.name || tr('Œuf') }));
+  tray.setImage(lines.length ? trayIcons.alert : trayIcons.normal);
+  tray.setToolTip([`ThomasGotchi v${app.getVersion()}`, ...lines].join('\n'));
+}
+
+ipcMain.on('pet-status', (e, alert) => {
+  const p = petOf(e.sender);
+  if (!p) return;
+  p.alert = ALERTS[alert] ? alert : null;
+  updateTrayAlert();
+});
+
+// Photo souvenir : enregistrée dans Images > ThomasGotchi ; un clic sur la notification ouvre le dossier
+ipcMain.handle('save-photo', (e, dataUrl, name) => {
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/png;base64,')) return null;
+  const dir = path.join(app.getPath('pictures'), 'ThomasGotchi');
+  fs.mkdirSync(dir, { recursive: true });
+  const stamp = new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-');
+  const safe = String(name || 'ThomasGotchi').replace(/[^\p{L}\p{N} _-]/gu, '').trim() || 'ThomasGotchi';
+  const file = path.join(dir, `${safe}-${stamp}.png`);
+  fs.writeFileSync(file, Buffer.from(dataUrl.split(',')[1], 'base64'));
+  notify(tr('Photo enregistrée dans Images › ThomasGotchi'), () => shell.showItemInFolder(file));
+  return file;
+});
+
 function createTray() {
-  let icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png'));
-  icon = icon.resize({ width: isMac ? 18 : 16, height: isMac ? 18 : 16 });
-  tray = new Tray(icon);
+  trayIcons = makeTrayIcons();
+  tray = new Tray(trayIcons.normal);
   tray.setToolTip(`ThomasGotchi v${app.getVersion()}`);
   if (!isMac) tray.on('click', toggleVisible);
   // Mac : des fichiers déposés sur l'icône de la barre des menus sont donnés à manger au premier animal visible

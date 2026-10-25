@@ -41,6 +41,11 @@ for (const f of jsFiles) {
   for (const m of src.matchAll(/(?:msgs|say):\s*\[([^\]]*)\]|(?:say|pick)\(\[([^\]]*)\]/g)) {
     each(m[1] || m[2], rx(STR), [1, 2]);
   }
+  if (f === 'main.js') {
+    // Besoins affichés dans l'infobulle de l'icône
+    const start = src.indexOf('const ALERTS = {');
+    each(src.slice(start, src.indexOf('};', start)), rx(String.raw`\w+:\s*` + STR), [1, 2], true);
+  }
   if (f === 'src/pet.js') {
     // Besoins renvoyés par Pet.need
     const need = src.slice(src.indexOf('  need(s) {'), src.indexOf('  // ---- Actions ----'));
