@@ -5,6 +5,8 @@ for (const type of ['mousedown', 'mouseup', 'mousemove']) {
   addEventListener(type, (e) => zone.mouse(type, e.clientX, e.clientY, e.button, e.detail));
 }
 addEventListener('contextmenu', (e) => e.preventDefault()); // le clic droit est transmis à l'animal (réglages)
+document.addEventListener('mouseenter', () => zone.diag('zone de dépôt : souris dessus'));
+document.addEventListener('mouseleave', () => zone.diag('zone de dépôt : souris partie'));
 
 addEventListener('dragenter', (e) => {
   e.preventDefault();

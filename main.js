@@ -128,6 +128,7 @@ function createPetWindow(id) {
       contextIsolation: true,
       nodeIntegration: false,
       backgroundThrottling: false,
+      additionalArguments: USE_DROP_ZONE ? ['--tg-drop-zone'] : [],
     },
   });
   const p = { id, win, name: '', active: false, expandUp: 0, expandDown: 0, dragTimer: null, ignoring: true };
@@ -163,7 +164,9 @@ function createDropZone(p) {
     enableLargerThanScreen: true, backgroundColor: '#00000000',
     webPreferences: { preload: path.join(__dirname, 'preload-dropzone.js'), contextIsolation: true, nodeIntegration: false },
   });
-  zone.setAlwaysOnTop(true, 'screen-saver', 1); // un cran au-dessus de l'animal
+  // Niveau des fenêtres flottantes ordinaires (macOS ne propose peut-être pas les dépôts au niveau « économiseur
+  // d'écran » des animaux). Elle est donc sous la fenêtre de l'animal, qui laisse passer la souris sur son corps.
+  zone.setAlwaysOnTop(true, 'floating');
   zone.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   zone.loadFile(path.join(__dirname, 'src', 'dropzone.html'));
   p.zone = zone;
@@ -325,7 +328,8 @@ function copyDiag() {
   const head = [
     `ThomasGotchi ${app.getVersion()} · ${process.platform} ${os.release()} · Electron ${process.versions.electron}`,
     ...screen.getAllDisplays().map((d) => `écran ${JSON.stringify(d.bounds)} zone ${JSON.stringify(d.workArea)} x${d.scaleFactor}`),
-    ...[...pets.values()].filter(alive).map((p) => `animal ${p.name || p.id} : ${JSON.stringify(p.win.getBounds())} ignore=${p.ignoring} visible=${p.win.isVisible()}`),
+    ...[...pets.values()].filter(alive).map((p) => `animal ${p.name || p.id} : ${JSON.stringify(p.win.getBounds())} ignore=${p.ignoring} visible=${p.win.isVisible()}`
+      + (p.zone && !p.zone.isDestroyed() ? ` · zone de dépôt ${JSON.stringify(p.zone.getBounds())} visible=${p.zone.isVisible()} silhouette=${JSON.stringify(p.zoneBox)}` : USE_DROP_ZONE ? ' · pas de zone de dépôt' : '')),
     `fenêtres repérées : ${windowRects.size} (positions seulement ; « praticable » = l'animal peut monter dessus)`,
     ...[...windowRects.values()].map((r) => `  fenêtre ${Math.round(r.x1)},${Math.round(r.y1)} → ${Math.round(r.x2)},${Math.round(r.y2)}`
       + (platforms.some((pl) => pl.h === r.h) ? ' praticable' : r.y1 <= 150 ? ' trop près du haut' : ' bord caché')),

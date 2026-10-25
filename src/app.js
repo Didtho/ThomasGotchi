@@ -667,10 +667,18 @@ panel.addEventListener('click', (e) => {
 // La fenêtre laisse passer les clics partout, sauf sur le petit être et les panneaux.
 
 function overInteractive(x, y) {
-  const el = document.elementFromPoint(x, y);
-  if (el && el.closest('.hit')) return true;
-  return overPet(x, y);
+  return overHit(x, y) || overPet(x, y);
 }
+
+function overHit(x, y) {
+  const el = document.elementFromPoint(x, y);
+  return !!(el && el.closest('.hit'));
+}
+
+// Sur Mac, le corps de l'animal est couvert par la zone de dépôt (voir main.js), qui reçoit les fichiers et nous
+// renvoie la souris : la fenêtre ne capte alors elle-même la souris que sur les boutons et panneaux
+const zoneMode = !!desk.dropZone;
+const wantsMouse = (x, y) => (zoneMode ? overHit(x, y) : overInteractive(x, y));
 
 // x, y : coordonnées dans la fenêtre ; la zone du petit être peut être décalée quand la fenêtre est agrandie
 function overPet(x, y) {
@@ -686,7 +694,7 @@ document.addEventListener('mousemove', (e) => {
   }
   if (dragging) return;
   const over = overInteractive(e.clientX, e.clientY);
-  desk.setIgnore(!over);
+  desk.setIgnore(!wantsMouse(e.clientX, e.clientY));
   if (over) showPanel();
   else scheduleHide();
 });
@@ -1105,7 +1113,7 @@ desk.onCursor((pos) => {
   // elle laisserait passer le fichier jusqu'au bureau au lieu de le donner à manger
   const onPet = overPet(pos.x, pos.y);
   if (onPet !== cursorOnPet) { cursorOnPet = onPet; desk.diag(onPet ? `souris sur l'animal (${pos.x}, ${pos.y})` : 'souris hors de l\'animal'); }
-  if (!dragging && onPet) desk.setIgnore(false);
+  if (!zoneMode && !dragging && onPet) desk.setIgnore(false);
   // L'animal a pu s'éloigner de la souris sans qu'elle bouge (marche, chute, fenêtre déplacée) : on vérifie ici
   if (!panel.classList.contains('hidden') && !modalIsOpen() && !dragging && !overInteractive(pos.x, pos.y)) {
     desk.setIgnore(true);

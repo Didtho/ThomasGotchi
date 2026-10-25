@@ -6,6 +6,7 @@ const initialLang = ipcRenderer.sendSync('get-lang');
 contextBridge.exposeInMainWorld('desk', {
   lang: initialLang,
   isMac: process.platform === 'darwin',
+  dropZone: process.argv.includes('--tg-drop-zone'), // zone de dépôt posée sur l'animal (Mac, voir main.js)
   setLang: (value) => ipcRenderer.send('set-lang', value),
   onLang: (cb) => ipcRenderer.on('lang', (_e, l) => cb(l)),
   setIgnore: (ignore) => ipcRenderer.send('set-ignore', ignore),
