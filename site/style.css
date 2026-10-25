@@ -161,9 +161,25 @@ img { max-width: 100%; }
 .animal:hover { transform: translateY(-4px) rotate(-2deg); }
 .animal { cursor: pointer; }
 .animal img, .animal canvas.live { display: block; width: 100%; aspect-ratio: 180 / 200; object-fit: contain; }
-.animal canvas.live { display: none; }
-.animal.is-live canvas.live { display: block; } /* dessin en direct dès qu'il est prêt, à la place de l'image */
-.animal.is-live img { display: none; }
+.animal canvas.live { display: none; } /* affiché à la place de l'image dès que le dessin en direct est prêt (animals.js) */
+.pet.live { display: none; height: auto; aspect-ratio: 152 / 200; cursor: pointer; }
+
+/* Fêtes : bannière et couleurs d'accent, comme dans l'application (animals.js ajoute la classe fete-…) */
+.fete-banner {
+  padding: 8px 16px;
+  text-align: center;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  color: #fff;
+  background: var(--pink-deep);
+}
+body.fete-halloween { --pink: #ffb36b; --pink-deep: #d9631e; }
+body.fete-noel { --pink: #f59aa0; --pink-deep: #c42f3c; }
+body.fete-magie { --pink: #a9b6ff; --pink-deep: #3b4fb8; }
+body.fete-nouvelan { --pink: #ffd36b; --pink-deep: #b8860b; }
+body.fete-paques { --pink: #9fe3bd; --pink-deep: #2f9a63; }
+body.fete-chat { --pink: #ffc48a; --pink-deep: #d9792b; }
 .animal figcaption { font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 18px; }
 .animal figcaption small { display: block; margin-top: 2px; font-family: "Nunito", sans-serif; font-weight: 600; font-size: 12px; line-height: 1.25; color: var(--ink-soft); }
 .section-hint { margin: -8px 0 18px; text-align: center; font-size: 15px; color: var(--ink-soft); }

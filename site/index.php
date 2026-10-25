@@ -128,6 +128,7 @@ $jsonLd = [
   <link rel="stylesheet" href="<?= $asset('style.css') ?>">
 </head>
 <body>
+  <div class="fete-banner" hidden></div>
   <header class="top">
     <a class="brand" href="<?= $h($langUrl(TG_CURRENT)) ?>"><img src="<?= $asset('img/icon.png') ?>" alt="" width="40" height="40"> ThomasGotchi</a>
     <nav>
@@ -172,9 +173,9 @@ $jsonLd = [
       <div class="window">
         <div class="window-bar"><i></i><i></i><i></i></div>
         <div class="window-body">
-          <img class="pet p1" src="<?= $asset('img/chat-simba.png') ?>" alt="">
-          <img class="pet p2" src="<?= $asset('img/chat-snoop.png') ?>" alt="">
-          <img class="pet p3" src="<?= $asset('img/chat-grisette.png') ?>" alt="">
+          <img class="pet p1" src="<?= $asset('img/chat-simba.png') ?>" alt="" data-species="chat" data-color="simba">
+          <img class="pet p2" src="<?= $asset('img/chat-snoop.png') ?>" alt="" data-species="chat" data-color="snoop">
+          <img class="pet p3" src="<?= $asset('img/chat-grisette.png') ?>" alt="" data-species="chat" data-color="grisette">
           <span class="bubble"><?= $h(tt('Miam, un PDF ! 😋')) ?></span>
         </div>
       </div>
@@ -286,9 +287,12 @@ $jsonLd = [
   </footer>
 
   <!-- Moteur de dessin et bruitages de l'application : animaux animés et cris dans la liste des animaux -->
-  <?php foreach (['i18n', 'pet', 'draw', 'species', 'sound'] as $f): ?>
+  <?php foreach (['i18n', 'pet', 'draw', 'species', 'sound', 'seasons'] as $f): ?>
     <script src="<?= $asset("engine/$f.js") ?>"></script>
   <?php endforeach; ?>
+  <?php if (TG_CURRENT !== 'fr'): ?>
+    <script src="<?= $asset('engine/locales/' . TG_CURRENT . '.js') ?>"></script>
+  <?php endif; ?>
   <script src="<?= $asset('animals.js') ?>"></script>
   <script>
     // Met en avant le bouton correspondant à l'ordinateur du visiteur

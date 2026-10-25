@@ -18,8 +18,13 @@ app.whenReady().then(async () => {
   // Moteur de dessin et bruitages de l'application, pour les animaux animés du site (site/animals.js)
   const engine = path.join(__dirname, '..', 'site', 'engine');
   fs.mkdirSync(engine, { recursive: true });
-  for (const f of ['i18n.js', 'pet.js', 'draw.js', 'species.js', 'sound.js']) {
+  for (const f of ['i18n.js', 'pet.js', 'draw.js', 'species.js', 'sound.js', 'seasons.js']) {
     fs.copyFileSync(path.join(__dirname, '..', 'src', f), path.join(engine, f));
+  }
+  // Traductions de l'application : messages des fêtes affichés en bannière sur le site
+  fs.mkdirSync(path.join(engine, 'locales'), { recursive: true });
+  for (const lang of ['en', 'es', 'it']) {
+    fs.copyFileSync(path.join(__dirname, '..', 'src', 'locales', lang + '.js'), path.join(engine, 'locales', lang + '.js'));
   }
   const data = await win.webContents.executeJavaScript('window.appData()');
   fs.mkdirSync(path.join(__dirname, '..', 'site', 'data'), { recursive: true });
