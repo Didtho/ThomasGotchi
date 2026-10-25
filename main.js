@@ -100,8 +100,12 @@ function placeWindow(p, x, y) {
   p.win.setBounds({ x: Math.round(x), y: Math.round(y), width: W, height: H + p.expandUp + p.expandDown });
 }
 
+// Niveau des animaux au-dessus des autres fenêtres. Sur Mac, en dessous de celui des fichiers qu'on fait glisser :
+// au niveau « économiseur d'écran », le fichier glissé passait derrière l'animal et macOS ne le lui donnait pas.
+const PET_LEVEL = isMac ? 'pop-up-menu' : 'screen-saver';
+
 function keepOnTop() {
-  for (const p of pets.values()) if (alive(p)) p.win.setAlwaysOnTop(true, 'screen-saver');
+  for (const p of pets.values()) if (alive(p)) p.win.setAlwaysOnTop(true, PET_LEVEL);
 }
 
 function createPetWindow(id) {
@@ -134,7 +138,7 @@ function createPetWindow(id) {
   const p = { id, win, name: '', active: false, expandUp: 0, expandDown: 0, dragTimer: null, ignoring: true };
   pets.set(id, p);
 
-  win.setAlwaysOnTop(true, 'screen-saver');
+  win.setAlwaysOnTop(true, PET_LEVEL);
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
