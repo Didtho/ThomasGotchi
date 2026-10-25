@@ -511,7 +511,7 @@ function openTreat(spot) {
   Sound.play('win');
   if (spot.kind === 'gift') {
     // Le cadeau contient un accessoire pas encore gagné, sinon un grand moment de joie
-    const missing = Pet.ACCESSORIES.filter((a) => !state.unlocked.includes(a.id));
+    const missing = Pet.accessoriesFor(state).filter((a) => !state.unlocked.includes(a.id));
     const prize = missing[Math.floor(Math.random() * missing.length)];
     state.fun = Math.min(100, state.fun + 25);
     play('love', 1600);

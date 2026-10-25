@@ -254,7 +254,7 @@ function openJournal() {
     ['Câlins reçus', s.stats.hugs],
     ['Crottes ramassées', s.stats.poopsCleaned],
     ['Mini-jeux gagnés', s.stats.gamesWon],
-    ['Accessoires', `${s.unlocked.length} / ${Pet.ACCESSORIES.length}`],
+    ['Accessoires', `${s.unlocked.length} / ${Pet.accessoriesFor(s).length}`],
   ];
   const body = $('journal-body');
   body.innerHTML = '';
@@ -271,7 +271,7 @@ function openJournal() {
   rows.forEach(([l, v]) => addRow(l, v));
 
   // Prochain accessoire à gagner
-  const next = Pet.ACCESSORIES.find((a) => !s.unlocked.includes(a.id));
+  const next = Pet.accessoriesFor(s).find((a) => !s.unlocked.includes(a.id));
   if (next) addRow('Prochain cadeau', next.icon + ' ' + t(next.hint));
 
   if (friends.length) {

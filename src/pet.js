@@ -515,10 +515,13 @@ const ACCESSORIES = [
   { id: 'noel', name: 'Bonnet de Noël', icon: '🎅', hint: 'être là en décembre', earned: (s, d) => d.getMonth() === 11 },
   { id: 'fete', name: 'Chapeau de fête', icon: '🥳', hint: 'fêter la nouvelle année',
     earned: (s, d) => (d.getMonth() === 11 && d.getDate() === 31) || (d.getMonth() === 0 && d.getDate() <= 2) },
-  { id: 'magicien', name: 'Chapeau de magicien', icon: '🪄', hint: 'être là pour la soirée magique des 25 et 26 décembre',
-    earned: (s, d) => d.getMonth() === 11 && (d.getDate() === 25 || d.getDate() === 26) && d.getHours() >= 18 },
+  // Soirée magique de décembre 2026 seulement : ceux qui l'ont gagné le gardent
+  { id: 'magicien', name: 'Chapeau de magicien', icon: '🪄', hint: 'être là pour la soirée magique des 25 et 26 décembre', limited: true,
+    earned: (s, d) => d.getFullYear() === 2026 && d.getMonth() === 11 && (d.getDate() === 25 || d.getDate() === 26) && d.getHours() >= 18 },
 ];
 Pet.ACCESSORIES = ACCESSORIES;
+// Accessoires à afficher et à compter : un accessoire limité (édition unique) n'apparaît que chez ceux qui l'ont gagné
+Pet.accessoriesFor = (s) => ACCESSORIES.filter((a) => !a.limited || (s.unlocked || []).includes(a.id));
 
 // Tours que l'animal apprend petit à petit
 const TRICKS = [
