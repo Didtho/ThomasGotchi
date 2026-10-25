@@ -113,4 +113,7 @@ return [
     'Autre solution, valable aussi si macOS dit que l\'application est « endommagée » : ouvre le <strong>Terminal</strong> et tape cette commande, qui retire le blocage.' => 'Otra solución, que también sirve si macOS dice que la aplicación está «dañada»: abre el <strong>Terminal</strong> y escribe este comando, que quita el bloqueo.',
     'À refaire après chaque nouvelle version téléchargée.' => 'Hay que repetirlo con cada nueva versión descargada.',
     'Sur Mac, une petite manipulation est nécessaire la première fois : <a href="#installer">voir comment</a>.' => 'En Mac, hace falta un pequeño paso la primera vez: <a href="#installer">ver cómo</a>.',
+    'Comment le nourrir sur Mac ?' => '¿Cómo le doy de comer en Mac?',
+    'Sur Mac, un fichier glissé sur l\'animal ne lui parvient pas encore. Clique sur l\'icône de ThomasGotchi dans la barre des menus, en haut de l\'écran, puis sur « Donner un fichier à manger… » et choisis un ou plusieurs fichiers. Tu peux aussi glisser les fichiers directement sur cette icône.' => 'En Mac, un archivo arrastrado sobre la mascota todavía no le llega. Haz clic en el icono de ThomasGotchi en la barra de menús, arriba de la pantalla, luego en «Dar un archivo de comer…» y elige uno o varios archivos. También puedes arrastrar los archivos directamente sobre ese icono.',
+    'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'Para darle de comer: icono de ThomasGotchi en la barra de menús → <em>Dar un archivo de comer…</em>',
 ];
