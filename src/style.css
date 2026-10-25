@@ -187,12 +187,12 @@ html, body {
 /* Onglets des réglages : les pages sont superposées, la carte garde la hauteur de la plus grande */
 .tabs { display: flex; gap: 4px; margin: 0 0 8px; border-bottom: 1.5px solid #3b2a3a; }
 .tabs button {
-  flex: 1; min-width: 0; padding: 3px 0 2px; font: inherit; font-size: 10px; font-weight: 600; line-height: 1.25; cursor: pointer;
+  flex: 1; min-width: 0; padding: 3px 0 2px; font: inherit; font-size: 11px; font-weight: 600; line-height: 1.25; cursor: pointer;
   background: transparent; border: 1.5px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0;
   margin-bottom: -1.5px; opacity: .6;
 }
 .tabs button.on { background: #fff3f7; border-color: #3b2a3a; opacity: 1; }
-.tabs button i { display: block; font-style: normal; font-size: 13px; } /* l'icône au-dessus du mot */
+.tabs button i { display: block; font-style: normal; font-size: 18px; } /* l'icône au-dessus du mot */
 .tab-pages { display: grid; }
 .tab-page { grid-area: 1 / 1; visibility: hidden; }
 .tab-page.on { visibility: visible; }
@@ -278,7 +278,16 @@ button.danger { background: #ffe0e0 !important; }
 #trick-list button:disabled { opacity: .4; cursor: help; }
 .checks { flex-wrap: wrap; gap: 4px 12px; }
 .choices.species button { flex: 0 0 auto; padding: 2px 5px; font-size: 15px; line-height: 1.2; }
-/* 21 animaux : 7 par ligne pour garder la fenêtre compacte */
+/* 21 animaux : 6 par ligne, icônes assez grandes pour rester lisibles sur les écrans à haute résolution */
 .choices.species { gap: 3px; }
-.choices.species button { width: 28px; padding: 2px 0; font-size: 14px; }
+.choices.species button { width: 29px; padding: 2px 0; font-size: 18px; line-height: 1.25; }
+#modal-settings { overflow-x: hidden; }
+
+/* Réglages un peu plus grands et lisibles (la fenêtre ne fait que 240 px de large) */
+#modal-settings .label, #modal-settings label, #modal-settings .hint { font-size: 12px; }
+#modal-settings .choices button, #modal-settings .row button { font-size: 12px; padding: 4px 5px; }
+#modal-settings [data-group=accessory] button { font-size: 17px; padding: 2px 6px; }
+#modal-settings [data-group=pace] button { padding: 4px 1px; font-size: 11.5px; }
+#modal-settings .swatches { gap: 6px; }
+#modal-settings .swatches button { width: 23px; height: 23px; }
 .card { scrollbar-width: thin; }
