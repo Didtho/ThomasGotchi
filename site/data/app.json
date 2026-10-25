@@ -541,6 +541,14 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.10.1",
+   "date": "2026-10-25",
+   "items": [
+    "Onglet Amis : le prénom de l'ami en entier, avec son animal en dessous (icône de l'espèce + prénom) au lieu de « Jean-Marie (Max… »",
+    "Les boutons passent ensemble à la ligne quand ils ne tiennent pas à côté du prénom"
+   ]
+  },
+  {
    "version": "2.10.0",
    "date": "2026-10-25",
    "items": [
@@ -878,15 +886,6 @@
     "Pause vacances (un animal ou tous) et rythme de vie zen / normal / exigeant",
     "Mode ne pas déranger",
     "Export et import d'un animal"
-   ]
-  },
-  {
-   "version": "1.4.0",
-   "date": "2026-10-24",
-   "items": [
-    "Calendrier des fêtes : Halloween, Noël, Nouvel An, Saint-Valentin, Pâques, Journée du chat, anniversaire",
-    "Cadeau de Noël à ouvrir et chasse aux œufs de Pâques sur le bureau",
-    "Chapeau de fête à gagner au Nouvel An"
    ]
   }
  ]

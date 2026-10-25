@@ -582,6 +582,7 @@
     "On part en promenade chez {owner} ! 🐾": "Off for a walk to {owner}'s! 🐾",
     "On s'est promenés ensemble ! Coucou, c'est {name} de {owner} 🐾": "We went for a walk together! Hi, it's {name} from {owner}'s 🐾",
     "Promenade à deux (son animal le raccompagnera)": "Walk together (their pet will walk yours home)",
+    "{owner} et son animal {pet}": "{owner} and their pet {pet}",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;
