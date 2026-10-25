@@ -331,6 +331,7 @@
     'Donner un fichier à manger': 'Dar un archivo de comer',
     'Donner un fichier à manger…': 'Dar un archivo de comer…',
     'Site internet 🌐': 'Sitio web 🌐',
+    'Donne-moi à manger depuis le menu de l\'icône, en haut de l\'écran 🍽️': 'Dame de comer desde el menú del icono, arriba de la pantalla 🍽️',
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;

@@ -519,6 +519,8 @@ function dayRhythm() {
 
 // ---------- Logique (toutes les secondes) ----------
 
+let feedTipAt = 0; // dernier rappel « comment me nourrir » (Mac)
+
 function logic() {
   if (!state) return;
   const before = Pet.stage(state);
@@ -548,6 +550,13 @@ function logic() {
     desk.setDecor(festivity && !state.dead ? festivity.decor : null);
   }
   celebrate();
+
+  // Sur Mac, un fichier glissé sur l'animal ne lui arrive pas : quand il a faim, il rappelle comment le nourrir
+  if (desk.isMac && state.hunger < 40 && !state.sleeping && !state.dead && !Pet.isEgg(state) && !dnd
+      && Date.now() - feedTipAt > 20 * 60000) {
+    feedTipAt = Date.now();
+    say('Donne-moi à manger depuis le menu de l\'icône, en haut de l\'écran 🍽️', 6000);
+  }
 
   // Petit ronflement de temps en temps
   if (state.sleeping && ++snoreTick % 4 === 0) Sound.play('snore');

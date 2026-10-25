@@ -5,6 +5,7 @@ const initialLang = ipcRenderer.sendSync('get-lang');
 
 contextBridge.exposeInMainWorld('desk', {
   lang: initialLang,
+  isMac: process.platform === 'darwin',
   setLang: (value) => ipcRenderer.send('set-lang', value),
   onLang: (cb) => ipcRenderer.on('lang', (_e, l) => cb(l)),
   setIgnore: (ignore) => ipcRenderer.send('set-ignore', ignore),
