@@ -42,5 +42,8 @@ contextBridge.exposeInMainWorld('desk', {
   onWeather: (cb) => ipcRenderer.on('weather', (_e, w) => cb(w)),
   getCity: () => ipcRenderer.invoke('get-city'),
   setCity: (c) => ipcRenderer.invoke('set-city', c),
+  setDecor: (kind) => ipcRenderer.send('decor', kind),
+  onFalling: (cb) => ipcRenderer.on('falling', () => cb()),
+  onLanded: (cb) => ipcRenderer.on('landed', () => cb()),
   onMeet: (cb) => ipcRenderer.on('meet', (_e, info) => cb(info)),
 });

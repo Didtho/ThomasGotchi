@@ -32,8 +32,8 @@ window.renderAll = () => {
   out['chat-grisette'] = renderPng(view('chat', 'grisette'), PET);
   // Scènes complètes (décor compris)
   out['scene-pluie'] = renderPng(view('chat', 'simba', { weather: 'rain', gear: 'umbrella', t: 2.1 }));
-  out['scene-halloween'] = renderPng(view('chat', 'noir', { decor: 'halloween', accessory: 'sorciere', night: true, t: 3.2 }));
-  out['scene-noel'] = renderPng(view('renard', 'orange', { decor: 'snow', accessory: 'noel', t: 4 }));
+  out['scene-halloween'] = renderPng(view('chat', 'noir', { decor: 'halloween', decorBack: true, accessory: 'sorciere', night: true, t: 3.2 }));
+  out['scene-noel'] = renderPng(view('renard', 'orange', { decor: 'snow', decorBack: true, accessory: 'noel', t: 4 }));
   out['scene-danse'] = renderPng(view('licorne', 'blanc', { anim: 'dance', animT: 0.35, eyes: 'joy', mouth: 'open', t: 5 }));
   out['scene-dodo'] = renderPng(view('panda', 'blanc', { mood: 'sleep', eyes: 'closed', mouth: 'o', nightcap: true, weather: 'clear', isDay: false, t: 6 }));
   out['scene-fete'] = renderPng(view('dragon', 'vert', { decor: 'fireworks', accessory: 'fete', eyes: 'joy', mouth: 'open', t: 7.3 }));

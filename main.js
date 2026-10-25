@@ -137,6 +137,7 @@ function createPetWindow(id) {
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
   win.on('closed', () => { p.win = null; });
   // Au chargement, il apprend si le mode « ne pas déranger » est actif
+  win.webContents.once('did-finish-load', () => setTimeout(() => fallToFloor(p), 1500));
   win.webContents.on('did-finish-load', () => {
     win.webContents.send('dnd', dnd);
     if (weather) win.webContents.send('weather', weather);
@@ -166,6 +167,8 @@ function releasePet(p) {
   }
   if (alive(p)) p.win.destroy();
   pets.delete(p.id);
+  decorWanted.delete(p.id);
+  updateDecor();
   for (const f of [stateFile(p.id), windowFile(p.id)]) {
     try { fs.unlinkSync(dataFile(f)); } catch { /* déjà absent */ }
   }
@@ -284,8 +287,38 @@ ipcMain.handle('drag-end', (e) => {
   if (!p) return;
   clearInterval(p.dragTimer);
   p.dragTimer = null;
-  saveWindowPosition(p);
+  fallToFloor(p);
 });
+
+// Gravité : un animal lâché en hauteur tombe jusqu'au bas de l'écran qui se trouve sous ses pattes
+function fallToFloor(p) {
+  if (!alive(p) || p.expandUp || p.expandDown) return saveWindowPosition(p);
+  clearInterval(p.fallTimer);
+  const floorOf = (b) => {
+    const feetX = b.x + W / 2;
+    const wa = (screen.getAllDisplays().map((d) => d.workArea).find((a) => feetX >= a.x && feetX < a.x + a.width))
+      || screen.getDisplayMatching(b).workArea;
+    return wa.y + wa.height - b.height;
+  };
+  const start = p.win.getBounds();
+  if (start.y >= floorOf(start) - 2) return saveWindowPosition(p);
+  p.win.webContents.send('falling');
+  let vy = 0;
+  p.fallTimer = setInterval(() => {
+    if (!alive(p) || p.dragTimer) return clearInterval(p.fallTimer);
+    const b = p.win.getBounds();
+    const floor = floorOf(b);
+    vy = Math.min(vy + 1.4, 28);
+    const y = Math.min(floor, b.y + vy);
+    placeWindow(p, b.x, y);
+    if (y >= floor) {
+      clearInterval(p.fallTimer);
+      p.fallTimer = null;
+      p.win.webContents.send('landed');
+      saveWindowPosition(p);
+    }
+  }, 16);
+}
 
 ipcMain.handle('expand', (e, extra) => {
   const p = petOf(e.sender);
@@ -570,6 +603,50 @@ ipcMain.on('yarn-rewind', () => {
 });
 ipcMain.on('yarn-ignore', (_e, ignore) => {
   if (yarn && !yarn.win.isDestroyed()) yarn.win.setIgnoreMouseEvents(ignore, { forward: true });
+});
+
+// ---- Objet de fête posé sur le bureau (citrouille, sapin, gâteau, œufs) ----
+// Chaque animal annonce le décor de sa fête du moment ; un seul objet est posé pour tous,
+// immobile, à côté du premier animal. Il laisse passer les clics.
+
+const DECOR = { w: 70, h: 70 };
+const DECOR_ORDER = ['snow', 'halloween', 'spring', 'cake']; // en cas de fêtes différentes, la plus « générale » gagne
+const decorWanted = new Map(); // id de l'animal -> décor souhaité (ou null)
+let decor = null; // { win, kind }
+
+function updateDecor() {
+  const kinds = [...decorWanted.values()].filter(Boolean);
+  const kind = DECOR_ORDER.find((k) => kinds.includes(k)) || null;
+  if (decor && decor.kind === kind) return;
+  if (decor && !decor.win.isDestroyed()) decor.win.destroy();
+  decor = null;
+  if (!kind) return;
+  const first = [...pets.values()].find(alive);
+  const b = first ? first.win.getBounds() : null;
+  const wa = b ? screen.getDisplayMatching(b).workArea : screen.getPrimaryDisplay().workArea;
+  const saved = readJson('decor.json');
+  // Même place qu'avant si possible, sinon juste à gauche du premier animal
+  let x = saved && Number.isFinite(saved.x) ? saved.x : (b ? b.x + W / 2 - 150 : wa.x + 200);
+  x = Math.round(Math.min(Math.max(x, wa.x), wa.x + wa.width - DECOR.w));
+  const win = new BrowserWindow({
+    width: DECOR.w, height: DECOR.h, x, y: wa.y + wa.height - DECOR.h,
+    transparent: true, frame: false, resizable: false, movable: false, maximizable: false, minimizable: false,
+    fullscreenable: false, skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true,
+    backgroundColor: '#00000000', webPreferences: { contextIsolation: true, nodeIntegration: false },
+  });
+  win.setAlwaysOnTop(true, 'floating');
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.setIgnoreMouseEvents(true);
+  win.loadFile(path.join(__dirname, 'src', 'decor.html'), { query: { kind } });
+  decor = { win, kind };
+  try { writeJson('decor.json', { x }); } catch { /* sans gravité */ }
+}
+
+ipcMain.on('decor', (e, kind) => {
+  const p = petOf(e.sender);
+  if (!p) return;
+  decorWanted.set(p.id, kind || null);
+  updateDecor();
 });
 
 // ---- Gamelle : partagée par tous les animaux, posée en bas de l'écran ----

@@ -322,6 +322,9 @@
     'Redémarrer maintenant': 'Riavvia ora',
     'Plus tard': 'Più tardi',
     'La version {v} est prête : clique ici pour l\'installer (ou elle s\'installera à la prochaine ouverture).': 'La versione {v} è pronta: clicca qui per installarla (o verrà installata alla prossima apertura).',
+    'Ouf !': 'Uff!',
+    'Atterrissage réussi !': 'Atterraggio perfetto!',
+    'Boing !': 'Boing!',
     'ThomasGotchi': 'ThomasGotchi',
     'English': 'English', 'Español': 'Español', 'Français': 'Français', 'Italiano': 'Italiano',
   };

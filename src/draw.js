@@ -585,6 +585,8 @@ function drawCreature(ctx, v) {
   if (a === 'jump') { const k = Math.min(1, at / 0.8); jump = Math.sin(k * Math.PI) * 48; squash = k < 0.12 || k > 0.88 ? 1.1 : 0.94; }
   if (a === 'roll') jump = Math.sin(Math.min(1, at / 0.9) * Math.PI) * 28;
   if (a === 'stretch') squash = 1 + Math.sin(Math.min(1, at / 1.5) * Math.PI) * 0.16;
+  if (a === 'fall') squash = 0.9; // étiré pendant la chute
+  if (a === 'land') squash = 1 + 0.2 * Math.max(0, 1 - at / 0.35); // écrasé à l'atterrissage
   if (a === 'dance') jump = Math.abs(Math.sin(at * 8)) * 6;
   if (a === 'spin') jump = Math.abs(Math.sin(at * 6)) * 4;
   if (a === 'backflip') jump = Math.sin(Math.min(1, at / 1.0) * Math.PI) * 60;
@@ -1272,7 +1274,7 @@ const Draw = {
     }
     target.save();
     if (v.weather) drawWeatherBack(target, v);
-    if (v.decor) drawDecorBack(target, v);
+    if (v.decor && v.decorBack) drawDecorBack(target, v); // objets au sol : posés sur le bureau dans l'appli
     const box = v.stage === 'egg' ? drawEgg(target, v) : drawCreature(target, v);
     if (v.decor) drawDecorFront(target, v);
     if (v.weather) drawWeatherFront(target, v);

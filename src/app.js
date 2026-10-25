@@ -90,6 +90,7 @@ function buildView(now) {
   if (mood === 'dead') eyes = 'dead';
   else if (mood === 'sleep') eyes = 'closed';
   else if (anim === 'dizzy') eyes = 'dizzy';
+  else if (anim === 'fall') eyes = 'open';
   else if (['play', 'love', 'hatch', 'jump', 'roll', 'dance', 'spin', 'backflip', 'wave', 'tussle'].includes(anim)) eyes = 'joy';
   else if (blinking) eyes = 'closed';
   else if (mood === 'sick' || state.energy < 25) eyes = 'tired';
@@ -103,7 +104,8 @@ function buildView(now) {
   }
 
   let mouth = 'smile';
-  if (anim === 'eat') mouth = Math.sin(animT * 14) > 0 ? 'chomp' : 'flat';
+  if (anim === 'fall') mouth = 'o';
+  else if (anim === 'eat') mouth = Math.sin(animT * 14) > 0 ? 'chomp' : 'flat';
   else if (anim === 'drink' || mood === 'sleep' || hungryLook) mouth = hungryLook ? 'open' : 'o';
   else if (['play', 'love', 'hatch', 'dance', 'spin', 'backflip', 'wave', 'tussle'].includes(anim)) mouth = 'open';
   else if (mood === 'dead') mouth = 'flat';
@@ -528,7 +530,10 @@ function logic() {
   }
 
   dayRhythm();
-  if (unlockTick % 60 === 1) festivity = Seasons.birthday(state) || Seasons.current();
+  if (unlockTick % 60 === 1) {
+    festivity = Seasons.birthday(state) || Seasons.current();
+    desk.setDecor(festivity && !state.dead ? festivity.decor : null);
+  }
   celebrate();
 
   // Petit ronflement de temps en temps
@@ -1044,6 +1049,18 @@ desk.onYarn((info) => { yarnInfo = info; });
 
 // Un autre animal passe tout près : câlin, jeu du chat (l'un fuit, l'autre poursuit) ou sauts ensemble
 desk.onFriends((list) => { friends = list || []; });
+
+// Chute après avoir été lâché en hauteur, puis atterrissage avec un petit rebond
+desk.onFalling(() => {
+  walking = null;
+  if (state && !state.dead) play('fall', 10000);
+});
+desk.onLanded(() => {
+  if (!state || state.dead) return;
+  play('land', 350);
+  Sound.play('jump');
+  if (Math.random() < 0.3 && !state.sleeping) say(['Ouf !', 'Atterrissage réussi !', 'Boing !'][Math.floor(Math.random() * 3)], 1800);
+});
 
 // Changement de langue (depuis n'importe quel animal) : on retraduit tout de suite
 desk.onLang((l) => {

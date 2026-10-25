@@ -322,6 +322,9 @@
     'Redémarrer maintenant': 'Restart now',
     'Plus tard': 'Later',
     'La version {v} est prête : clique ici pour l\'installer (ou elle s\'installera à la prochaine ouverture).': 'Version {v} is ready: click here to install it (or it will be installed next time you open the app).',
+    'Ouf !': 'Phew!',
+    'Atterrissage réussi !': 'Perfect landing!',
+    'Boing !': 'Boing!',
     'ThomasGotchi': 'ThomasGotchi',
     'English': 'English', 'Español': 'Español', 'Français': 'Français', 'Italiano': 'Italiano',
   };
