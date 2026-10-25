@@ -588,6 +588,7 @@ function updatePanel() {
 
 function showPanel() {
   clearTimeout(hideTimer);
+  hideTimer = null;
   if (!state || state.dead || modalIsOpen()) return;
   if (panel.classList.contains('hidden')) {
     updatePanel();
@@ -597,7 +598,7 @@ function showPanel() {
 
 function scheduleHide() {
   clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => panel.classList.add('hidden'), 900);
+  hideTimer = setTimeout(() => { hideTimer = null; panel.classList.add('hidden'); }, 900);
 }
 
 function doAction(act) {
@@ -1047,7 +1048,14 @@ desk.onDnd((on) => {
   if (on) walking = null;
 });
 
-desk.onCursor((pos) => { cursor = pos; });
+desk.onCursor((pos) => {
+  cursor = pos;
+  // L'animal a pu s'éloigner de la souris sans qu'elle bouge (marche, chute, fenêtre déplacée) : on vérifie ici
+  if (!panel.classList.contains('hidden') && !modalIsOpen() && !dragging && !overInteractive(pos.x, pos.y)) {
+    desk.setIgnore(true);
+    if (!hideTimer) scheduleHide();
+  }
+});
 
 // On l'a secoué en le déplaçant
 desk.onShaken(() => {

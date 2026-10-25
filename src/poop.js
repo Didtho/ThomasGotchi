@@ -55,9 +55,7 @@ function draw(now) {
     setTimeout(() => requestAnimationFrame(draw), 120);
     return;
   }
-  ellipse(28, 53, 15, 3, 'rgba(0,0,0,.15)');
-  for (const [dy, w] of [[0, 14], [-9, 10.5], [-17, 7]]) ellipse(28, 47 + dy, w, 6, '#9a6a43', INK, 2.2);
-  ellipse(23, 38, 2.5, 1.6, 'rgba(255,255,255,.45)');
+  drawSwirl();
 
   // Lignes d'odeur
   ctx.strokeStyle = 'rgba(110,140,60,.85)';
@@ -72,7 +70,55 @@ function draw(now) {
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
+  drawFlies(t);
   setTimeout(() => requestAnimationFrame(draw), 60); // animation lente : quasiment rien pour le processeur
+}
+
+// Crotte enroulée : des boudins qui se chevauchent en spirale, et la petite pointe recourbée au sommet
+function drawSwirl() {
+  const BROWN = '#9a6a43';
+  ellipse(28, 53, 16, 3, 'rgba(0,0,0,.15)');
+  // Pointe recourbée (dessinée d'abord, le dernier boudin la recouvre à sa base)
+  ctx.beginPath();
+  ctx.moveTo(24, 34);
+  ctx.quadraticCurveTo(25, 25, 32, 24);
+  ctx.quadraticCurveTo(29, 28, 32, 34);
+  ctx.closePath();
+  ctx.fillStyle = BROWN;
+  ctx.fill();
+  ctx.lineWidth = 2.2;
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = INK;
+  ctx.stroke();
+  // Boudins, du plus large au plus petit, légèrement décalés à gauche puis à droite
+  for (const [x, y, rx, ry] of [[28, 47, 15, 6], [29.5, 40.5, 11.5, 5.2], [27, 35, 8, 4.4]]) {
+    ellipse(x, y, rx, ry, BROWN, INK, 2.2);
+    // Trait de l'enroulement qui passe devant
+    ctx.beginPath();
+    ctx.ellipse(x, y - ry * 0.35, rx * 0.75, ry * 0.7, 0, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.lineWidth = 1.3;
+    ctx.strokeStyle = 'rgba(59,42,58,.45)';
+    ctx.stroke();
+  }
+  ellipse(22, 44.5, 3, 1.6, 'rgba(255,255,255,.4)');
+  ellipse(25, 33.5, 2, 1.1, 'rgba(255,255,255,.4)');
+}
+
+// Deux petites mouches qui tournent au-dessus de la crotte
+function drawFlies(t) {
+  for (let i = 0; i < 2; i++) {
+    const s = t * (1.6 + i * 0.5) + i * 2.4;
+    const x = 28 + Math.sin(s) * 16 + Math.sin(s * 2.7) * 3;
+    const y = 16 + Math.sin(s * 1.9 + i) * 6;
+    const up = Math.sin(t * 40 + i) > 0; // battement d'ailes
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(x + side * 1.3, y - 1.4, 0.9, 1.7, side * (up ? 0.9 : 0.3), 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(160,175,190,.6)';
+      ctx.fill();
+    }
+    ellipse(x, y, 1.6, 1.2, '#2a2230');
+  }
 }
 
 // Flaque jaune ; contre le bord de l'écran, avec une coulure le long du bord

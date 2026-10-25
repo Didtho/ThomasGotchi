@@ -411,7 +411,56 @@ function fallToFloor(p) {
 }
 
 // Un animal posé sur une fenêtre la suit si elle bouge, et tombe si elle disparaît ou s'il n'y a plus de bord sous lui
+// ---- Les crottes et flaques obéissent aussi à la gravité ----
+const POOP_BASE = 53; // hauteur de la base de la crotte dans sa petite fenêtre
+
+function settlePoop(poop) {
+  if (!poop || poop.win.isDestroyed() || poop.falling) return;
+  const b = poop.win.getBounds();
+  const cx = b.x + b.width / 2;
+  const base = b.y + POOP_BASE;
+  const surface = surfaceBelow(cx, base, b);
+  const rect = surface.h && windowRects.get(surface.h);
+  poop.platform = surface.h;
+  poop.platformX = rect ? rect.x1 : null;
+  poop.platformY = rect ? rect.y1 : null;
+  if (Math.abs(surface.y - base) <= 2) return;
+  // Petite chute jusqu'à la surface
+  poop.falling = true;
+  let vy = 0;
+  const timer = setInterval(() => {
+    if (poop.win.isDestroyed()) return clearInterval(timer);
+    const cb = poop.win.getBounds();
+    vy = Math.min(vy + 1.4, 28);
+    const target = surface.y - POOP_BASE;
+    const y = Math.min(target, cb.y + vy);
+    poop.win.setBounds({ x: cb.x, y: Math.round(y), width: cb.width, height: cb.height });
+    if (y >= target) { clearInterval(timer); poop.falling = false; }
+  }, 16);
+}
+
+// Une crotte posée sur une fenêtre la suit si elle bouge, et tombe si la fenêtre disparaît
+function checkPoopSupports() {
+  for (const poop of poopWindows.values()) {
+    if (!poop.platform || poop.falling || poop.win.isDestroyed()) continue;
+    const rect = windowRects.get(poop.platform);
+    const b = poop.win.getBounds();
+    if (rect && (rect.x1 !== poop.platformX || rect.y1 !== poop.platformY)) {
+      poop.win.setBounds({ x: Math.round(b.x + rect.x1 - poop.platformX), y: Math.round(b.y + rect.y1 - poop.platformY), width: b.width, height: b.height });
+      poop.platformX = rect.x1;
+      poop.platformY = rect.y1;
+    }
+    const nb = poop.win.getBounds();
+    const cx = nb.x + nb.width / 2;
+    if (!platforms.some((pl) => pl.h === poop.platform && cx >= pl.x1 && cx <= pl.x2)) {
+      poop.platform = null;
+      settlePoop(poop);
+    }
+  }
+}
+
 function checkSupports() {
+  checkPoopSupports();
   for (const p of pets.values()) {
     if (!alive(p) || !p.platform || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) continue;
     const rect = windowRects.get(p.platform);
@@ -591,7 +640,10 @@ function createPoop(owner, id, x, y, style, kind, edge) {
   w.setAlwaysOnTop(true, 'floating');
   w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   w.loadFile(path.join(__dirname, 'src', 'poop.html'), { query: { style: style || 'cute', kind: kind || 'poop', edge: edge || '' } });
-  poopWindows.set(id, { win: w, owner: owner.id, kind: kind || 'poop' });
+  const poop = { win: w, owner: owner.id, kind: kind || 'poop', platform: null, platformX: null, platformY: null };
+  poopWindows.set(id, poop);
+  // Une fois les fenêtres connues, elle se pose sur la surface qui est sous elle (bord de fenêtre ou bas de l'écran)
+  if (kind !== 'egg') setTimeout(() => settlePoop(poop), 600);
   w.on('closed', () => poopWindows.delete(id));
 }
 
@@ -608,7 +660,7 @@ function poopNextToPet(p, id, side, style, kind, edge) {
   const dist = edge ? 50 : 75 + Math.random() * 45;
   const wa = screen.getDisplayMatching(b).workArea;
   let x = Math.round(Math.min(Math.max(b.x + W / 2 + side * dist - POOP / 2, wa.x), wa.x + wa.width - POOP));
-  let y = Math.round(b.y + p.expandUp + H - POOP + 2);
+  let y = Math.round(b.y + p.expandUp + FEET - POOP_BASE);
   if (kind === 'egg') {
     // Œufs de Pâques cachés n'importe où sur l'écran
     x = Math.round(wa.x + 40 + Math.random() * (wa.width - 80 - POOP));
