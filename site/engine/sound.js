@@ -134,6 +134,12 @@ const Sound = (() => {
   };
 
   const effects = {
+    // « Joyeux anniversaire » (mélodie du domaine public), joué doucement pour l'anniversaire du maître
+    birthday() {
+      const notes = [[392, 0.75], [392, 0.25], [440, 1], [392, 1], [523, 1], [494, 2], [392, 0.75], [392, 0.25], [440, 1], [392, 1], [587, 1], [523, 2]];
+      let at = 0;
+      for (const [f, beats] of notes) { tone('triangle', f, f, beats * 0.27, { at, vol: 0.45 }); at += beats * 0.3; }
+    },
     eat() { for (let i = 0; i < 4; i++) noise(0.07, { at: i * 0.22, vol: 0.9, freq: 2200 + Math.random() * 1500, q: 0.8 }); },
     drink() { for (let i = 0; i < 3; i++) tone('sine', 300, 650, 0.12, { at: i * 0.3, vol: 0.7 }); },
     play() { tone('sine', 220, 700, 0.25, { vol: 0.6 }); tone('triangle', 700, 300, 0.2, { at: 0.25, vol: 0.4 }); },

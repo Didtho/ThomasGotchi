@@ -175,12 +175,15 @@ img { max-width: 100%; }
   background: var(--pink-deep);
 }
 body.fete-halloween { --pink: #ffb36b; --pink-deep: #d9631e; }
-.bats { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; opacity: .85; }
+.fete-layer { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; opacity: .85; }
 body.fete-noel { --pink: #f59aa0; --pink-deep: #c42f3c; }
 body.fete-magie { --pink: #a9b6ff; --pink-deep: #3b4fb8; }
 body.fete-nouvelan { --pink: #ffd36b; --pink-deep: #b8860b; }
 body.fete-paques { --pink: #9fe3bd; --pink-deep: #2f9a63; }
 body.fete-chat { --pink: #ffc48a; --pink-deep: #d9792b; }
+body.fete-chandeleur { --pink: #f6cf7d; --pink-deep: #b97a1c; }
+body.fete-poisson { --pink: #9fdcff; --pink-deep: #2a86c4; }
+body.fete-musique { --pink: #cdb8ff; --pink-deep: #7a4fd0; }
 .animal figcaption { font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 18px; }
 .animal figcaption small { display: block; margin-top: 2px; font-family: "Nunito", sans-serif; font-weight: 600; font-size: 12px; line-height: 1.25; color: var(--ink-soft); }
 .section-hint { margin: -8px 0 18px; text-align: center; font-size: 15px; color: var(--ink-soft); }
@@ -234,6 +237,44 @@ body.fete-chat { --pink: #ffc48a; --pink-deep: #d9792b; }
   0%, 100% { box-shadow: 0 0 0 0 rgba(232, 69, 109, 0); }
   50% { box-shadow: 0 0 0 8px rgba(232, 69, 109, .35); }
 }
+
+/* Démo jouable : Simba à gauche, ses jauges et les boutons à droite */
+.demo { display: flex; align-items: center; justify-content: center; gap: 32px; max-width: 760px; margin: 0 auto; }
+.demo-stage {
+  position: relative;
+  width: 280px;
+  flex: none;
+  background: linear-gradient(#cfe0ff, #e9dcff);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.demo-stage.drop { outline: 4px dashed var(--pink-deep); outline-offset: 4px; }
+.demo-stage canvas { display: block; width: 100%; aspect-ratio: 200 / 220; cursor: pointer; }
+.demo-bubble {
+  position: absolute; left: 50%; top: 12px; transform: translateX(-50%);
+  max-width: 90%; padding: 6px 12px;
+  background: #fff; border: 2px solid var(--ink); border-radius: 14px;
+  font-size: 14px; font-weight: 600; text-align: center;
+}
+.demo-side { flex: 1; min-width: 220px; }
+.demo-stat { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 20px; }
+.demo-stat .bar { flex: 1; height: 14px; background: #eee3ea; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; }
+.demo-stat .bar i { display: block; height: 100%; background: #6fd39b; transition: width .4s; }
+.demo-stat .bar i.mid { background: #ffc94a; }
+.demo-stat .bar i.low { background: #ff6f6f; }
+.demo-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+@media (max-width: 640px) { .demo { flex-direction: column; gap: 18px; } .demo-side { width: 100%; } }
+
+/* Nouveautés : une carte par version, les plus anciennes repliées */
+.changelog { max-width: 860px; margin: 0 auto; }
+.release { margin: 0 0 14px; padding: 16px 22px; background: var(--card); border: 3px solid var(--ink); border-radius: var(--radius); }
+.release h3 { margin: 0 0 6px; font-size: 20px; }
+.release time { margin-left: 8px; font-family: "Nunito", sans-serif; font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+.release ul { margin: 0; padding-left: 20px; }
+.release li { margin: 3px 0; font-size: 15px; }
+.older summary { margin: 6px 0 14px; cursor: pointer; font-weight: 700; color: var(--pink-deep); text-align: center; }
 
 /* Encadré : avertissement de macOS et comment le lever */
 .mac-warning {

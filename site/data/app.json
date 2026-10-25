@@ -538,5 +538,317 @@
  },
  "coats": 19,
  "accessories": 8,
- "tricks": 5
+ "tricks": 5,
+ "changelog": [
+  {
+   "version": "2.5.0",
+   "date": "2026-10-25",
+   "items": [
+    "Pastille rouge sur l'icône de la barre des tâches quand un animal a faim, soif, est malade ou sale (détail dans l'infobulle)",
+    "Photo souvenir : « Prendre une photo 📸 » dans le menu de l'icône, enregistrée dans Images > ThomasGotchi",
+    "Anniversaire du maître (réglages) : gâteau, chanson « Joyeux anniversaire », vœux à voix haute et cadeau",
+    "Nouvelles fêtes : Chandeleur (crêpe qui saute), 1er avril (poisson dans le dos), Fête de la musique (notes), fêtes des mamies, des mamans, des papas et des papis (cœurs)",
+    "Mac : la zone de dépôt capte maintenant la souris (elle laissait tout passer) ; le panneau de santé apparaît au survol même quand l'application n'est pas au premier plan"
+   ]
+  },
+  {
+   "version": "2.4.2",
+   "date": "2026-10-25",
+   "items": [
+    "Soirée magique limitée aux 25 et 26 décembre 2026 ; le chapeau de magicien devient un accessoire en édition unique (gardé par ceux qui l'ont gagné, absent des objectifs et du cadeau de Noël pour les autres)"
+   ]
+  },
+  {
+   "version": "2.4.1",
+   "date": "2026-10-25",
+   "items": [
+    "Soirée magique les 25 et 26 décembre à partir de 18 h : chapeau de magicien étoilé, lunettes rondes, petite marque en éclair sur le front, baguette qui lance des étincelles pendant un câlin, paillettes dorées autour de l'animal",
+    "Un hibou traverse l'écran et dépose une lettre : elle contient le chapeau de magicien (nouvel accessoire), puis de gentils messages",
+    "Le hibou de compagnie est tout fier ce soir-là",
+    "Site : la soirée magique est mentionnée avec les fêtes"
+   ]
+  },
+  {
+   "version": "2.4.0",
+   "date": "2026-10-25",
+   "items": [
+    "Chaque espèce a son caractère : roi de la sieste (chat), sauteur (lapin, sautille), gourmand (ourson), fidèle (chien, fête ton retour), curieux (renard), gros dormeur (panda), ami du froid (pingouin), infatigable (hamster), paisible (koala), amie de la pluie (grenouille), artiste (licorne), cracheur de feu (dragon, petite flamme pendant un câlin), hurleur (loup, hurle à la lune le soir), fier (lion), sportif (tigre), pas très propre (cochon), doux (mouton), petit appétit (souris), noctambule (hibou, se couche à 2 h), grimpeur (singe), maniaque (raton laveur)",
+    "Caractère affiché dans le panneau et au choix de l'animal",
+    "Site : animaux dessinés en direct ; un clic joue leur cri et une animation de leur caractère ; caractère affiché sous chaque animal"
+   ]
+  },
+  {
+   "version": "2.3.10",
+   "date": "2026-10-25",
+   "items": [
+    "Mac : animaux placés au niveau des menus surgissants au lieu de « économiseur d'écran », sous le niveau des fichiers qu'on fait glisser (le fichier glissé passait derrière l'animal et macOS ne le lui donnait pas)"
+   ]
+  },
+  {
+   "version": "2.3.9",
+   "date": "2026-10-25",
+   "items": [
+    "Mac : la fenêtre de l'animal ne capte plus la souris sur son corps (elle passait devant la zone de dépôt) ; la zone de dépôt passe au niveau des fenêtres flottantes ordinaires",
+    "Journal de diagnostic : état de la zone de dépôt et passage de la souris dessus"
+   ]
+  },
+  {
+   "version": "2.3.8",
+   "date": "2026-10-25",
+   "items": [
+    "Journal de diagnostic : positions des fenêtres repérées (sans titre) et raison pour laquelle l'animal peut ou non monter dessus (praticable, trop près du haut, bord caché)"
+   ]
+  },
+  {
+   "version": "2.3.7",
+   "date": "2026-10-25",
+   "items": [
+    "Mac : zone de dépôt invisible posée sur le corps de l'animal, qui capte toujours la souris : elle reçoit les fichiers glissés (le journal montrait que la fenêtre de l'animal ne les recevait jamais) et transmet clics et mouvements à l'animal",
+    "Journal de diagnostic : démarrage, erreurs et arrêts du suivi des fenêtres"
+   ]
+  },
+  {
+   "version": "2.3.6",
+   "date": "2026-10-25",
+   "items": [
+    "Dessin net sur les écrans zoomés (Windows à 125 %, 150 %…) et les écrans Retina : l'animal, les crottes, la pelote, la gamelle et les décors sont dessinés à la résolution réelle de l'écran au lieu d'être agrandis"
+   ]
+  },
+  {
+   "version": "2.3.5",
+   "date": "2026-10-25",
+   "items": [
+    "Journal de diagnostic du glisser-déposer (entrée de la souris dans la fenêtre, fichier vu, dépôt reçu…), copié par « Copier le diagnostic 🩺 » dans le menu de l'icône, pour comprendre pourquoi le dépôt se perd sur Mac"
+   ]
+  },
+  {
+   "version": "2.3.4",
+   "date": "2026-10-25",
+   "items": [
+    "Mac : quand il a faim, l'animal rappelle (au plus toutes les 20 minutes) qu'on le nourrit depuis le menu de l'icône"
+   ]
+  },
+  {
+   "version": "2.3.3",
+   "date": "2026-10-25",
+   "items": [
+    "Bonnet de Noël redessiné : il épouse la tête comme le bonnet de nuit",
+    "Site : encadré expliquant l'avertissement de macOS et comment l'autoriser gratuitement (Réglages ou Terminal)",
+    "Site : après un clic sur « Télécharger », la page descend jusqu'aux conseils d'installation du bon système ; rappel pour Mac sous les boutons"
+   ]
+  },
+  {
+   "version": "2.3.2",
+   "date": "2026-10-25",
+   "items": [
+    "Menu de l'icône : « Donner un fichier à manger… » (choix dans une fenêtre) ; sur Mac, on peut aussi déposer des fichiers sur l'icône de la barre des menus",
+    "Menu de l'icône : lien vers le site internet",
+    "« Cacher » cache aussi les crottes, le décor de fête, la pelote et la gamelle",
+    "Site : les chats de la maison (Simba, Snoop, Grisette) en haut de page, dans une section avec leur fiche, sur l'image de partage et dans la scène d'Halloween"
+   ]
+  },
+  {
+   "version": "2.3.1",
+   "date": "2026-10-25",
+   "items": [
+    "Mac : on peut de nouveau le nourrir en lui glissant un fichier dessus",
+    "Mac : la citrouille et les autres décors de fête s'affichent sans carré blanc",
+    "Mac : on peut le déplacer tout en haut de l'écran (la fenêtre peut dépasser, comme sous Windows)",
+    "Site : la marche sur les fenêtres n'est plus annoncée comme réservée à Windows"
+   ]
+  },
+  {
+   "version": "2.3.0",
+   "date": "2026-10-25",
+   "items": [
+    "Mac : les animaux voient aussi les fenêtres ouvertes (positions lues sans autorisation) et peuvent grimper dessus, tomber au bord ou quand la fenêtre se ferme"
+   ]
+  },
+  {
+   "version": "2.2.1",
+   "date": "2026-10-25",
+   "items": [
+    "Le panneau de santé se cache quand l'animal s'éloigne de la souris",
+    "Crottes et flaques soumises à la gravité : posées sur le bord d'une fenêtre, elles la suivent et tombent si elle se ferme",
+    "Crotte enroulée en spirale, avec deux petites mouches qui volent au-dessus"
+   ]
+  },
+  {
+   "version": "2.2.0",
+   "date": "2026-10-25",
+   "items": [
+    "Les animaux sautent plus souvent et plus loin sur les fenêtres (grand bond en arc, jusqu'en haut de l'écran)",
+    "Site : compteur de téléchargements (base de données, robots exclus) et script d'envoi SFTP",
+    "Accès confidentiels uniquement dans des fichiers locaux exclus de GitHub"
+   ]
+  },
+  {
+   "version": "2.1.0",
+   "date": "2026-10-25",
+   "items": [
+    "Sous Windows, les animaux marchent sur le haut des fenêtres, tombent au bord ou quand la fenêtre se ferme, et suivent une fenêtre déplacée",
+    "Ils sautent parfois tout seuls sur une fenêtre proche",
+    "Site mis à jour ; règle de test ajoutée dans CLAUDE.md"
+   ]
+  },
+  {
+   "version": "2.0.2",
+   "date": "2026-10-25",
+   "items": [
+    "Décors de fête au sol (citrouille, sapin, gâteau, œufs) posés sur le bureau, immobiles",
+    "Gravité : un animal lâché en hauteur tombe jusqu'en bas de l'écran, avec un petit rebond"
+   ]
+  },
+  {
+   "version": "2.0.1",
+   "date": "2026-10-25",
+   "items": [
+    "Mise à jour plus simple : notification pendant le téléchargement, puis fenêtre « Redémarrer maintenant / Plus tard »",
+    "En arrière-plan : un clic sur la notification lance l'installation"
+   ]
+  },
+  {
+   "version": "2.0.0",
+   "date": "2026-10-25",
+   "items": [
+    "Application en français, anglais, espagnol et italien (langue automatique ou choisie dans les réglages)",
+    "Voix dans la langue choisie",
+    "Site en 4 langues (/en/, /es/, /it/), sélecteur de langue, langue du navigateur proposée",
+    "Site signé DidTech",
+    "Scripts de vérification des traductions"
+   ]
+  },
+  {
+   "version": "1.9.2",
+   "date": "2026-10-25",
+   "items": [
+    "La fenêtre des réglages ne dépasse plus de l'écran : elle défile si la place manque",
+    "Animaux sur 7 colonnes pour une fenêtre plus compacte"
+   ]
+  },
+  {
+   "version": "1.9.1",
+   "date": "2026-10-25",
+   "items": [
+    "Plus de gouttes de pluie qui tombent (nuages gris et parapluie seulement)",
+    "Orage : petit éclair sans flash"
+   ]
+  },
+  {
+   "version": "1.9.0",
+   "date": "2026-10-25",
+   "items": [
+    "9 nouveaux animaux : loup, lion, tigre, cochon, mouton, souris, hibou, singe, raton laveur",
+    "Nouvelle couleur unie : ardoise",
+    "Site : animaux et nombre de pelages repris automatiquement de l'application"
+   ]
+  },
+  {
+   "version": "1.8.0",
+   "date": "2026-10-25",
+   "items": [
+    "9 nouveaux animaux : chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, dragon",
+    "Détails propres à chaque espèce (oreilles, queue, visage, ailes, corne, crinière…) et leur cri",
+    "Nouvelles couleurs unies : marron, orange, caramel, gris perle, vert, blanc"
+   ]
+  },
+  {
+   "version": "1.7.0",
+   "date": "2026-10-25",
+   "items": [
+    "Météo réelle (Open-Meteo), Lyon par défaut, ville dans les réglages",
+    "Pluie, neige, soleil, nuages, brouillard et orage autour de l'animal",
+    "Parapluie, écharpe et lunettes de soleil selon le temps"
+   ]
+  },
+  {
+   "version": "1.6.0",
+   "date": "2026-10-25",
+   "items": [
+    "Tours à apprendre : dire bonjour, roulade, danse, toupie, saut périlleux",
+    "Amitié entre animaux, visites, toilette et chamailleries",
+    "Voix : il dit le prénom de son maître (synthèse vocale du système)",
+    "Réactions à l'utilisateur : pause conseillée, fête au retour"
+   ]
+  },
+  {
+   "version": "1.5.0",
+   "date": "2026-10-25",
+   "items": [
+    "Gamelle sur le bureau : il va manger et boire tout seul",
+    "Pause vacances (un animal ou tous) et rythme de vie zen / normal / exigeant",
+    "Mode ne pas déranger",
+    "Export et import d'un animal"
+   ]
+  },
+  {
+   "version": "1.4.0",
+   "date": "2026-10-24",
+   "items": [
+    "Calendrier des fêtes : Halloween, Noël, Nouvel An, Saint-Valentin, Pâques, Journée du chat, anniversaire",
+    "Cadeau de Noël à ouvrir et chasse aux œufs de Pâques sur le bureau",
+    "Chapeau de fête à gagner au Nouvel An"
+   ]
+  },
+  {
+   "version": "1.3.3",
+   "date": "2026-10-24",
+   "items": [
+    "Nouveau bonnet de nuit qui coiffe la tête",
+    "Plus de crotte ni de pipi pendant le sommeil : il se retient jusqu'au réveil"
+   ]
+  },
+  {
+   "version": "1.3.2",
+   "date": "2026-10-24",
+   "items": [
+    "Fabrication plus robuste (nouvel essai automatique, Windows et Mac indépendants)"
+   ]
+  },
+  {
+   "version": "1.3.1",
+   "date": "2026-10-24",
+   "items": [
+    "Un animal déjà endormi au coucher dort toute la nuit"
+   ]
+  },
+  {
+   "version": "1.3.0",
+   "date": "2026-10-24",
+   "items": [
+    "Pelote de laine qui se déroule, les animaux courent après",
+    "Jeux entre animaux : câlin, jeu du chat, sauts ensemble",
+    "Numéro de version et état de la mise à jour dans le menu et les réglages",
+    "Nouvelle icône (Simba)",
+    "Installation dans Program Files"
+   ]
+  },
+  {
+   "version": "1.2.0",
+   "date": "2026-10-24",
+   "items": [
+    "Modèles Simba, Snoop et Grisette d'après les chats de la maison",
+    "Pelages : museau, liseré, plastron, pattes blancs, taches, bout de queue, poils longs",
+    "Choix il / elle, phrases accordées",
+    "Pipi après avoir bu, et contre le bord de l'écran",
+    "Ronflement plus audible, bouton « Recommencer »"
+   ]
+  },
+  {
+   "version": "1.1.0",
+   "date": "2026-10-24",
+   "items": [
+    "Jusqu'à 5 animaux, chacun dans sa fenêtre ; câlin quand ils se croisent",
+    "Les yeux suivent la souris ; tête qui tourne quand on le secoue",
+    "Sons synthétisés (cri selon l'animal, repas, jeux, ronflements), désactivables",
+    "Promenades variées : course, saut, roulade, étirement, curiosité pour la souris",
+    "Rythme du jour : coucher le soir avec bonnet de nuit, réveil le matin",
+    "Mini-jeux : attrape les friandises, jeu des gobelets",
+    "Carnet de vie avec souvenirs des anciens compagnons",
+    "Accessoires à débloquer (nœud, lunettes, fleur, couronne, sorcière, Noël)",
+    "Mises à jour : automatiques sur Windows, signalées dans le menu sur Mac",
+    "Publication automatique des installateurs sur GitHub à chaque tag"
+   ]
+  }
+ ]
 }

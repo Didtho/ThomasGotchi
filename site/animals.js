@@ -8,29 +8,55 @@
   const HERO = { x: 44, y: 100, w: 152, h: 200 }; // chats du haut de page : même largeur que leur image, plus de place au-dessus
 
   // ---- Fête du moment (calendrier de l'application, src/seasons.js) ----
-  const fete = typeof Seasons !== 'undefined' ? Seasons.current(new Date()) : null;
+  // Aperçu d'une autre date : ?date=2026-12-25T19:00 (pour voir le site d'une fête sans attendre)
+  const asked = new Date(new URLSearchParams(location.search).get('date') || NaN);
+  const today = isNaN(asked) ? new Date() : asked;
+  const fete = typeof Seasons !== 'undefined' ? Seasons.current(today) : null;
   const FETE_ACCESSORY = { halloween: 'sorciere', noel: 'noel', nouvelan: 'fete', magie: 'magicien', paques: 'fleur' };
+  // Partagé avec la démo jouable (demo.js) : son compagnon porte aussi l'accessoire de la fête
+  window.TG_FETE = fete ? { accessory: FETE_ACCESSORY[fete.id] || null, magic: !!fete.magic } : {};
   if (fete) {
     document.body.classList.add('fete-' + fete.id);
     const banner = document.querySelector('.fete-banner');
     if (banner) { banner.textContent = t(fete.greeting); banner.hidden = false; }
-    if (fete.id === 'halloween' && !matchMedia('(prefers-reduced-motion: reduce)').matches) startBats();
   }
 
-  // Halloween : trois chauves-souris (même dessin que dans l'application) traversent l'écran en volant en vague,
-  // sur une couche qui laisse passer les clics
-  function startBats() {
-    const layer = document.createElement('canvas');
-    layer.className = 'bats';
-    layer.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(layer);
-    const ctx = layer.getContext('2d');
-    // Chacune a sa hauteur, sa vitesse et son sens ; elle repart d'un bord après avoir traversé
-    const bats = [0, 1, 2].map((i) => ({ y: 0.15 + i * 0.22, speed: 55 + i * 18, dir: i % 2 ? -1 : 1, offset: i * 0.37, size: 1.6 - i * 0.2 }));
-    function bat(x, y, flap, s) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(s, s);
+  // ---- Petits éléments de fête qui passent sur la page (sur une couche qui laisse passer les clics) ----
+  // Chaque élément i a des réglages fixes tirés de son numéro ; sa position ne dépend que du temps.
+  const rand = (i, k = 1) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+  const crossing = (i, t, W, H, speed) => { // traverse l'écran de gauche à droite (ou l'inverse), en vague
+    const span = W + 200, dir = i % 2 ? -1 : 1;
+    const k = ((t * speed * (1 + i * 0.3)) / span + rand(i)) % 1;
+    return [dir > 0 ? -100 + k * span : W + 100 - k * span, H * (0.15 + 0.22 * (i % 3)) + Math.sin(t * 1.6 + i * 2) * 28, dir];
+  };
+  const falling = (i, t, W, H, speed) => { // tombe doucement en se balançant
+    const y = ((t * speed * (0.7 + rand(i, 2) * 0.6) + rand(i, 3) * (H + 40)) % (H + 40)) - 20;
+    return [rand(i) * W + Math.sin(t * 0.8 + i) * 20, y];
+  };
+  const rising = (i, t, W, H, speed) => { // monte en s'effaçant vers le haut
+    const y = H + 20 - ((t * speed * (0.7 + rand(i, 2) * 0.6) + rand(i, 3) * (H + 40)) % (H + 40));
+    return [rand(i) * W + Math.sin(t + i) * 15, y, Math.min(1, y / (H * 0.4))];
+  };
+  function heart(ctx, x, y, s, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + s * 0.35);
+    ctx.bezierCurveTo(x - s, y - s * 0.4, x - s * 0.45, y - s, x, y - s * 0.45);
+    ctx.bezierCurveTo(x + s * 0.45, y - s, x + s, y - s * 0.4, x, y + s * 0.35);
+    ctx.fill();
+  }
+  function star(ctx, x, y, s, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x - s * 0.15, y - s, s * 0.3, s * 2);
+    ctx.fillRect(x - s, y - s * 0.15, s * 2, s * 0.3);
+  }
+  const COLORS = ['#ffd84a', '#ff6f91', '#6fd3ff', '#9fe3bd', '#cdb8ff'];
+  const FETE_LAYERS = {
+    // Halloween : chauves-souris (même dessin que dans l'application)
+    halloween: { n: 3, draw(ctx, i, t, W, H) {
+      const [x, y] = crossing(i, t, W, H, 55);
+      const flap = Math.sin(t * 14 + i) * 5, s = 1.6 - (i % 3) * 0.2;
+      ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
       ctx.fillStyle = '#2b1d33';
       ctx.beginPath();
       ctx.moveTo(0, 0);
@@ -39,16 +65,92 @@
       ctx.quadraticCurveTo(8, 1, 14, -flap);
       ctx.quadraticCurveTo(7, -6 - flap, 0, 0);
       ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(0, 1, 3, 3.5, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, 1, 3, 3.5, 0, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
-    }
-    let lastBat = 0;
-    function fly(now) {
-      requestAnimationFrame(fly);
-      if (now - lastBat < 33) return;
-      lastBat = now;
+    } },
+    // Noël : flocons bleutés (des flocons blancs ne se verraient pas sur le fond clair)
+    noel: { n: 16, draw(ctx, i, t, W, H) {
+      const [x, y] = falling(i, t, W, H, 30);
+      ctx.globalAlpha = 0.65;
+      ctx.fillStyle = '#9db8de';
+      ctx.font = `${12 + rand(i, 4) * 10}px sans-serif`;
+      ctx.fillText('❄', x, y);
+    } },
+    // Soirée magique : étoiles dorées qui scintillent
+    magie: { n: 14, draw(ctx, i, t, W, H) {
+      ctx.globalAlpha = Math.max(0, Math.sin(t * 1.5 + i * 1.7));
+      star(ctx, rand(i) * W, rand(i, 2) * H, 5 + rand(i, 3) * 5, '#f2c230');
+    } },
+    // Nouvel An : confettis
+    nouvelan: { n: 26, draw(ctx, i, t, W, H) {
+      const [x, y] = falling(i, t, W, H, 60);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(t * 3 + i);
+      ctx.fillStyle = COLORS[i % COLORS.length];
+      ctx.fillRect(-4, -2, 8, 4);
+      ctx.restore();
+    } },
+    // Saint-Valentin et fêtes de la famille : cœurs qui montent
+    hearts: { n: 9, draw(ctx, i, t, W, H) {
+      const [x, y, a] = rising(i, t, W, H, 35);
+      ctx.globalAlpha = 0.7 * a;
+      heart(ctx, x, y, 8 + rand(i, 4) * 6, i % 2 ? '#ff6f91' : '#ff9fc6');
+    } },
+    // Pâques : pétales pastel qui tombent
+    paques: { n: 14, draw(ctx, i, t, W, H) {
+      const [x, y] = falling(i, t, W, H, 35);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(t * 2 + i));
+      ctx.fillStyle = ['#ffb3cf', '#fff1a8', '#b9e8c9', '#d6c8ff'][i % 4];
+      ctx.beginPath(); ctx.ellipse(0, 0, 6, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    } },
+    // Chandeleur : crêpes qui tombent en tournoyant
+    chandeleur: { n: 6, draw(ctx, i, t, W, H) {
+      const [x, y] = falling(i, t, W, H, 40);
+      const flip = Math.abs(Math.cos(t * 2 + i));
+      ctx.fillStyle = '#f3c06b';
+      ctx.strokeStyle = '#3b2a3a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(x, y, 14, 2 + flip * 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } },
+    // 1er avril : poissons qui traversent l'écran
+    poisson: { n: 3, draw(ctx, i, t, W, H) {
+      const [x, y, dir] = crossing(i, t, W, H, 50);
+      ctx.save(); ctx.translate(x, y); ctx.scale(-dir, 1);
+      ctx.fillStyle = '#7fd1ff'; ctx.strokeStyle = '#3b2a3a'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(0, 0, 14, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(23, -8 + Math.sin(t * 8) * 2); ctx.lineTo(23, 8 + Math.sin(t * 8) * 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#3b2a3a'; ctx.beginPath(); ctx.arc(-6, -2, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    } },
+    // Fête de la musique : notes qui montent
+    musique: { n: 10, draw(ctx, i, t, W, H) {
+      const [x, y, a] = rising(i, t, W, H, 40);
+      ctx.globalAlpha = 0.8 * a;
+      ctx.fillStyle = COLORS[i % COLORS.length];
+      ctx.font = `bold ${18 + rand(i, 4) * 10}px sans-serif`;
+      ctx.fillText(i % 2 ? '♫' : '♪', x, y);
+    } },
+    // Journée du chat : empreintes de pattes qui apparaissent et s'effacent
+    chat: { n: 10, draw(ctx, i, t, W, H) {
+      ctx.globalAlpha = Math.max(0, Math.sin(t * 0.8 + i * 1.3)) * 0.35;
+      ctx.font = `${20 + rand(i, 4) * 10}px sans-serif`;
+      ctx.fillText('🐾', rand(i) * W, rand(i, 2) * H);
+    } },
+  };
+  for (const id of ['valentin', 'grandsmeres', 'meres', 'peres', 'grandsperes']) FETE_LAYERS[id] = FETE_LAYERS.hearts;
+  if (fete && FETE_LAYERS[fete.id] && !matchMedia('(prefers-reduced-motion: reduce)').matches) startFeteLayer(FETE_LAYERS[fete.id]);
+
+  function startFeteLayer(kind) {
+    const layer = document.createElement('canvas');
+    layer.className = 'fete-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(layer);
+    const ctx = layer.getContext('2d');
+    let last = 0;
+    function frame(now) {
+      requestAnimationFrame(frame);
+      if (now - last < 33) return;
+      last = now;
       const dpr = window.devicePixelRatio || 1;
       const W = innerWidth, H = innerHeight;
       if (layer.width !== Math.round(W * dpr) || layer.height !== Math.round(H * dpr)) {
@@ -58,15 +160,13 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
       const t = now / 1000;
-      for (const [i, b] of bats.entries()) {
-        const span = W + 200;
-        const k = ((t * b.speed) / span + b.offset) % 1; // position le long de la traversée
-        const x = b.dir > 0 ? -100 + k * span : W + 100 - k * span;
-        const y = H * b.y + Math.sin(t * 1.6 + i * 2) * 28 + Math.sin(t * 4 + i) * 6;
-        bat(x, y, Math.sin(t * 14 + i) * 5, b.size);
+      for (let i = 0; i < kind.n; i++) {
+        ctx.globalAlpha = 1;
+        kind.draw(ctx, i, t, W, H);
       }
+      ctx.globalAlpha = 1;
     }
-    requestAnimationFrame(fly);
+    requestAnimationFrame(frame);
   }
 
   // Animaux dessinés en direct : cartes de la liste, et chats du haut de page (qui remplacent leur image)

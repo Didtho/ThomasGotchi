@@ -16,6 +16,33 @@ const Seasons = (() => {
   const md = (d) => (d.getMonth() + 1) * 100 + d.getDate(); // 24 décembre -> 1224
   const between = (d, from, to) => md(d) >= from && md(d) <= to;
 
+  // n-ième dimanche d'un mois (n = -1 : le dernier), sous la forme 1224
+  function sunday(year, month, n) {
+    const day = new Date(year, month - 1, 1);
+    if (n > 0) {
+      day.setDate(1 + ((7 - day.getDay()) % 7) + (n - 1) * 7);
+    } else {
+      day.setMonth(month, 0); // dernier jour du mois
+      day.setDate(day.getDate() - day.getDay());
+    }
+    return md(day);
+  }
+
+  // Fêtes de la famille (dates françaises) : mamies, mamans, papas, papis
+  function familyDay(d) {
+    const year = d.getFullYear();
+    const today = md(d);
+    if (today === sunday(year, 3, 1)) return { id: 'grandsmeres', greeting: 'Bonne fête à toutes les mamies ! 💐' };
+    // Fête des mères : dernier dimanche de mai, ou premier de juin s'il tombe le jour de la Pentecôte
+    const pentecost = new Date(easter(year));
+    pentecost.setDate(pentecost.getDate() + 49);
+    const mothers = sunday(year, 5, -1) === md(pentecost) ? sunday(year, 6, 1) : sunday(year, 5, -1);
+    if (today === mothers) return { id: 'meres', greeting: 'Bonne fête à toutes les mamans ! 💐' };
+    if (today === sunday(year, 6, 3)) return { id: 'peres', greeting: 'Bonne fête à tous les papas ! 👔' };
+    if (today === sunday(year, 10, 1)) return { id: 'grandsperes', greeting: 'Bonne fête à tous les papis ! 🎩' };
+    return null;
+  }
+
   // Fête du moment (une seule à la fois), ou null
   function current(d = new Date()) {
     const year = d.getFullYear();
@@ -46,6 +73,17 @@ const Seasons = (() => {
     if (days >= -2 && days <= 1) {
       return { id: 'paques', key: `paques-${year}`, decor: 'spring', greeting: 'Joyeuses Pâques ! Trouve les œufs cachés 🥚',
         greetToday: true, eggs: true };
+    }
+    const family = familyDay(d);
+    if (family) return { ...family, key: `${family.id}-${year}`, decor: 'hearts', greetToday: true };
+    if (md(d) === 202) {
+      return { id: 'chandeleur', key: `chandeleur-${year}`, decor: 'crepe', greeting: 'C\'est la Chandeleur ! Qui veut des crêpes ? 🥞', greetToday: true };
+    }
+    if (md(d) === 401) {
+      return { id: 'poisson', key: `poisson-${year}`, decor: 'fish', greeting: 'Hihi… pourquoi tu rigoles ? J\'ai quelque chose dans le dos ? 🐟', greetToday: true };
+    }
+    if (md(d) === 621) {
+      return { id: 'musique', key: `musique-${year}`, decor: 'music', greeting: 'C\'est la Fête de la musique ! 🎶', greetToday: true };
     }
     if (md(d) === 808) {
       return { id: 'chat', key: `chat-${year}`, decor: 'confetti', greeting: 'C\'est la Journée mondiale du chat ! 🐱', greetToday: true };

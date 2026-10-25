@@ -23,9 +23,9 @@ $features = [
     ['💖', 'Prends soin de lui', 'Faim, soif, sommeil, propreté, câlins… Ses besoins se lisent sur son visage. Sans soins, il tombe malade.'],
     ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il fait même ses besoins sur le bureau.'],
     ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, pelote de laine… et des tours qu\'il apprend petit à petit.'],
-    ['🎃', 'Fêtes et météo', 'Halloween, Noël et sa soirée magique, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.'],
+    ['🎃', 'Fêtes et météo', 'Halloween, Noël et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.'],
     ['💞', 'Plusieurs compagnons', 'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.'],
-    ['🗣️', 'Il te parle', 'Il dit ton prénom à voix haute, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.'],
+    ['🗣️', 'Il te parle', 'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.'],
     ['🎁', 'Gratuit, sans pub', 'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).'],
 ];
 
@@ -133,6 +133,7 @@ $jsonLd = [
     <a class="brand" href="<?= $h($langUrl(TG_CURRENT)) ?>"><img src="<?= $asset('img/icon.png') ?>" alt="" width="40" height="40"> ThomasGotchi</a>
     <nav>
       <a href="#fonctions"><?= $h(tt('Fonctions')) ?></a>
+      <a href="#essayer"><?= $h(tt('Essayer')) ?></a>
       <a href="#animaux"><?= $h(tt('Animaux')) ?></a>
       <a href="#installer"><?= $h(tt('Installer')) ?></a>
       <a href="#faq"><?= $h(tt('Questions')) ?></a>
@@ -192,6 +193,29 @@ $jsonLd = [
           <p><?= $h(tt($text)) ?></p>
         </article>
       <?php endforeach; ?>
+    </div>
+  </section>
+
+  <section class="section" id="essayer">
+    <h2><?= $h(tt('Essaie-le tout de suite !')) ?></h2>
+    <p class="section-lead"><?= $h(tt('Glisse un fichier sur lui pour le nourrir (il ne quitte pas ton ordinateur), clique sur lui pour un câlin, et regarde ses jauges.')) ?></p>
+    <div class="demo">
+      <div class="demo-stage" id="demo-stage">
+        <canvas id="demo-canvas" aria-label="<?= $h(tt('Ton compagnon')) ?>"></canvas>
+        <div class="demo-bubble" hidden></div>
+      </div>
+      <div class="demo-side">
+        <?php foreach ([['hunger', '🍔', 'Faim'], ['thirst', '💧', 'Soif'], ['fun', '💖', 'Bonheur'], ['clean', '🛁', 'Propreté']] as [$k, $icon, $label]): ?>
+          <div class="demo-stat" title="<?= $h(tt($label)) ?>"><span><?= $icon ?></span><div class="bar"><i id="demo-<?= $k ?>"></i></div></div>
+        <?php endforeach; ?>
+        <div class="demo-actions">
+          <button class="btn small" data-demo="feed">🍔 <?= $h(tt('Un fichier')) ?></button>
+          <button class="btn small alt" data-demo="drink">💧 <?= $h(tt('À boire')) ?></button>
+          <button class="btn small alt" data-demo="play">🎾 <?= $h(tt('Jouer')) ?></button>
+          <button class="btn small alt" data-demo="wash">🛁 <?= $h(tt('Laver')) ?></button>
+        </div>
+        <input type="file" id="demo-file" multiple hidden>
+      </div>
     </div>
   </section>
 
@@ -269,6 +293,25 @@ $jsonLd = [
     </div>
   </section>
 
+  <?php if (!empty($app['changelog'])): ?>
+  <section class="section tinted" id="nouveautes">
+    <h2><?= $h(tt('Nouveautés')) ?></h2>
+    <p class="section-lead"><?= $h(tt('L\'application s\'améliore souvent, et se met à jour toute seule.')) ?><?php if (TG_CURRENT !== 'fr'): ?> <em><?= $h(tt('(Notes de version en français.)')) ?></em><?php endif; ?></p>
+    <div class="changelog">
+      <?php foreach ($app['changelog'] as $i => $v): ?>
+        <?php if ($i === 5): ?><details class="older"><summary><?= $h(tt('Versions précédentes')) ?></summary><?php endif; ?>
+        <article class="release" lang="fr">
+          <h3><?= $h(tt('Version {v}', ['v' => $v['version']])) ?> <time datetime="<?= $h($v['date']) ?>"><?= $h(date('d/m/Y', strtotime($v['date']))) ?></time></h3>
+          <ul>
+            <?php foreach ($v['items'] as $item): ?><li><?= $h($item) ?></li><?php endforeach; ?>
+          </ul>
+        </article>
+      <?php endforeach; ?>
+      <?php if (count($app['changelog']) > 5): ?></details><?php endif; ?>
+    </div>
+  </section>
+  <?php endif; ?>
+
   <section class="section" id="faq">
     <h2><?= $h(tt('Questions fréquentes')) ?></h2>
     <div class="faq">
@@ -294,6 +337,7 @@ $jsonLd = [
     <script src="<?= $asset('engine/locales/' . TG_CURRENT . '.js') ?>"></script>
   <?php endif; ?>
   <script src="<?= $asset('animals.js') ?>"></script>
+  <script src="<?= $asset('demo.js') ?>"></script>
   <script>
     // Met en avant le bouton correspondant à l'ordinateur du visiteur
     const isMac = /Mac/i.test(navigator.platform || navigator.userAgent);

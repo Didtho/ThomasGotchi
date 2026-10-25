@@ -5,6 +5,25 @@ const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
+// Nouveautés de chaque version, lues dans git : étiquettes vX.Y.Z et lignes « - … » du message de leur commit
+function changelog() {
+  const { execFileSync } = require('child_process');
+  // git appelé directement (sans interpréteur de commandes, qui transformerait certains caractères)
+  const git = (...args) => execFileSync('git', args, { cwd: path.join(__dirname, '..'), encoding: 'utf8' });
+  try {
+    return git('for-each-ref', '--sort=-creatordate', '--format=%(refname:short) %(creatordate:short)', 'refs/tags')
+      .split('\n').filter((l) => /^v\d+\.\d+\.\d+ /.test(l)).slice(0, 40)
+      .map((l) => {
+        const [tag, date] = l.trim().split(' ');
+        const items = git('log', '-1', '--format=%B', tag).split('\n').filter((s) => s.startsWith('- ')).map((s) => s.slice(2).trim());
+        return { version: tag.slice(1), date, items };
+      })
+      .filter((v) => v.items.length);
+  } catch {
+    return []; // pas de git : la section des nouveautés reste vide
+  }
+}
+
 app.whenReady().then(async () => {
   const win = new BrowserWindow({ show: false, width: 300, height: 300, transparent: true });
   await win.loadFile(path.join(__dirname, 'render.html'));
@@ -27,6 +46,7 @@ app.whenReady().then(async () => {
     fs.copyFileSync(path.join(__dirname, '..', 'src', 'locales', lang + '.js'), path.join(engine, 'locales', lang + '.js'));
   }
   const data = await win.webContents.executeJavaScript('window.appData()');
+  data.changelog = changelog();
   fs.mkdirSync(path.join(__dirname, '..', 'site', 'data'), { recursive: true });
   fs.writeFileSync(path.join(__dirname, '..', 'site', 'data', 'app.json'), JSON.stringify(data, null, 1));
   console.log(Object.keys(images).length + 1, 'images générées dans', dir);

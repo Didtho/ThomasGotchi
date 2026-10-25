@@ -37,8 +37,6 @@ return [
     'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.' =>
         'Up to 5 pets that become friends, play tag, groom each other and play-fight.',
     'Il te parle' => 'It talks to you',
-    'Il dit ton prénom à voix haute, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.' =>
-        'It says your name out loud, suggests a break when you work too much and celebrates when you come back.',
     'Gratuit, sans pub' => 'Free, no ads',
     'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).' =>
         'No account, no ads. It even works offline (except for the weather).',
@@ -114,5 +112,22 @@ return [
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'To feed it: ThomasGotchi icon in the menu bar → <em>Feed a file…</em>',
     'Clique sur un animal pour l\'entendre 🔊' => 'Click an animal to hear it 🔊',
     '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animals, each with its own personality, {c} coats, a cute or retro pixel style, and accessories to win.',
-    'Halloween, Noël et sa soirée magique, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Christmas and its magical evening, New Year, Easter… and the real weather in your city, with umbrella and scarf.',
+    'Halloween, Noël et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Christmas and its magical evening, New Year, Candlemas, Easter, Mother\'s and Father\'s Day… and the real weather in your city, with umbrella and scarf.',
+    'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.' => 'It says your name out loud, wishes you a happy birthday, suggests a break when you work too much and celebrates when you come back.',
+    'Essayer' => 'Try it',
+    'Essaie-le tout de suite !' => 'Try it right now!',
+    'Glisse un fichier sur lui pour le nourrir (il ne quitte pas ton ordinateur), clique sur lui pour un câlin, et regarde ses jauges.' => 'Drag a file onto it to feed it (it never leaves your computer), click it for a cuddle, and watch its gauges.',
+    'Ton compagnon' => 'Your companion',
+    'Faim' => 'Hunger',
+    'Soif' => 'Thirst',
+    'Bonheur' => 'Happiness',
+    'Propreté' => 'Cleanliness',
+    'Un fichier' => 'A file',
+    'À boire' => 'A drink',
+    'Jouer' => 'Play',
+    'Laver' => 'Wash',
+    'Nouveautés' => 'What\'s new',
+    'L\'application s\'améliore souvent, et se met à jour toute seule.' => 'The app improves often, and updates itself.',
+    '(Notes de version en français.)' => '(Release notes in French.)',
+    'Versions précédentes' => 'Earlier versions',
 ];

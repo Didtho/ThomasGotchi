@@ -37,8 +37,6 @@ return [
     'Jusqu\'à 5 animaux qui deviennent amis, jouent à chat, se font la toilette et se chamaillent.' =>
         'Hasta 5 mascotas que se hacen amigas, juegan al pilla-pilla, se asean y se pelean de broma.',
     'Il te parle' => 'Te habla',
-    'Il dit ton prénom à voix haute, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.' =>
-        'Dice tu nombre en voz alta, te aconseja un descanso cuando trabajas demasiado y hace fiesta cuando vuelves.',
     'Gratuit, sans pub' => 'Gratis, sin anuncios',
     'Pas de compte, pas de publicité. Il fonctionne même sans connexion (sauf la météo).' =>
         'Sin cuenta, sin publicidad. Funciona incluso sin conexión (excepto el tiempo).',
@@ -114,5 +112,22 @@ return [
     'Pour le nourrir : icône de ThomasGotchi dans la barre des menus → <em>Donner un fichier à manger…</em>' => 'Para darle de comer: icono de ThomasGotchi en la barra de menús → <em>Dar un archivo de comer…</em>',
     'Clique sur un animal pour l\'entendre 🔊' => 'Haz clic en un animal para oírlo 🔊',
     '{n} animaux, chacun avec son caractère, {c} pelages, un style mignon ou pixel rétro, et des accessoires à gagner.' => '{n} animales, cada uno con su carácter, {c} pelajes, un estilo mono o píxel retro, y accesorios que ganar.',
-    'Halloween, Noël et sa soirée magique, Nouvel An, Pâques… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Navidad y su noche mágica, Año Nuevo, Pascua… y el tiempo real de tu ciudad, con paraguas y bufanda.',
+    'Halloween, Noël et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Navidad y su noche mágica, Año Nuevo, la Candelaria, Pascua, el día de la madre y del padre… y el tiempo real de tu ciudad, con paraguas y bufanda.',
+    'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.' => 'Dice tu nombre en voz alta, te felicita por tu cumpleaños, te aconseja una pausa cuando trabajas demasiado y hace fiesta cuando vuelves.',
+    'Essayer' => 'Probar',
+    'Essaie-le tout de suite !' => '¡Pruébalo ahora mismo!',
+    'Glisse un fichier sur lui pour le nourrir (il ne quitte pas ton ordinateur), clique sur lui pour un câlin, et regarde ses jauges.' => 'Arrastra un archivo sobre él para darle de comer (no sale de tu ordenador), haz clic para darle un mimo y mira sus indicadores.',
+    'Ton compagnon' => 'Tu compañero',
+    'Faim' => 'Hambre',
+    'Soif' => 'Sed',
+    'Bonheur' => 'Felicidad',
+    'Propreté' => 'Limpieza',
+    'Un fichier' => 'Un archivo',
+    'À boire' => 'De beber',
+    'Jouer' => 'Jugar',
+    'Laver' => 'Lavar',
+    'Nouveautés' => 'Novedades',
+    'L\'application s\'améliore souvent, et se met à jour toute seule.' => 'La aplicación mejora a menudo y se actualiza sola.',
+    '(Notes de version en français.)' => '(Notas de versión en francés.)',
+    'Versions précédentes' => 'Versiones anteriores',
 ];

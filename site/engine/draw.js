@@ -1156,6 +1156,47 @@ function drawDecorFront(ctx, v) {
       heart(ctx, 25 + ((i * 71) % 190) + Math.sin(t * 2 + i) * 6, 290 - k * 230, 9, '#ff6f91');
     }
     ctx.globalAlpha = 1;
+  } else if (v.decor === 'crepe') {
+    // Chandeleur : une crêpe qui saute et se retourne au-dessus de lui, de temps en temps
+    const k = (t % 4) / 1.2;
+    if (k < 1) {
+      const y = 150 - Math.sin(k * Math.PI) * 55;
+      const flip = Math.abs(Math.cos(k * Math.PI * 2));
+      ellipse(ctx, 175, y, 20, 2 + flip * 9, '#f3c06b', INK, 2);
+      if (flip > 0.4) for (const [dx, dy] of [[-7, -1], [5, 2], [1, -3]]) ellipse(ctx, 175 + dx, y + dy * flip, 2.4, 1.4 * flip, '#c98a3c');
+    }
+  } else if (v.decor === 'music') {
+    // Fête de la musique : des notes qui s'envolent autour de lui
+    ctx.font = 'bold 20px sans-serif';
+    ctx.textAlign = 'center';
+    const colors = ['#ff6f91', '#6f8fe8', '#3fb57a', '#e8a33a'];
+    for (let i = 0; i < 5; i++) {
+      const k = (t * 0.3 + i / 5) % 1;
+      ctx.globalAlpha = Math.sin(k * Math.PI);
+      ctx.fillStyle = colors[i % 4];
+      ctx.fillText(i % 2 ? '♫' : '♪', 30 + ((i * 53) % 180) + Math.sin(t * 2 + i) * 8, 280 - k * 220);
+    }
+    ctx.globalAlpha = 1;
+  } else if (v.decor === 'fish') {
+    // 1er avril : un poisson en papier collé dans son dos (il ne s'en rend pas compte)
+    ctx.save();
+    ctx.translate(160, 252);
+    ctx.rotate(0.35 + Math.sin(t * 2) * 0.04);
+    ellipse(ctx, 0, 0, 13, 7, '#7fd1ff', INK, 1.8);
+    ctx.beginPath();
+    ctx.moveTo(12, 0);
+    ctx.lineTo(21, -7);
+    ctx.lineTo(21, 7);
+    ctx.closePath();
+    ctx.fillStyle = '#7fd1ff';
+    ctx.fill();
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    ellipse(ctx, -6, -1.5, 1.6, 1.6, INK);
+    ctx.fillStyle = 'rgba(255,255,255,.85)'; // petit bout de scotch
+    ctx.fillRect(-3, -9, 7, 5);
+    ctx.restore();
   }
 }
 
