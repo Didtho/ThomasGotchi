@@ -541,6 +541,42 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.7.1",
+   "date": "2026-10-25",
+   "items": [
+    "Visites : on peut donner un fichier à manger à un animal en visite ; il rentre vraiment rassasié et le raconte (« J'ai bien mangé chez Lucas ! 😋 »)"
+   ]
+  },
+  {
+   "version": "2.7.0",
+   "date": "2026-10-25",
+   "items": [
+    "Visites entre ordinateurs : code ami (onglet « Amis » des réglages), amitié acceptée des deux côtés ; quand les deux applications sont ouvertes, l'animal part vraiment en visite (il quitte l'écran, apparaît chez l'ami avec le prénom de son maître, joue avec ses animaux, puis revient raconter), une ou deux fois par jour ou à la demande",
+    "Service des visites sur le site (site/api/visits.php) ; mentions légales, FAQ et README mis à jour"
+   ]
+  },
+  {
+   "version": "2.6.3",
+   "date": "2026-10-25",
+   "items": [
+    "Mac : le fichier de la zone de dépôt manquait dans l'installateur ; elle ne pouvait ni recevoir les fichiers ni transmettre les clics (impossible de nourrir ou de déplacer l'animal)"
+   ]
+  },
+  {
+   "version": "2.6.2",
+   "date": "2026-10-25",
+   "items": [
+    "Perché tout en haut d'une fenêtre, la fenêtre de réglages, le panneau de santé et les bulles ne sont plus coupés par le haut de l'écran (la fenêtre redescend le temps des réglages, puis l'animal reprend sa place)"
+   ]
+  },
+  {
+   "version": "2.6.1",
+   "date": "2026-10-25",
+   "items": [
+    "Réglages plus lisibles sur les grands écrans : icônes des animaux, des onglets, des couleurs et des accessoires agrandies, textes un peu plus grands"
+   ]
+  },
+  {
    "version": "2.6.0",
    "date": "2026-10-25",
    "items": [
@@ -843,22 +879,6 @@
     "Choix il / elle, phrases accordées",
     "Pipi après avoir bu, et contre le bord de l'écran",
     "Ronflement plus audible, bouton « Recommencer »"
-   ]
-  },
-  {
-   "version": "1.1.0",
-   "date": "2026-10-24",
-   "items": [
-    "Jusqu'à 5 animaux, chacun dans sa fenêtre ; câlin quand ils se croisent",
-    "Les yeux suivent la souris ; tête qui tourne quand on le secoue",
-    "Sons synthétisés (cri selon l'animal, repas, jeux, ronflements), désactivables",
-    "Promenades variées : course, saut, roulade, étirement, curiosité pour la souris",
-    "Rythme du jour : coucher le soir avec bonnet de nuit, réveil le matin",
-    "Mini-jeux : attrape les friandises, jeu des gobelets",
-    "Carnet de vie avec souvenirs des anciens compagnons",
-    "Accessoires à débloquer (nœud, lunettes, fleur, couronne, sorcière, Noël)",
-    "Mises à jour : automatiques sur Windows, signalées dans le menu sur Mac",
-    "Publication automatique des installateurs sur GitHub à chaque tag"
    ]
   }
  ]
