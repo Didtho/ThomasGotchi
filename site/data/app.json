@@ -541,6 +541,18 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.11.0",
+   "date": "2026-10-25",
+   "items": [
+    "Calendrier de l'Avent (1er au 24 décembre) : chaque jour une boîte numérotée sur le bureau (friandise, blague, neige magique, jouet ; le 24, un accessoire)",
+    "Pointeur laser (menu de l'icône) : pendant 30 s, l'animal court après le point rouge qui suit la souris",
+    "Gros câlin : rester appuyé sur l'animal (les félins ronronnent, ça compte double)",
+    "Mode concentration (menu de l'icône) : 25 minutes au calme dans son panier, puis il propose 5 minutes de pause",
+    "Musique (Windows) : il danse de temps en temps quand de la musique joue",
+    "Il embellit quand il est bien soigné : pelage brillant (7 jours), collier doré (30 jours), médaille étoile (90 jours), suivi dans le carnet"
+   ]
+  },
+  {
    "version": "2.10.1",
    "date": "2026-10-25",
    "items": [
@@ -876,16 +888,6 @@
     "Amitié entre animaux, visites, toilette et chamailleries",
     "Voix : il dit le prénom de son maître (synthèse vocale du système)",
     "Réactions à l'utilisateur : pause conseillée, fête au retour"
-   ]
-  },
-  {
-   "version": "1.5.0",
-   "date": "2026-10-25",
-   "items": [
-    "Gamelle sur le bureau : il va manger et boire tout seul",
-    "Pause vacances (un animal ou tous) et rythme de vie zen / normal / exigeant",
-    "Mode ne pas déranger",
-    "Export et import d'un animal"
    ]
   }
  ]

@@ -602,6 +602,23 @@ Pet.checkTrophies = (s) => {
   return fresh;
 };
 
+// ---------- Embellissement ----------
+// Un jour « bien soigné » : au moins une heure ce jour-là avec faim, soif, bonheur, propreté et santé à 50 ou plus,
+// sans être malade. Après 7, 30 et 90 jours : pelage brillant, collier doré, médaille étoile (Pet.shine = 1, 2, 3).
+Pet.SHINE_DAYS = [7, 30, 90];
+Pet.shine = (s) => Pet.SHINE_DAYS.filter((d) => (s.goodDays || 0) >= d).length;
+// À appeler chaque minute passée ensemble ; renvoie le nouveau niveau quand il vient de monter (sinon 0)
+Pet.careTick = (s, now = Date.now()) => {
+  const d = new Date(now);
+  const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  if (!s.careDay || s.careDay.key !== key) s.careDay = { key, minutes: 0 };
+  const ok = !Pet.isSick(s) && ['hunger', 'thirst', 'fun', 'clean', 'health'].every((k) => s[k] >= 50);
+  if (!ok || ++s.careDay.minutes !== 60) return 0;
+  const before = Pet.shine(s);
+  s.goodDays = (s.goodDays || 0) + 1;
+  return Pet.shine(s) > before ? Pet.shine(s) : 0;
+};
+
 // ---------- Bilan de la semaine ----------
 // On garde les compteurs au début de la semaine (lundi 0 h) : le bilan est la différence avec aujourd'hui.
 // s.week = { start, base, minutes } (semaine en cours), s.lastWeek = { start, meals, hugs, …, minutes }
