@@ -70,7 +70,7 @@ function petOf(sender) {
   return null;
 }
 
-const alive = (p) => p.win && !p.win.isDestroyed();
+const alive = (p) => !!(p && p.win && !p.win.isDestroyed());
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -137,7 +137,8 @@ function createPetWindow(id) {
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
-  win.on('closed', () => { p.win = null; });
+  win.on('closed', () => { p.win = null; if (p.zone && !p.zone.isDestroyed()) p.zone.destroy(); });
+  if (USE_DROP_ZONE) createDropZone(p);
   // Au chargement, il apprend si le mode « ne pas déranger » est actif
   win.webContents.once('did-finish-load', () => setTimeout(() => fallToFloor(p), 1500));
   win.webContents.on('did-finish-load', () => {
@@ -146,6 +147,82 @@ function createPetWindow(id) {
   });
   return p;
 }
+
+// ---- Mac : zone de dépôt posée sur l'animal ----
+// Sur Mac, une fenêtre qui laisse passer la souris ne reçoit jamais un fichier glissé, même si elle se remet à capter
+// la souris quand il arrive (vu dans le journal de diagnostic). Une petite fenêtre invisible qui capte toujours la
+// souris est donc posée sur le corps de l'animal : elle reçoit les fichiers et transmet clics et mouvements à l'animal.
+// TG_DROP_ZONE=1 l'active ailleurs, pour la tester.
+const USE_DROP_ZONE = isMac || process.env.TG_DROP_ZONE === '1';
+
+function createDropZone(p) {
+  const zone = new BrowserWindow({
+    width: 100, height: 100, show: false,
+    transparent: true, frame: false, resizable: false, movable: false, maximizable: false, minimizable: false,
+    fullscreenable: false, skipTaskbar: true, hasShadow: false, focusable: false, alwaysOnTop: true,
+    enableLargerThanScreen: true, backgroundColor: '#00000000',
+    webPreferences: { preload: path.join(__dirname, 'preload-dropzone.js'), contextIsolation: true, nodeIntegration: false },
+  });
+  zone.setAlwaysOnTop(true, 'screen-saver', 1); // un cran au-dessus de l'animal
+  zone.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  zone.loadFile(path.join(__dirname, 'src', 'dropzone.html'));
+  p.zone = zone;
+  p.zoneBox = null; // silhouette de l'animal dans sa fenêtre : { x, y, w, h }
+  p.win.on('move', () => syncDropZone(p));
+  p.win.on('show', () => syncDropZone(p));
+  p.win.on('hide', () => syncDropZone(p));
+}
+
+// La zone suit l'animal ; elle s'efface quand il est caché ou qu'une fenêtre de réglages est ouverte
+function syncDropZone(p) {
+  const zone = p.zone;
+  if (!zone || zone.isDestroyed()) return;
+  if (!alive(p) || !p.zoneBox || !p.win.isVisible() || p.expandUp || p.expandDown) {
+    if (zone.isVisible()) zone.hide();
+    return;
+  }
+  const b = p.win.getBounds();
+  const r = { x: Math.round(b.x + p.zoneBox.x), y: Math.round(b.y + p.zoneBox.y), width: Math.max(20, p.zoneBox.w), height: Math.max(20, p.zoneBox.h) };
+  const c = zone.getBounds();
+  if (c.x !== r.x || c.y !== r.y || c.width !== r.width || c.height !== r.height) zone.setBounds(r);
+  if (!zone.isVisible()) zone.showInactive();
+}
+
+const petOfZone = (sender) => [...pets.values()].find((p) => p.zone && !p.zone.isDestroyed() && p.zone.webContents === sender);
+
+ipcMain.on('drop-box', (e, box) => {
+  const p = petOf(e.sender);
+  if (!p || !p.zone) return;
+  p.zoneBox = box;
+  syncDropZone(p);
+});
+
+// Souris sur la zone : rejouée dans la fenêtre de l'animal, aux mêmes coordonnées
+ipcMain.on('zone-mouse', (e, type, x, y, button, clicks) => {
+  const p = petOfZone(e.sender);
+  if (!alive(p) || !p.zoneBox) return;
+  const b = p.win.getBounds();
+  const px = Math.round(x + p.zoneBox.x), py = Math.round(y + p.zoneBox.y);
+  p.win.webContents.sendInputEvent({
+    type: { mousedown: 'mouseDown', mouseup: 'mouseUp', mousemove: 'mouseMove' }[type],
+    x: px, y: py, globalX: b.x + px, globalY: b.y + py,
+    button: ['left', 'middle', 'right'][button] || 'left',
+    clickCount: clicks || 1,
+  });
+});
+
+ipcMain.on('zone-feed', (e, meals) => {
+  const p = petOfZone(e.sender);
+  if (!alive(p) || !Array.isArray(meals)) return;
+  p.win.webContents.send('feed-files', meals.slice(0, 20));
+});
+
+ipcMain.on('zone-diag', (e, text) => {
+  const p = petOfZone(e.sender);
+  diag(`[${p ? p.name || p.id : '?'}] ${String(text).slice(0, 300)}`);
+});
+
+if (USE_DROP_ZONE) setInterval(() => { for (const p of pets.values()) syncDropZone(p); }, 100);
 
 function saveWindowPosition(p) {
   if (!alive(p)) return;
@@ -168,6 +245,7 @@ function releasePet(p) {
     poopWindows.delete(poopId);
   }
   if (alive(p)) p.win.destroy();
+  if (p.zone && !p.zone.isDestroyed()) p.zone.destroy();
   pets.delete(p.id);
   decorWanted.delete(p.id);
   updateDecor();
@@ -436,6 +514,11 @@ function startWindowWatcher() {
       });
     }
     const startedAt = Date.now();
+    diag('suivi des fenêtres lancé');
+    watcher.stderr.on('data', (chunk) => {
+      const text = chunk.toString().trim();
+      if (!text.startsWith('#< CLIXML')) diag('suivi des fenêtres, erreur : ' + text.slice(0, 300)); // CLIXML : bavardage de PowerShell
+    });
     let buffer = '';
     watcher.stdout.on('data', (chunk) => {
       buffer += chunk.toString();
@@ -444,8 +527,9 @@ function startWindowWatcher() {
       const last = lines.filter((l) => l.startsWith('[')).pop();
       if (last) { try { updatePlatforms(JSON.parse(last)); } catch { /* ligne incomplète */ } }
     });
-    watcher.on('exit', () => {
+    watcher.on('exit', (code) => {
       watcher = null;
+      diag(`suivi des fenêtres arrêté (code ${code}, après ${Math.round((Date.now() - startedAt) / 1000)} s)`);
       // Sur Mac, le script s'arrête de lui-même toutes les 3 minutes : on le relance en gardant les fenêtres connues.
       // S'il s'arrête tout de suite, c'est qu'il ne marche pas sur ce Mac : seul le bas de l'écran comptera.
       if (isMac && !appQuitting && Date.now() - startedAt > 20000) return startWindowWatcher();

@@ -16,6 +16,17 @@ let state = null;
 
 // La toile suit la densité de l'écran (zoom Windows 125 %, écran Retina…), sinon le dessin est agrandi et flou.
 // Le dessin garde ses coordonnées de 240 x 300 grâce à la mise à l'échelle.
+// Mac : la zone de dépôt (petite fenêtre posée sur l'animal, voir main.js) suit sa silhouette dans la fenêtre
+// (envoyée seulement si elle change vraiment : la respiration et les petits sauts ne comptent pas)
+let lastDropBox = null;
+function sendDropBox() {
+  if (!box) return;
+  const r = { x: Math.round(box.left), y: Math.round(box.top + stageEl.offsetTop), w: Math.round(box.right - box.left), h: Math.round(box.bottom - box.top) };
+  if (lastDropBox && ['x', 'y', 'w', 'h'].every((k) => Math.abs(r[k] - lastDropBox[k]) < 8)) return;
+  lastDropBox = r;
+  desk.dropBox(r);
+}
+
 let canvasDpr = 0;
 function fitCanvas() {
   const dpr = window.devicePixelRatio || 1;
@@ -209,6 +220,7 @@ function frame(now) {
 
   fitCanvas();
   box = Draw.render(ctx, buildView(now));
+  sendDropBox();
   placePanel();
   placeBubble();
   wander(now);
