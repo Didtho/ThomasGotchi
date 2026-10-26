@@ -541,6 +541,14 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.11.2",
+   "date": "2026-10-26",
+   "items": [
+    "Menu de l'icône réorganisé : s'occuper de lui, puis Jouer (laser, pelote) et Objets sur le bureau (gamelle, panier, plante) en sous-menus, Animaux (adopter, importer) et Options (plein écran, démarrage, mise à jour, site, diagnostic)",
+    "Mise à jour recherchée à chaque ouverture du menu (et chaque heure au lieu de toutes les 6 heures) ; la version disponible s'affiche en tête du menu"
+   ]
+  },
+  {
    "version": "2.11.1",
    "date": "2026-10-26",
    "items": [
@@ -877,15 +885,6 @@
     "9 nouveaux animaux : chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, dragon",
     "Détails propres à chaque espèce (oreilles, queue, visage, ailes, corne, crinière…) et leur cri",
     "Nouvelles couleurs unies : marron, orange, caramel, gris perle, vert, blanc"
-   ]
-  },
-  {
-   "version": "1.7.0",
-   "date": "2026-10-25",
-   "items": [
-    "Météo réelle (Open-Meteo), Lyon par défaut, ville dans les réglages",
-    "Pluie, neige, soleil, nuages, brouillard et orage autour de l'animal",
-    "Parapluie, écharpe et lunettes de soleil selon le temps"
    ]
   }
  ]

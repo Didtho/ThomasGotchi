@@ -617,6 +617,14 @@
     "Clic : arroser (eau : {n} %) · Glisser : déplacer": "Click: water it (water: {n}%) · Drag: move",
     "Clic : remplir · Glisser : déplacer": "Click: refill · Drag: move",
     "Son panier pour dormir · Glisser : déplacer": "Its sleeping basket · Drag: move",
+    "⚙️ Réglages": "⚙️ Settings",
+    "🍽️ Donner un fichier à manger": "🍽️ Feed a file",
+    "🎾 Jouer": "🎾 Play",
+    "🏠 Objets sur le bureau": "🏠 Objects on the desktop",
+    "🐾 Animaux": "🐾 Pets",
+    "📸 Prendre une photo": "📸 Take a photo",
+    "🔧 Options": "🔧 Options",
+    "🧶 Pelote de laine": "🧶 Ball of yarn",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;
