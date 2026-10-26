@@ -627,6 +627,8 @@
     "🧶 Pelote de laine": "🧶 Gomitolo",
     "🎲 Mini-jeux": "🎲 Minigiochi",
     "{icon} {temp} °C à {city}": "{icon} {temp} °C a {city}",
+    "Gravité (il tombe quand on le lâche)": "Gravità (cade quando lo lasci)",
+    "Désactivée : il reste là où tu le poses, même en l'air": "Disattivata: resta dove lo metti, anche a mezz'aria",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).it = L;

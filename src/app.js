@@ -195,6 +195,7 @@ function buildView(now) {
     // Pas de ciel dessiné autour de lui (soleil, nuages… en double avec plusieurs animaux) : seulement sa tenue,
     // la météo s'affiche une fois en haut du menu de l'icône
     gear: weatherGear(mood),
+    ground: groundFx(), // ce que ses pattes soulèvent quand il marche (neige, boue, herbe, feuilles)
     night: isNight(),
     eggProgress: Math.min(1, Math.max(0, 1 - (state.hatchAt - Date.now()) / HATCH_DELAY)),
   };
@@ -449,6 +450,18 @@ function weatherGear(mood) {
   if (weather.condition === 'rain' || weather.condition === 'storm') return 'umbrella';
   if (weather.temp <= 5 || weather.condition === 'snow') return 'scarf';
   if (weather.condition === 'clear' && weather.isDay && weather.temp >= 26) return 'sunglasses';
+  return null;
+}
+
+// Sol sous ses pattes selon le temps : neige, boue sous la pluie, feuilles mortes en automne, herbe s'il fait beau
+function groundFx() {
+  if (!weather) return null;
+  const c = weather.condition;
+  if (c === 'snow') return 'snow';
+  if (c === 'rain' || c === 'storm') return 'mud';
+  const month = new Date().getMonth();
+  if ((month === 9 || month === 10) && (c === 'clear' || c === 'clouds')) return 'leaves';
+  if (c === 'clear' && weather.isDay) return 'grass';
   return null;
 }
 
@@ -1373,6 +1386,7 @@ async function openSettings() {
   $('set-login').checked = await desk.getLogin();
   $('set-sound').checked = state.sound !== false;
   $('set-voice').checked = state.voice !== false;
+  $('set-gravity').checked = desk.gravity(); // réglage commun à tous les animaux (main.js)
   showSettingsTab('animal');
   $('set-owner').value = state.owner || '';
   fillBirthday();
@@ -1599,6 +1613,7 @@ function takePhoto() {
   say(Pet.g(state, 'Clic ! Je suis beau, non ? 📸', 'Clic ! Je suis belle, non ? 📸'), 3500);
 }
 $('set-city').addEventListener('change', () => desk.setCity($('set-city').value));
+$('set-gravity').addEventListener('change', (e) => desk.setGravity(e.target.checked));
 $('set-voice').addEventListener('change', (e) => {
   state.voice = e.target.checked;
   if (state.voice) speak(t('Bonjour{owner} !', { owner: owner() }));

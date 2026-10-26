@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('desk', {
   scale: ipcRenderer.sendSync('get-scale'), // taille des animaux (réglage commun à tous)
   setScale: (scale) => ipcRenderer.send('set-scale', scale),
   onScale: (cb) => ipcRenderer.on('scale', (_e, scale) => cb(scale)),
+  gravity: () => ipcRenderer.sendSync('get-gravity'), // gravité (réglage commun) : sinon il reste là où on le pose
+  setGravity: (on) => ipcRenderer.send('set-gravity', on),
   dropZone: process.argv.includes('--tg-drop-zone'), // zone de dépôt posée sur l'animal (Mac, voir main.js)
   setLang: (value) => ipcRenderer.send('set-lang', value),
   onLang: (cb) => ipcRenderer.on('lang', (_e, l) => cb(l)),

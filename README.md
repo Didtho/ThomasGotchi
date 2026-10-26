@@ -54,6 +54,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   anniversaire ! 🎂 »…), qui arrive même si son ordinateur est éteint. Seuls passent le prénom du maître et
   l'apparence de l'animal : pas de messages libres.
 - 🔍 **Taille** (onglet « Options » des réglages) : normale, grande ou très grande, pour les grands écrans.
+- 🪶 **Gravité** (onglet « Options ») : décochée, l'animal reste là où on le pose, même en l'air, et ne grimpe plus aux fenêtres.
 - 🧶 **Pelote de laine** (menu de l'icône › Jouer) et 🥣 **gamelle** (› Objets sur le bureau) : il court après la pelote, va manger et boire tout seul.
 - 🧺 **Panier** : il va s'y coucher le soir et y faire la sieste quand il est fatigué. 🪴 **Plante** : un clic pour
   l'arroser ; bien arrosée, elle pousse un peu chaque jour jusqu'à fleurir (elle penche si on l'oublie, sans jamais
@@ -62,6 +63,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   et cadeau) si tu indiques ta date dans les réglages.
 - Il remarque quand tu tapes longtemps (« une petite pause ? ») et fait la fête quand tu reviens.
 - 🌦️ **Météo réelle** (Lyon par défaut, ville modifiable) : il sort son parapluie, son écharpe ou ses lunettes de soleil.
+  Quand il marche, ses pattes soulèvent un peu de neige, de boue, d'herbe ou de feuilles mortes selon le temps et la saison.
   Le temps qu'il fait s'affiche une fois, en haut du menu de l'icône et dans son infobulle. Données : Open-Meteo.
 - 🏖️ **Pause vacances**, 🔕 **ne pas déranger**, **rythme de vie** (zen, normal, exigeant).
 - 💾 **Exporter** un animal dans un fichier et l'**importer** sur un autre ordinateur.

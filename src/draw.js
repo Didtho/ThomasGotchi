@@ -1411,6 +1411,57 @@ function drawWeatherBack(ctx, v) {
   }
 }
 
+// Quand il marche, ses pattes soulèvent un peu le sol selon le temps (v.ground) : neige, boue, herbe ou feuilles mortes.
+// Petites projections derrière lui, qui retombent et s'effacent (discret).
+function drawGroundFx(ctx, v) {
+  const t = v.t;
+  const back = -(v.facing || 1); // les projections partent derrière lui
+  const y0 = GROUND - 2;
+  // Brins d'herbe sous les pattes quand il fait beau (ils ondulent un peu)
+  if (v.ground === 'grass') {
+    ctx.strokeStyle = '#5fb848';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 9; i++) {
+      const x = CENTER - 40 + i * 10 + (i % 2) * 3;
+      const h = 6 + (i % 3) * 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y0 + 2);
+      ctx.quadraticCurveTo(x + Math.sin(t * 3 + i) * 2, y0 - h / 2, x + Math.sin(t * 3 + i) * 3, y0 - h);
+      ctx.stroke();
+    }
+    ctx.lineCap = 'butt';
+  }
+  for (let i = 0; i < 8; i++) {
+    const k = (t * 1.6 + i / 8) % 1; // avancée de chaque projection (0 → 1)
+    const x = CENTER + back * (16 + k * 42) + (i % 3 - 1) * 6;
+    const y = y0 - 4 - Math.sin(k * Math.PI) * (16 + (i % 3) * 7);
+    ctx.globalAlpha = 1 - k;
+    if (v.ground === 'snow') {
+      ellipse(ctx, x, y, 3.6, 3.6, '#ffffff', '#a9c6e2', 1.2);
+    } else if (v.ground === 'mud') {
+      ellipse(ctx, x, y, 3.4, 2.6, '#7a5233', '#5a3a22', 1);
+    } else if (v.ground === 'grass') {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(k * 6 + i);
+      ctx.fillStyle = '#6cc04a';
+      ctx.fillRect(-1.2, -4.5, 2.4, 9);
+      ctx.restore();
+    } else if (v.ground === 'leaves') {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(k * 5 + i);
+      ellipse(ctx, 0, 0, 5, 2.8, ['#e07b39', '#c9532d', '#e8b33f'][i % 3], '#8a4a22', 1);
+      ctx.restore();
+    }
+  }
+  ctx.globalAlpha = 1;
+  // Boue : petite flaque sous lui ; neige : petit tapis blanc
+  if (v.ground === 'mud') ellipse(ctx, CENTER, y0 + 3, 34, 4, 'rgba(122,82,51,.35)');
+  if (v.ground === 'snow') ellipse(ctx, CENTER, y0 + 3, 38, 4, 'rgba(255,255,255,.85)');
+}
+
 // Devant l'animal : neige et éclairs. La pluie n'est pas dessinée (les gouttes gênaient) :
 // les nuages gris et le parapluie suffisent à la montrer.
 function drawWeatherFront(ctx, v) {
@@ -1561,6 +1612,7 @@ const Draw = {
     if (v.weather) drawWeatherBack(target, v);
     if (v.decor && v.decorBack) drawDecorBack(target, v); // objets au sol : posés sur le bureau dans l'appli
     const box = v.stage === 'egg' ? drawEgg(target, v) : drawCreature(target, v);
+    if (v.ground && v.walking && v.stage !== 'egg') drawGroundFx(target, v);
     if (v.decor) drawDecorFront(target, v);
     if (v.weather) drawWeatherFront(target, v);
     target.restore();

@@ -280,6 +280,15 @@ function setPetScale(scale) {
 ipcMain.on('get-scale', (e) => { e.returnValue = petScale; });
 ipcMain.on('set-scale', (_e, scale) => setPetScale(Number(scale)));
 
+// Gravité (réglage commun) : désactivée, un animal reste là où on le pose, même en l'air
+let gravity = true;
+ipcMain.on('get-gravity', (e) => { e.returnValue = gravity; });
+ipcMain.on('set-gravity', (_e, on) => {
+  gravity = !!on;
+  saveSettings();
+  if (gravity) for (const p of pets.values()) if (alive(p) && !p.away && !p.platform) fallToFloor(p); // ils retombent
+});
+
 function saveWindowPosition(p) {
   if (!alive(p) || p.guest) return;
   const [x, y] = p.win.getPosition();
@@ -794,6 +803,11 @@ function fallToFloor(p) {
   const first = surfaceBelow(f0.x, f0.y, b0);
   if (f0.y >= first.y - 2) { land(p, first); return saveWindowPosition(p); }
   p.platform = null;
+  // Sans gravité : posé tout près d'un bord (fenêtre, bas de l'écran), il s'y pose ; sinon il reste en l'air
+  if (!gravity) {
+    if (first.y - f0.y < 12) land(p, first);
+    return saveWindowPosition(p);
+  }
   p.win.webContents.send('falling');
   let vy = 0;
   p.fallTimer = setInterval(() => {
@@ -876,7 +890,7 @@ function checkSupports() {
     const nb = p.win.getBounds();
     const f = feetOf(nb);
     const pl = platforms.find((x) => x.h === p.platform && f.x >= x.x1 && f.x <= x.x2);
-    if (!pl) { fallToFloor(p); continue; }
+    if (!pl) { if (gravity) fallToFloor(p); else p.platform = null; continue; } // sans gravité : il reste là
     if (Math.abs(pl.y - f.y) > 1) placeWindow(p, nb.x, pl.y - FEET);
   }
 }
@@ -884,7 +898,7 @@ function checkSupports() {
 // Saut sur une fenêtre un peu au-dessus de lui (déclenché de temps en temps par l'animal)
 ipcMain.handle('climb', (e) => {
   const p = petOf(e.sender);
-  if (!p || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) return false;
+  if (!p || !gravity || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) return false; // sans gravité, il ne grimpe pas
   const b = p.win.getBounds();
   const f = feetOf(b);
   // Fenêtre au-dessus de lui, jusqu'à 350 px sur le côté : il choisit la plus proche
@@ -1544,7 +1558,7 @@ function sendToPets(channel, value) {
 }
 
 function saveSettings() {
-  try { writeJson('settings.json', { dnd, city, lang: langSetting, autoHide: autoHideSetting, scale: petScale }); } catch { /* sans gravité */ }
+  try { writeJson('settings.json', { dnd, city, lang: langSetting, autoHide: autoHideSetting, scale: petScale, gravity }); } catch { /* sans gravité */ }
 }
 
 ipcMain.on('get-lang', (e) => { e.returnValue = { setting: langSetting, lang: currentLang() }; });
@@ -2290,6 +2304,7 @@ app.setAppUserModelId('com.thomasgotchi.app'); // nom affiché dans les notifica
 app.whenReady().then(() => {
   if (isMac && app.dock) app.dock.hide();
   applyScaleValues(Number((readJson('settings.json') || {}).scale) || 1); // taille des animaux, avant de créer leurs fenêtres
+  gravity = (readJson('settings.json') || {}).gravity !== false; // avant leur première chute au démarrage
   const saved = readJson('pets.json');
   const ids = Array.isArray(saved) && saved.length ? saved.slice(0, MAX_PETS) : ['main'];
   ids.forEach(createPetWindow);
