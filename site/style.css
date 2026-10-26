@@ -275,6 +275,15 @@ body.fete-inocentes { --pink: #9fdcff; --pink-deep: #2a86c4; }
 .demo-stat .bar i.mid { background: #ffc94a; }
 .demo-stat .bar i.low { background: #ff6f6f; }
 .demo-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+/* Choix de l'animal de la démo : une pastille par espèce */
+.demo-pick { margin-top: 26px; }
+.demo-species { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 760px; margin: 0 auto; }
+.demo-species button {
+  width: 42px; height: 42px; padding: 0; font-size: 22px; line-height: 1; cursor: pointer;
+  background: var(--card); border: 2px solid var(--ink); border-radius: 50%; transition: transform .15s;
+}
+.demo-species button:hover { transform: scale(1.12); }
+.demo-species button.on { background: #ffe1ea; border-color: var(--pink-deep); box-shadow: 0 0 0 3px var(--pink); }
 @media (max-width: 640px) { .demo { flex-direction: column; gap: 18px; } .demo-side { width: 100%; } }
 
 /* Nouveautés : une carte par version, les plus anciennes repliées */

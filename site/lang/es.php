@@ -41,7 +41,7 @@ return [
     'Chat' => 'Gato', 'Lapin' => 'Conejo', 'Ourson' => 'Osito', 'Chien' => 'Perro', 'Renard' => 'Zorro', 'Panda' => 'Panda',
     'Pingouin' => 'Pingüino', 'Hamster' => 'Hámster', 'Koala' => 'Koala', 'Grenouille' => 'Rana', 'Licorne' => 'Unicornio',
     'Dragon' => 'Dragón', 'Loup' => 'Lobo', 'Lion' => 'León', 'Tigre' => 'Tigre', 'Cochon' => 'Cerdito', 'Mouton' => 'Oveja',
-    'Souris' => 'Ratón', 'Hibou' => 'Búho', 'Singe' => 'Mono', 'Raton laveur' => 'Mapache',
+    'Souris' => 'Ratón', 'Hibou' => 'Búho', 'Singe' => 'Mono', 'Raton laveur' => 'Mapache', 'Oiseau' => 'Pájaro',
 
     'Une vie pleine de surprises' => 'Una vida llena de sorpresas',
     'Il sort son parapluie quand il pleut chez toi' => 'Saca su paraguas cuando llueve donde vives',
@@ -108,6 +108,7 @@ return [
     'Halloween, Noël avec son calendrier de l\'Avent et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Navidad con su calendario de Adviento y su noche mágica, Año Nuevo, la Candelaria, Pascua, el día de la madre y del padre… y el tiempo real de tu ciudad, con paraguas y bufanda.',
     'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.' => 'Dice tu nombre en voz alta, te felicita por tu cumpleaños, te aconseja una pausa cuando trabajas demasiado y hace fiesta cuando vuelves.',
     'Essayer' => 'Probar',
+    'Choisis l\'animal à essayer :' => 'Elige el animal que quieres probar:',
     'Essaie-le tout de suite !' => '¡Pruébalo ahora mismo!',
     'Glisse un fichier sur lui pour le nourrir (il ne quitte pas ton ordinateur), clique sur lui pour un câlin, et regarde ses jauges.' => 'Arrastra un archivo sobre él para darle de comer (no sale de tu ordenador), haz clic para darle un mimo y mira sus indicadores.',
     'Ton compagnon' => 'Tu compañero',

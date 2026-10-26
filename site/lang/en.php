@@ -41,7 +41,7 @@ return [
     'Chat' => 'Cat', 'Lapin' => 'Rabbit', 'Ourson' => 'Bear cub', 'Chien' => 'Dog', 'Renard' => 'Fox', 'Panda' => 'Panda',
     'Pingouin' => 'Penguin', 'Hamster' => 'Hamster', 'Koala' => 'Koala', 'Grenouille' => 'Frog', 'Licorne' => 'Unicorn',
     'Dragon' => 'Dragon', 'Loup' => 'Wolf', 'Lion' => 'Lion', 'Tigre' => 'Tiger', 'Cochon' => 'Pig', 'Mouton' => 'Sheep',
-    'Souris' => 'Mouse', 'Hibou' => 'Owl', 'Singe' => 'Monkey', 'Raton laveur' => 'Raccoon',
+    'Souris' => 'Mouse', 'Hibou' => 'Owl', 'Singe' => 'Monkey', 'Raton laveur' => 'Raccoon', 'Oiseau' => 'Bird',
 
     'Une vie pleine de surprises' => 'A life full of surprises',
     'Il sort son parapluie quand il pleut chez toi' => 'It takes out its umbrella when it rains where you live',
@@ -108,6 +108,7 @@ return [
     'Halloween, Noël avec son calendrier de l\'Avent et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Christmas with its Advent calendar and magical evening, New Year, Candlemas, Easter, Mother\'s and Father\'s Day… and your town\'s real weather, with umbrella and scarf.',
     'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.' => 'It says your name out loud, wishes you a happy birthday, suggests a break when you work too much and celebrates when you come back.',
     'Essayer' => 'Try it',
+    'Choisis l\'animal à essayer :' => 'Choose the animal to try:',
     'Essaie-le tout de suite !' => 'Try it right now!',
     'Glisse un fichier sur lui pour le nourrir (il ne quitte pas ton ordinateur), clique sur lui pour un câlin, et regarde ses jauges.' => 'Drag a file onto it to feed it (it never leaves your computer), click it for a cuddle, and watch its gauges.',
     'Ton compagnon' => 'Your companion',

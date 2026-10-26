@@ -14,6 +14,28 @@
   state.hatchAt = Date.now() - 10 * 86400000; // déjà adulte
   Object.assign(state, { hunger: 55, thirst: 50, fun: 60, clean: 70, energy: 90 });
   let anim = null, animStart = 0, animDur = 0, bubbleUntil = 0;
+
+  // Choix de l'animal : une pastille par espèce (le chat garde le pelage de Simba, les autres leur couleur de départ)
+  const picker = document.getElementById('demo-species');
+  for (const sp of Pet.SPECIES) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = sp.icon;
+    b.title = t(sp.name);
+    b.setAttribute('aria-label', t(sp.name));
+    b.classList.toggle('on', sp.id === state.species);
+    b.addEventListener('click', () => {
+      picker.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+      state.species = sp.id;
+      state.color = sp.id === 'chat' ? 'simba' : sp.color || 'rose';
+      state.name = sp.id === 'chat' ? 'Simba' : t(sp.name);
+      play('jump', 900);
+      try { Sound.play('voice', sp.id); } catch { /* pas de son */ }
+      const tr = Pet.TRAITS[sp.id];
+      say(tr ? tr.icon + ' ' + t(tr.desc) : t(sp.name), 3500);
+    });
+    picker.appendChild(b);
+  }
   const fete = window.TG_FETE || {};
 
   function say(text, ms = 3000) {
@@ -41,9 +63,9 @@
   stage.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; stage.classList.add('drop'); });
   stage.addEventListener('dragleave', () => stage.classList.remove('drop'));
   stage.addEventListener('drop', (e) => { e.preventDefault(); stage.classList.remove('drop'); eat(e.dataTransfer.files); });
-  const picker = document.getElementById('demo-file');
-  picker.addEventListener('change', () => { eat(picker.files); picker.value = ''; });
-  document.querySelector('[data-demo=feed]').addEventListener('click', () => picker.click());
+  const files = document.getElementById('demo-file');
+  files.addEventListener('change', () => { eat(files.files); files.value = ''; });
+  document.querySelector('[data-demo=feed]').addEventListener('click', () => files.click());
   document.querySelector('[data-demo=drink]').addEventListener('click', () => apply(Pet.drink(state)));
   document.querySelector('[data-demo=play]').addEventListener('click', () => apply(Pet.play(state)));
   document.querySelector('[data-demo=wash]').addEventListener('click', () => apply(Pet.wash(state)));
@@ -84,13 +106,14 @@
     const mood = Pet.mood(state);
     const need = state.thirst < 30 ? 'thirst' : state.hunger < 30 ? 'hunger' : null;
     const joy = ['play', 'love', 'jump', 'dance'].includes(anim);
+    const flying = anim === 'play' && !!(Pet.TRAITS[state.species] || {}).fly; // l'oiseau joue en volant
     ctx.setTransform(scale, 0, 0, scale, -CROP.x * scale, -CROP.y * scale);
     Draw.render(ctx, {
-      stage: 'adult', species: 'chat', mood, need,
+      stage: 'adult', species: state.species, mood, need,
       eyes: joy ? 'joy' : (t % 4.3) < 0.13 ? 'closed' : mood === 'sad' || mood === 'sick' ? 'sad' : 'open',
       mouth: anim === 'eat' ? (Math.sin(animT * 14) > 0 ? 'chomp' : 'flat') : joy ? 'open' : need ? 'flat' : 'smile',
-      color: Pet.COLORS.simba, coat: Pet.COATS.simba, dark: false, care: state.care, style: 'cute',
-      dirty: state.clean < 35, t, anim, animT, facing: 0, lookX: null, lookY: 0.15,
+      color: Pet.COLORS[state.color] || Pet.COLORS.rose, coat: Pet.COATS[state.color] || null, dark: false, care: state.care, style: 'cute',
+      dirty: state.clean < 35, t, anim: flying ? null : anim, animT, facing: 0, lookX: null, lookY: 0.15, flying,
       accessory: fete.accessory || null, magic: !!fete.magic,
     });
   }

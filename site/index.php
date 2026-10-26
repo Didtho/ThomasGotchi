@@ -229,6 +229,8 @@ $jsonLd = [
         <input type="file" id="demo-file" multiple hidden>
       </div>
     </div>
+    <p class="section-hint demo-pick"><?= $h(tt('Choisis l\'animal à essayer :')) ?></p>
+    <div class="demo-species" id="demo-species"></div>
   </section>
 
   <section class="section tinted" id="animaux">

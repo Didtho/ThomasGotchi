@@ -41,7 +41,7 @@ return [
     'Chat' => 'Gatto', 'Lapin' => 'Coniglio', 'Ourson' => 'Orsetto', 'Chien' => 'Cane', 'Renard' => 'Volpe', 'Panda' => 'Panda',
     'Pingouin' => 'Pinguino', 'Hamster' => 'Criceto', 'Koala' => 'Koala', 'Grenouille' => 'Rana', 'Licorne' => 'Unicorno',
     'Dragon' => 'Drago', 'Loup' => 'Lupo', 'Lion' => 'Leone', 'Tigre' => 'Tigre', 'Cochon' => 'Maialino', 'Mouton' => 'Pecora',
-    'Souris' => 'Topolino', 'Hibou' => 'Gufo', 'Singe' => 'Scimmia', 'Raton laveur' => 'Procione',
+    'Souris' => 'Topolino', 'Hibou' => 'Gufo', 'Singe' => 'Scimmia', 'Raton laveur' => 'Procione', 'Oiseau' => 'Uccellino',
 
     'Une vie pleine de surprises' => 'Una vita piena di sorprese',
     'Il sort son parapluie quand il pleut chez toi' => 'Tira fuori l\'ombrello quando piove dove abiti',
@@ -108,6 +108,7 @@ return [
     'Halloween, Noël avec son calendrier de l\'Avent et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.' => 'Halloween, Natale con il suo calendario dell\'Avvento e la serata magica, Capodanno, la Candelora, Pasqua, la festa della mamma e del papà… e il meteo reale della tua città, con ombrello e sciarpa.',
     'Il dit ton prénom à voix haute, te souhaite ton anniversaire, te conseille une pause quand tu travailles trop et fait la fête quand tu reviens.' => 'Dice il tuo nome ad alta voce, ti fa gli auguri di compleanno, ti consiglia una pausa quando lavori troppo e fa festa quando torni.',
     'Essayer' => 'Prova',
+    'Choisis l\'animal à essayer :' => 'Scegli l\'animale da provare:',
     'Essaie-le tout de suite !' => 'Provalo subito!',
     'Glisse un fichier sur lui pour le nourrir (il ne quitte pas ton ordinateur), clique sur lui pour un câlin, et regarde ses jauges.' => 'Trascina un file su di lui per dargli da mangiare (non lascia il tuo computer), cliccalo per una coccola e guarda i suoi indicatori.',
     'Ton compagnon' => 'Il tuo compagno',
