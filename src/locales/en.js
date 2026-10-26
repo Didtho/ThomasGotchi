@@ -625,6 +625,7 @@
     "📸 Prendre une photo": "📸 Take a photo",
     "🔧 Options": "🔧 Options",
     "🧶 Pelote de laine": "🧶 Ball of yarn",
+    "🎲 Mini-jeux": "🎲 Mini-games",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;

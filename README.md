@@ -22,7 +22,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
 - **Petits ennuis** au hasard (environ tous les trois jours) : rhume 🤧 et mal de ventre 🤢 à soigner avec le médicament,
   puces 🐜 à faire partir avec un bain. Malade, il se voit (nez rouge, puces…), refuse de jouer et bouge moins.
 - 🔴 **Pastille sur l'icône** quand un animal a faim, soif, est malade ou sale (le détail s'affiche au survol de l'icône).
-- 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets, jeu des paires, et le 🔴 **pointeur
+- 🎾 **Mini-jeux** (bouton 🎾 de l'animal, ou menu de l'icône › Jouer › Mini-jeux) : lancer la balle, attraper les friandises, jeu des gobelets, jeu des paires, et le 🔴 **pointeur
   laser** (menu de l'icône › Jouer) : 30 secondes à courir après le point rouge qui suit la souris.
 - 🎯 **Mode concentration** (menu de l'icône) : 25 minutes pendant lesquelles il s'installe dans son panier sans bouger
   ni parler, puis il félicite et propose 5 minutes de pause.

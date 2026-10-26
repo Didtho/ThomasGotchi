@@ -625,6 +625,7 @@
     "📸 Prendre une photo": "📸 Hacer una foto",
     "🔧 Options": "🔧 Opciones",
     "🧶 Pelote de laine": "🧶 Ovillo de lana",
+    "🎲 Mini-jeux": "🎲 Minijuegos",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;

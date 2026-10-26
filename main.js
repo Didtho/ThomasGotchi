@@ -474,6 +474,8 @@ function buildTrayMenu() {
     {
       label: tr('🎾 Jouer'),
       submenu: [
+        perPet(tr('🎲 Mini-jeux'), (p) => sendMenu(p, 'games')),
+        { type: 'separator' },
         { label: tr('🔴 Pointeur laser'), type: 'checkbox', checked: !!laser, click: () => (laser ? stopLaser() : startLaser()) },
         { label: tr('🧶 Pelote de laine'), type: 'checkbox', checked: !!yarn, click: toggleYarn },
       ],

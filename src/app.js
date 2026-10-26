@@ -1727,6 +1727,7 @@ desk.onReminder((r) => {
 desk.onMenu((action) => {
   if (action === 'settings') openSettings();
   if (action === 'notes') openNotes();
+  if (action === 'games') doAction('play'); // fenêtre des mini-jeux (refusée s'il dort, est malade…)
   if (action === 'photo') takePhoto();
   if (action === 'pause') setPause(true);
   if (action === 'resume') setPause(false);
