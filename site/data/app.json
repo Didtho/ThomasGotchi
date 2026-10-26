@@ -541,6 +541,30 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.12.0",
+   "date": "2026-10-26",
+   "items": [
+    "Réglage « Gravité » (onglet Options) : décoché, l'animal reste là où on le pose, même en l'air, s'y promène à la même hauteur et ne grimpe plus aux fenêtres",
+    "Quand il marche, ses pattes soulèvent un peu de neige, de boue, d'herbe ou de feuilles mortes selon le temps et la saison"
+   ]
+  },
+  {
+   "version": "2.11.4",
+   "date": "2026-10-26",
+   "items": [
+    "Météo : plus de soleil, nuages ni étoiles dessinés autour de chaque animal (en double avec plusieurs animaux) ; ils gardent leur tenue (parapluie, écharpe, lunettes de soleil)",
+    "Le temps qu'il fait s'affiche une seule fois, en haut du menu de l'icône et dans son infobulle",
+    "Un seul animal commente le changement de temps"
+   ]
+  },
+  {
+   "version": "2.11.3",
+   "date": "2026-10-26",
+   "items": [
+    "Menu de l'icône › Jouer › Mini-jeux : ouvre la fenêtre des jeux de l'animal choisi (sous-menu avec les prénoms s'il y en a plusieurs)"
+   ]
+  },
+  {
    "version": "2.11.2",
    "date": "2026-10-26",
    "items": [
@@ -859,32 +883,6 @@
    "items": [
     "La fenêtre des réglages ne dépasse plus de l'écran : elle défile si la place manque",
     "Animaux sur 7 colonnes pour une fenêtre plus compacte"
-   ]
-  },
-  {
-   "version": "1.9.1",
-   "date": "2026-10-25",
-   "items": [
-    "Plus de gouttes de pluie qui tombent (nuages gris et parapluie seulement)",
-    "Orage : petit éclair sans flash"
-   ]
-  },
-  {
-   "version": "1.9.0",
-   "date": "2026-10-25",
-   "items": [
-    "9 nouveaux animaux : loup, lion, tigre, cochon, mouton, souris, hibou, singe, raton laveur",
-    "Nouvelle couleur unie : ardoise",
-    "Site : animaux et nombre de pelages repris automatiquement de l'application"
-   ]
-  },
-  {
-   "version": "1.8.0",
-   "date": "2026-10-25",
-   "items": [
-    "9 nouveaux animaux : chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, dragon",
-    "Détails propres à chaque espèce (oreilles, queue, visage, ailes, corne, crinière…) et leur cri",
-    "Nouvelles couleurs unies : marron, orange, caramel, gris perle, vert, blanc"
    ]
   }
  ]

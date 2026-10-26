@@ -625,6 +625,10 @@
     "📸 Prendre une photo": "📸 Hacer una foto",
     "🔧 Options": "🔧 Opciones",
     "🧶 Pelote de laine": "🧶 Ovillo de lana",
+    "🎲 Mini-jeux": "🎲 Minijuegos",
+    "{icon} {temp} °C à {city}": "{icon} {temp} °C en {city}",
+    "Gravité (il tombe quand on le lâche)": "Gravedad (se cae al soltarlo)",
+    "Désactivée : il reste là où tu le poses, même en l'air": "Desactivada: se queda donde lo pongas, incluso en el aire",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;
