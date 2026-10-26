@@ -614,6 +614,9 @@
     "Quel est le dessert préféré des bonshommes de neige ? Les glaces, bien sûr ! ⛄": "Qual è il dolce preferito dei pupazzi di neve? Il gelato, ovvio! ⛄",
     "Pourquoi les rennes ont-ils un nez rouge ? Ils ont trop fait de luge ! 🦌": "Perché le renne hanno il naso rosso? Troppo slittino! 🦌",
     "Comment appelle-t-on un sapin qui chante ? Un sapin de Noël… à capella ! 🎄": "Come si chiama un abete che canta? Un albero di Natale… a cappella! 🎄",
+    "Clic : arroser (eau : {n} %) · Glisser : déplacer": "Clic: annaffia (acqua: {n}%) · Trascina: sposta",
+    "Clic : remplir · Glisser : déplacer": "Clic: riempi · Trascina: sposta",
+    "Son panier pour dormir · Glisser : déplacer": "Il suo cestino per dormire · Trascina: sposta",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).it = L;

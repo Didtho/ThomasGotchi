@@ -541,6 +541,14 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.11.1",
+   "date": "2026-10-26",
+   "items": [
+    "Plante : un arrosoir vient la verser à chaque clic ; la goutte « j'ai soif » est plus visible",
+    "Bulle d'aide au survol de la gamelle, du panier et de la plante (que faire avec, et niveau d'eau de la plante)"
+   ]
+  },
+  {
    "version": "2.11.0",
    "date": "2026-10-25",
    "items": [
@@ -878,16 +886,6 @@
     "Météo réelle (Open-Meteo), Lyon par défaut, ville dans les réglages",
     "Pluie, neige, soleil, nuages, brouillard et orage autour de l'animal",
     "Parapluie, écharpe et lunettes de soleil selon le temps"
-   ]
-  },
-  {
-   "version": "1.6.0",
-   "date": "2026-10-25",
-   "items": [
-    "Tours à apprendre : dire bonjour, roulade, danse, toupie, saut périlleux",
-    "Amitié entre animaux, visites, toilette et chamailleries",
-    "Voix : il dit le prénom de son maître (synthèse vocale du système)",
-    "Réactions à l'utilisateur : pause conseillée, fête au retour"
    ]
   }
  ]
