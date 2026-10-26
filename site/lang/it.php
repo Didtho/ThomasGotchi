@@ -84,6 +84,7 @@ return [
         'In francese, inglese, spagnolo e italiano. Sceglie da solo la lingua del tuo computer, e puoi cambiarla nelle sue impostazioni.',
 
     'ThomasGotchi · une création' => 'ThomasGotchi · una creazione di',
+    'Aussi sur itch.io' => 'Anche su itch.io',
     'code source' => 'codice sorgente',
     'Déjà {n} téléchargements !' => 'Già {n} download!',
     'Déjà {n} téléchargement !' => 'Già {n} download!',

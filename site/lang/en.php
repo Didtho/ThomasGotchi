@@ -84,6 +84,7 @@ return [
         'In French, English, Spanish and Italian. It picks your computer\'s language by itself, and you can change it in its settings.',
 
     'ThomasGotchi · une création' => 'ThomasGotchi · created by',
+    'Aussi sur itch.io' => 'Also on itch.io',
     'code source' => 'source code',
     'Déjà {n} téléchargements !' => 'Already {n} downloads!',
     'Déjà {n} téléchargement !' => 'Already {n} download!',

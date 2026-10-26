@@ -349,7 +349,7 @@ $jsonLd = [
 
   <footer class="bottom">
     <img src="<?= $asset('img/icon.png') ?>" alt="" width="32" height="32">
-    <p><?= $h(tt('ThomasGotchi · une création')) ?> <a href="https://www.didtech.fr/">DidTech</a> · <a href="https://github.com/<?= $h(TG_REPO) ?>"><?= $h(tt('code source')) ?></a> · <a href="#soutenir"><?= $h(tt('Soutenir')) ?></a> · <a href="<?= $root ?>mentions-legales.php"><?= $h(tt('Mentions légales')) ?></a></p>
+    <p><?= $h(tt('ThomasGotchi · une création')) ?> <a href="https://www.didtech.fr/">DidTech</a> · <a href="https://github.com/<?= $h(TG_REPO) ?>"><?= $h(tt('code source')) ?></a> · <a href="https://didtech.itch.io/thomasgotchi"><?= $h(tt('Aussi sur itch.io')) ?></a> · <a href="#soutenir"><?= $h(tt('Soutenir')) ?></a> · <a href="<?= $root ?>mentions-legales.php"><?= $h(tt('Mentions légales')) ?></a></p>
   </footer>
 
   <!-- Moteur de dessin et bruitages de l'application : animaux animés et cris dans la liste des animaux -->
