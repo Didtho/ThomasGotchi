@@ -461,6 +461,8 @@ function buildTrayMenu() {
   const menu = Menu.buildFromTemplate([
     // En tête : la version (ou la mise à jour à installer), et la météo
     updateMenuItem(),
+    // (rien à installer : on peut quand même chercher, juste sous la version)
+    ...(updateState || updateUrl ? [] : [{ label: tr('🔎 Rechercher une mise à jour'), enabled: app.isPackaged, click: () => checkForUpdates(true) }]),
     ...(weather ? [{ label: weatherLine(), enabled: false }] : []),
     { type: 'separator' },
     { label: tr(anyVisible() ? 'Cacher' : 'Afficher'), click: toggleVisible, accelerator: HIDE_SHORTCUT, registerAccelerator: false },
@@ -531,7 +533,6 @@ function buildTrayMenu() {
           click: (item) => { app.setLoginItemSettings({ openAtLogin: item.checked }); },
         },
         { type: 'separator' },
-        { label: tr('Rechercher une mise à jour'), enabled: app.isPackaged, click: () => checkForUpdates(true) },
         { label: tr('Site internet 🌐'), click: () => shell.openExternal(siteUrl()) },
         { label: tr('Copier le diagnostic 🩺'), click: copyDiag },
       ],

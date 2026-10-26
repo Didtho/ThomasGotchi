@@ -629,6 +629,7 @@
     "{icon} {temp} °C à {city}": "{icon} {temp} °C in {city}",
     "Gravité (il tombe quand on le lâche)": "Gravity (it falls when you let go)",
     "Désactivée : il reste là où tu le poses, même en l'air": "Off: it stays where you put it, even in mid-air",
+    "🔎 Rechercher une mise à jour": "🔎 Check for updates",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;
