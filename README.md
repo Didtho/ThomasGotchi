@@ -62,7 +62,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   et cadeau) si tu indiques ta date dans les réglages.
 - Il remarque quand tu tapes longtemps (« une petite pause ? ») et fait la fête quand tu reviens.
 - 🌦️ **Météo réelle** (Lyon par défaut, ville modifiable) : il sort son parapluie, son écharpe ou ses lunettes de soleil.
-  Données : Open-Meteo.
+  Le temps qu'il fait s'affiche une fois, en haut du menu de l'icône et dans son infobulle. Données : Open-Meteo.
 - 🏖️ **Pause vacances**, 🔕 **ne pas déranger**, **rythme de vie** (zen, normal, exigeant).
 - 💾 **Exporter** un animal dans un fichier et l'**importer** sur un autre ordinateur.
 

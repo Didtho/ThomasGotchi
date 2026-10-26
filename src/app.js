@@ -192,8 +192,8 @@ function buildView(now) {
     accessory: state.accessory,
     decor: festivity ? festivity.decor : null,
     magic: !!(festivity && festivity.magic), // soirée magique : baguette et étincelles
-    weather: weather ? weather.condition : null,
-    isDay: weather ? weather.isDay : !isNight(),
+    // Pas de ciel dessiné autour de lui (soleil, nuages… en double avec plusieurs animaux) : seulement sa tenue,
+    // la météo s'affiche une fois en haut du menu de l'icône
     gear: weatherGear(mood),
     night: isNight(),
     eggProgress: Math.min(1, Math.max(0, 1 - (state.hatchAt - Date.now()) / HATCH_DELAY)),
@@ -442,7 +442,6 @@ function wander(now) {
 
 // ---------- Météo ----------
 
-const WEATHER_ICONS = { clear: '☀️', clouds: '☁️', rain: '🌧️', storm: '⛈️', snow: '❄️', fog: '🌫️' };
 
 // Ce qu'il porte selon le temps qu'il fait (rien quand il dort)
 function weatherGear(mood) {
@@ -890,7 +889,7 @@ function updatePanel() {
   const trait = Pet.trait(state);
   $('pet-trait').textContent = Pet.isEgg(state) ? '' : Pet.traitLabel(state);
   $('pet-trait').title = trait.desc ? t(trait.desc) : '';
-  $('pet-age').textContent = Pet.ageText(state) + (weather ? `  ${weather.condition === 'clear' && !weather.isDay ? '🌙' : WEATHER_ICONS[weather.condition] || ''} ${weather.temp}°` : '');
+  $('pet-age').textContent = Pet.ageText(state); // (la météo est en haut du menu de l'icône)
   for (const key of ['hunger', 'thirst', 'energy', 'fun', 'clean', 'health']) {
     const v = state[key];
     const el = $('bar-' + key);
@@ -1839,7 +1838,7 @@ desk.onLang((l) => {
 desk.onWeather((w) => {
   const prev = weather;
   weather = w;
-  reactToWeather(prev, w);
+  if (w && w.lead) reactToWeather(prev, w); // un seul animal commente le temps (main.js choisit lequel)
 });
 
 // Ce que fait l'utilisateur sur l'ordinateur

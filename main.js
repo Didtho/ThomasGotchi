@@ -164,7 +164,7 @@ function createPetWindow(id) {
   win.webContents.once('did-finish-load', () => setTimeout(() => fallToFloor(p), 1500));
   win.webContents.on('did-finish-load', () => {
     win.webContents.send('dnd', dnd);
-    if (weather) win.webContents.send('weather', weather);
+    if (weather) win.webContents.send('weather', { ...weather, lead: false });
   });
   return p;
 }
@@ -450,8 +450,9 @@ function buildTrayMenu() {
     : { label, submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => action(p) })) });
   const working = focus && focus.phase === 'work';
   const menu = Menu.buildFromTemplate([
-    // En tête : la version, ou la mise à jour à installer
+    // En tête : la version (ou la mise à jour à installer), et la météo
     updateMenuItem(),
+    ...(weather ? [{ label: weatherLine(), enabled: false }] : []),
     { type: 'separator' },
     { label: tr(anyVisible() ? 'Cacher' : 'Afficher'), click: toggleVisible, accelerator: HIDE_SHORTCUT, registerAccelerator: false },
     {
@@ -563,7 +564,7 @@ function updateTrayAlert() {
   const lines = [...pets.values()].filter((p) => alive(p) && p.alert && !p.away).map((p) => tr(ALERTS[p.alert], { name: p.name || tr('Œuf') }));
   tray.setImage(lines.length ? trayIcons.alert : trayIcons.normal);
   const away = [...pets.values()].filter((p) => p.away).map((p) => tr('{name} est en visite chez {owner} 🧳', { name: p.name, owner: p.away.owner }));
-  tray.setToolTip([`ThomasGotchi v${app.getVersion()}`, ...lines, ...away].join('\n'));
+  tray.setToolTip([`ThomasGotchi v${app.getVersion()}`, weatherLine(), ...lines, ...away].filter(Boolean).join('\n'));
 }
 
 ipcMain.on('pet-status', (e, alert) => {
@@ -1987,23 +1988,37 @@ function weatherCondition(code) {
   return 'clouds';
 }
 
+// La météo part à tous les animaux (pour leur tenue) ; un seul la commente (lead), et elle s'affiche une fois
+// en haut du menu de l'icône et dans son infobulle
+function sendWeather() {
+  const lead = [...pets.values()].find((p) => alive(p) && !p.away);
+  for (const p of pets.values()) if (alive(p)) p.win.webContents.send('weather', weather && { ...weather, lead: p === lead });
+  buildTrayMenu();
+  updateTrayAlert();
+}
+
+const WEATHER_ICONS = { clear: '☀️', clouds: '☁️', rain: '🌧️', storm: '⛈️', snow: '❄️', fog: '🌫️' };
+const weatherLine = () => (weather
+  ? tr('{icon} {temp} °C à {city}', { icon: weather.condition === 'clear' && !weather.isDay ? '🌙' : WEATHER_ICONS[weather.condition] || '', temp: weather.temp, city: weather.city })
+  : null);
+
 async function fetchWeather() {
   if (!city) {
     weather = null;
-    sendToPets('weather', null);
+    sendWeather();
     return;
   }
   try {
     if (!cityGeo || cityGeo.query !== city) {
       const g = await (await net.fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr`)).json();
       const r = g.results && g.results[0];
-      if (!r) { weather = null; sendToPets('weather', null); return; }
+      if (!r) { weather = null; sendWeather(); return; }
       cityGeo = { query: city, name: r.name, lat: r.latitude, lon: r.longitude };
     }
     const f = await (await net.fetch(`https://api.open-meteo.com/v1/forecast?latitude=${cityGeo.lat}&longitude=${cityGeo.lon}&current=temperature_2m,weather_code,is_day&timezone=auto`)).json();
     const c = f.current;
     weather = { city: cityGeo.name, condition: weatherCondition(c.weather_code), temp: Math.round(c.temperature_2m), isDay: c.is_day === 1 };
-    sendToPets('weather', weather);
+    sendWeather();
   } catch { /* hors ligne : on garde la dernière météo connue */ }
 }
 

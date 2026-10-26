@@ -626,6 +626,7 @@
     "🔧 Options": "🔧 Opciones",
     "🧶 Pelote de laine": "🧶 Ovillo de lana",
     "🎲 Mini-jeux": "🎲 Minijuegos",
+    "{icon} {temp} °C à {city}": "{icon} {temp} °C en {city}",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;
