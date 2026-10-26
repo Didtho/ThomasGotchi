@@ -48,3 +48,28 @@ jobs:
           path: |
             dist/*.exe
             dist/*.dmg
+
+  # Envoie aussi les installateurs sur itch.io (https://didtech.itch.io/thomasgotchi), canaux « windows » et « mac ».
+  # Il faut la clé d'accès itch.io dans le secret BUTLER_API_KEY du dépôt ; sans elle, cette étape ne fait rien.
+  itch:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    env:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+    steps:
+      - uses: actions/download-artifact@v4
+        if: env.BUTLER_API_KEY != ''
+        with:
+          path: art
+      - if: env.BUTLER_API_KEY != ''
+        run: |
+          curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler && chmod +x butler/butler
+          version="${GITHUB_REF_NAME#v}"
+          # Un dossier par canal, avec seulement son installateur
+          mkdir -p up/windows up/mac
+          cp art/ThomasGotchi-windows-latest/ThomasGotchi-Setup-*.exe up/windows/
+          cp art/ThomasGotchi-macos-latest/*.dmg up/mac/
+          butler/butler push up/windows didtech/thomasgotchi:windows --userversion "$version"
+          butler/butler push up/mac didtech/thomasgotchi:mac --userversion "$version"
