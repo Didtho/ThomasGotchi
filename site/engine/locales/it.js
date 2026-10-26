@@ -630,6 +630,14 @@
     "Gravité (il tombe quand on le lâche)": "Gravità (cade quando lo lasci)",
     "Désactivée : il reste là où tu le poses, même en l'air": "Disattivata: resta dove lo metti, anche a mezz'aria",
     "🔎 Rechercher une mise à jour": "🔎 Cerca aggiornamenti",
+    "Oiseau": "Uccellino",
+    "Voltigeur": "Volatore",
+    "Voltigeuse": "Volatrice",
+    "Vole de fenêtre en fenêtre et chante le matin.": "Vola di finestra in finestra e canta al mattino.",
+    "Cui-cui !": "Cip cip!",
+    "Cui-cui ! Bonjour ! 🎶": "Cip cip! Buongiorno! 🎶",
+    "Je m'envole !": "Volo via!",
+    "Hop, à tire-d'aile !": "Hop, a tutta ala!",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).it = L;

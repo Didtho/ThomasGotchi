@@ -718,6 +718,7 @@ function drawCreature(ctx, v) {
   if (a === 'backflip') jump = Math.sin(Math.min(1, at / 1.0) * Math.PI) * 60;
   if (a === 'tussle') { jump = Math.abs(Math.sin(at * 14)) * 8; squash = 1 + Math.sin(at * 20) * 0.05; }
   if (v.mood === 'dead') float = 40 + Math.sin(v.t * 1.5) * 6;
+  if (v.flying) { jump = 14 + Math.sin(v.t * 8) * 4; squash = 1; } // oiseau en vol : il flotte au-dessus de son ombre
 
   const cx = CENTER;
   const g = geometry(v.stage, species, jump + float, squash);
@@ -804,6 +805,7 @@ function drawCreature(ctx, v) {
   drawTail(ctx, species, cx, g, body, tailSide, v.t * (v.walking ? 2.5 : 1), v.mood === 'dead' ? null : v.coat);
   speciesLayer(ctx, 'back', species, cx, g, body, v);
 
+  if (species === 'oiseau' && v.mood !== 'dead') drawBirdLegs(ctx, cx, g, v); // derrière le corps
   // Corps, ventre, petites pattes
   const grad = ctx.createRadialGradient(cx - bodyRx * 0.3, bodyCy - bodyRy * 0.4, r * 0.1, cx, bodyCy, r);
   grad.addColorStop(0, shade(body, 0.08));
@@ -818,7 +820,7 @@ function drawCreature(ctx, v) {
   if (v.dirty) drawDirt(ctx, cx, bodyCy + bodyRy * 0.1, bodyRx, bodyRy);
   // Pattes : en marchant, elles avancent et se lèvent chacune leur tour
   const pawY = bodyCy + bodyRy * 0.82;
-  for (const [side, phase] of [[-1, 0], [1, Math.PI]]) {
+  for (const [side, phase] of species === 'oiseau' ? [] : [[-1, 0], [1, Math.PI]]) {
     const s = v.walking ? Math.sin(stride + phase) : 0;
     const lifted = a === 'pee' && side === (v.facing || 1); // patte levée côté bord
     const px = cx + side * bodyRx * 0.42 + v.facing * s * r * 0.14 + (lifted ? side * r * 0.2 : 0);

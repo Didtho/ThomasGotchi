@@ -104,6 +104,11 @@
    "id": "raton",
    "name": "Raton laveur",
    "color": "#8d8a99"
+  },
+  {
+   "id": "oiseau",
+   "name": "Oiseau",
+   "color": "#a9d4ff"
   }
  ],
  "traits": {
@@ -212,6 +217,11 @@
     "icon": "🧼",
     "name": "Maniaque",
     "desc": "Se lave souvent les pattes : reste propre plus longtemps."
+   },
+   "oiseau": {
+    "icon": "🪶",
+    "name": "Voltigeur",
+    "desc": "Vole de fenêtre en fenêtre et chante le matin."
    }
   },
   "en": {
@@ -319,6 +329,11 @@
     "icon": "🧼",
     "name": "Neat freak",
     "desc": "Often washes its paws: stays clean longer."
+   },
+   "oiseau": {
+    "icon": "🪶",
+    "name": "High flyer",
+    "desc": "Flies from window to window and sings in the morning."
    }
   },
   "es": {
@@ -426,6 +441,11 @@
     "icon": "🧼",
     "name": "Maniático",
     "desc": "Se lava a menudo las patas: se mantiene limpio más tiempo."
+   },
+   "oiseau": {
+    "icon": "🪶",
+    "name": "Volador",
+    "desc": "Vuela de ventana en ventana y canta por la mañana."
    }
   },
   "it": {
@@ -533,6 +553,11 @@
     "icon": "🧼",
     "name": "Pignolo",
     "desc": "Si lava spesso le zampe: resta pulito più a lungo."
+   },
+   "oiseau": {
+    "icon": "🪶",
+    "name": "Volatore",
+    "desc": "Vola di finestra in finestra e canta al mattino."
    }
   }
  },
@@ -540,6 +565,15 @@
  "accessories": 8,
  "tricks": 5,
  "changelog": [
+  {
+   "version": "2.13.0",
+   "date": "2026-10-26",
+   "items": [
+    "Nouvel animal : l'oiseau 🐦, qui vole ! Il s'envole de fenêtre en fenêtre, se pose en bas de l'écran, va à la gamelle et au panier à tire-d'aile et descend en planant quand on le lâche",
+    "Son caractère : Voltigeur / Voltigeuse, il chante une fois le matin (cui-cui)",
+    "Sans gravité, il reste là où on l'a posé"
+   ]
+  },
   {
    "version": "2.12.2",
    "date": "2026-10-26",
@@ -871,14 +905,6 @@
    "items": [
     "Décors de fête au sol (citrouille, sapin, gâteau, œufs) posés sur le bureau, immobiles",
     "Gravité : un animal lâché en hauteur tombe jusqu'en bas de l'écran, avec un petit rebond"
-   ]
-  },
-  {
-   "version": "2.0.1",
-   "date": "2026-10-25",
-   "items": [
-    "Mise à jour plus simple : notification pendant le téléchargement, puis fenêtre « Redémarrer maintenant / Plus tard »",
-    "En arrière-plan : un clic sur la notification lance l'installation"
    ]
   }
  ]
