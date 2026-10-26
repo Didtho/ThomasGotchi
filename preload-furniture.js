@@ -5,4 +5,5 @@ contextBridge.exposeInMainWorld('furn', {
   click: () => ipcRenderer.send('furn-click'),
   dragStart: () => ipcRenderer.send('furn-drag-start'),
   dragEnd: () => ipcRenderer.send('furn-drag-end'),
+  hover: (on) => ipcRenderer.send('furn-hover', on), // souris sur le meuble : bulle d'aide
 });

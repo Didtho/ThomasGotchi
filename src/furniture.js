@@ -87,6 +87,63 @@ function basket(W, base) {
   }
 }
 
+// Arrosoir (k de 0 à 1) : il apparaît en haut à gauche, se penche, verse un filet de gouttes sur la terre, puis s'efface
+const WATERING = 1600; // durée de l'arrosage (ms)
+function wateringCan(k, cx, soilY) {
+  const alpha = Math.min(1, k / 0.12, (1 - k) / 0.12);
+  const tilt = 0.9 * Math.sin(Math.min(1, Math.max(0, (k - 0.1) / 0.25)) * Math.PI / 2) * (k > 0.8 ? (1 - k) / 0.2 : 1);
+  const px = cx - 29, py = 22; // centre de l'arrosoir (le filet tombe sur la terre, à gauche de la tige)
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(px, py);
+  ctx.rotate(tilt);
+  // Bec, puis corps, anse et rebord
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = INK;
+  ctx.beginPath();
+  ctx.moveTo(8, 2);
+  ctx.lineTo(19, -7);
+  ctx.stroke();
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#5aa9e6';
+  ctx.stroke();
+  ellipse(20, -8, 3, 2, '#5aa9e6', INK, 1.5);
+  ctx.beginPath();
+  ctx.arc(-11, -1, 6, Math.PI * 0.5, Math.PI * 1.5);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = INK;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-10, -7);
+  ctx.lineTo(10, -7);
+  ctx.lineTo(9, 9);
+  ctx.lineTo(-9, 9);
+  ctx.closePath();
+  ctx.fillStyle = '#5aa9e6';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  ctx.fillRect(-6, -4, 3, 10);
+  ctx.restore();
+  ctx.lineCap = 'butt';
+  // Filet de gouttes depuis le bout du bec jusqu'à la terre, pendant qu'il est penché
+  if (k > 0.25 && k < 0.82) {
+    const sx = px + Math.cos(tilt) * 21 - Math.sin(tilt) * -8, sy = py + Math.sin(tilt) * 21 + Math.cos(tilt) * -8;
+    ctx.strokeStyle = 'rgba(90,170,255,.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(sx + 3, sy + 4, sx + 3, soilY);
+    ctx.stroke();
+    for (let i = 0; i < 5; i++) {
+      const f = (performance.now() / 500 + i / 5) % 1;
+      ellipse(sx + 1 + f * 2, sy + f * (soilY - sy), 2, 3, 'rgba(70,150,240,.95)', INK, 0.8);
+    }
+  }
+}
+
 // Plante en pot : elle grandit (data.growth de 0 à 4) et penche quand elle a soif
 function plant(W, H, base, t) {
   const cx = W / 2;
@@ -143,16 +200,11 @@ function plant(W, H, base, t) {
   } else if (g >= 3) {
     ellipse(tipX, tipY - 2, 4, 5.5, '#ff9fc6', INK, 1.3);
   }
-  // Gouttes d'eau juste après l'arrosage
-  const k = (performance.now() - wateredAt) / 900;
-  if (k < 1) {
-    for (let i = 0; i < 5; i++) {
-      const x = cx - 12 + i * 6, y = 4 + ((k * 40 + i * 9) % 40);
-      ellipse(x, y, 1.8, 3, 'rgba(110,180,255,.9)');
-    }
-  }
+  // Juste après un clic : l'arrosoir arrive, se penche et verse
+  const k = (performance.now() - wateredAt) / WATERING;
+  if (k < 1) wateringCan(k, cx, base - 31);
   // Petite goutte qui clignote au-dessus quand elle a soif (discret)
-  if (thirsty && Math.sin(t * 2) > 0) ellipse(cx + 16, top - height - 4, 2.5, 3.5, 'rgba(110,180,255,.8)', INK, 1);
+  if (thirsty && Math.sin(t * 2) > 0) ellipse(cx + 17, top - height - 2, 3.5, 5, 'rgba(110,180,255,.9)', INK, 1.3);
 }
 
 function draw(now) {
@@ -161,7 +213,7 @@ function draw(now) {
   const W = innerWidth, H = innerHeight;
   ctx.clearRect(0, 0, W, H);
   const base = H - 8;
-  ellipse(W / 2, base + 2, W / 2 - 6, 4, 'rgba(0,0,0,.15)');
+  ellipse(W / 2, base + 2, kind === 'plant' ? 22 : W / 2 - 6, 4, 'rgba(0,0,0,.15)');
 
   if (kind === 'bowl') {
     // Bol rouge de croquettes, bol bleu d'eau
@@ -192,16 +244,19 @@ function draw(now) {
     }
     ctx.globalAlpha = 1;
   }
-  const busy = k < 1 || now - wateredAt < 900;
+  const busy = k < 1 || now - wateredAt < WATERING;
   setTimeout(() => requestAnimationFrame(draw), busy ? 16 : 120);
 }
 requestAnimationFrame(draw);
 
 window.furn.onState((s) => {
-  if (kind === 'plant' && s.water > data.water + 20) wateredAt = performance.now();
-  else if (s.food > data.food + 20 || s.water > data.water + 20) sparkleAt = performance.now();
+  if (kind === 'bowl' && (s.food > data.food + 20 || s.water > data.water + 20)) sparkleAt = performance.now();
   data = s;
 });
+
+// Survol : bulle d'aide (affichée par main.js)
+document.documentElement.addEventListener('mouseenter', () => window.furn.hover(true));
+document.documentElement.addEventListener('mouseleave', () => window.furn.hover(false));
 
 // Clic simple = remplir ; glisser = déplacer
 let press = null;
@@ -214,6 +269,10 @@ addEventListener('mousemove', (e) => {
 });
 addEventListener('mouseup', () => {
   if (!press) return;
-  if (press.moved) window.furn.dragEnd(); else window.furn.click();
+  if (press.moved) window.furn.dragEnd();
+  else {
+    window.furn.click();
+    if (kind === 'plant') wateredAt = performance.now(); // l'arrosoir passe à chaque clic, même si elle a déjà de l'eau
+  }
   press = null;
 });

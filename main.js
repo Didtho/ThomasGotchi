@@ -1282,7 +1282,7 @@ ipcMain.handle('owl', (e) => new Promise((resolve) => {
 
 // ---- Meubles : gamelle, panier, plante — partagés par tous les animaux, posés en bas de l'écran ----
 
-const FURN = { bowl: { w: 84, h: 50 }, basket: { w: 100, h: 46 }, plant: { w: 56, h: 84 } };
+const FURN = { bowl: { w: 84, h: 50 }, basket: { w: 100, h: 46 }, plant: { w: 90, h: 96 } }; // plante : place pour l'arrosoir
 // { bowl: { win, x, food, water }, basket: { win, x }, plant: { win, x, water, growth, at } }
 let furniture = {};
 const furnData = (f) => { const { win, ...data } = f; return data; }; // ce qu'on garde et envoie (sans la fenêtre)
@@ -1336,6 +1336,7 @@ function spawnFurniture(kind, saved) {
 function removeFurniture(kind) {
   const f = furniture[kind];
   if (!f) return;
+  hideFurnTip();
   if (!f.win.isDestroyed()) f.win.destroy();
   delete furniture[kind];
   saveFurniture();
@@ -1379,8 +1380,49 @@ function furnitureOf(sender) {
   return Object.keys(furniture).find((k) => !furniture[k].win.isDestroyed() && furniture[k].win.webContents === sender) || null;
 }
 
+// Bulle d'aide au survol d'un meuble (petite fenêtre au-dessus, qui laisse passer les clics)
+let furnTip = null;
+let furnTipTimer = null;
+
+function showFurnTip(kind) {
+  const f = furniture[kind];
+  if (!f || f.win.isDestroyed()) return;
+  const text = {
+    bowl: tr('Clic : remplir · Glisser : déplacer'),
+    basket: tr('Son panier pour dormir · Glisser : déplacer'),
+    plant: tr('Clic : arroser (eau : {n} %) · Glisser : déplacer', { n: Math.round(f.water || 0) }),
+  }[kind];
+  const b = f.win.getBounds();
+  const wa = screen.getDisplayMatching(b).workArea;
+  const w = 300, h = 34;
+  const x = Math.round(Math.min(Math.max(b.x + b.width / 2 - w / 2, wa.x), wa.x + wa.width - w));
+  hideFurnTip();
+  furnTip = new BrowserWindow({
+    width: w, height: h, x, y: b.y - h, transparent: true, frame: false, resizable: false, focusable: false,
+    skipTaskbar: true, hasShadow: false, alwaysOnTop: true, show: false, backgroundColor: '#00000000',
+    webPreferences: { contextIsolation: true, nodeIntegration: false },
+  });
+  furnTip.setIgnoreMouseEvents(true);
+  furnTip.setAlwaysOnTop(true, 'floating');
+  furnTip.loadFile(path.join(__dirname, 'src', 'tip.html'), { query: { text } });
+  furnTip.once('ready-to-show', () => { if (furnTip && !furnTip.isDestroyed()) furnTip.showInactive(); });
+}
+
+function hideFurnTip() {
+  clearTimeout(furnTipTimer);
+  if (furnTip && !furnTip.isDestroyed()) furnTip.destroy();
+  furnTip = null;
+}
+
+ipcMain.on('furn-hover', (e, on) => {
+  const k = furnitureOf(e.sender);
+  hideFurnTip();
+  if (on && k) furnTipTimer = setTimeout(() => showFurnTip(k), 500);
+});
+
 // Clic : remplir la gamelle, arroser la plante
 ipcMain.on('furn-click', (e) => {
+  hideFurnTip();
   const k = furnitureOf(e.sender);
   if (k === 'bowl') Object.assign(furniture.bowl, { food: 100, water: 100 });
   else if (k === 'plant') furniture.plant.water = 100;
@@ -1391,6 +1433,7 @@ ipcMain.on('furn-click', (e) => {
 
 let furnDrag = null;
 ipcMain.on('furn-drag-start', (e) => {
+  hideFurnTip();
   const k = furnitureOf(e.sender);
   if (!k) return;
   const item = furniture[k];

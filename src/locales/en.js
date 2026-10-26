@@ -614,6 +614,9 @@
     "Quel est le dessert préféré des bonshommes de neige ? Les glaces, bien sûr ! ⛄": "What's a snowman's favourite dessert? Ice cream, of course! ⛄",
     "Pourquoi les rennes ont-ils un nez rouge ? Ils ont trop fait de luge ! 🦌": "Why do reindeer have red noses? Too much sledging! 🦌",
     "Comment appelle-t-on un sapin qui chante ? Un sapin de Noël… à capella ! 🎄": "What do you call a singing Christmas tree? A tree… a cappella! 🎄",
+    "Clic : arroser (eau : {n} %) · Glisser : déplacer": "Click: water it (water: {n}%) · Drag: move",
+    "Clic : remplir · Glisser : déplacer": "Click: refill · Drag: move",
+    "Son panier pour dormir · Glisser : déplacer": "Its sleeping basket · Drag: move",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;
