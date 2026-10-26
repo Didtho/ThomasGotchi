@@ -444,18 +444,14 @@ function buildTrayMenu() {
   if (!tray) return;
   const login = app.getLoginItemSettings().openAtLogin;
   const list = [...pets.values()];
-  const settings = list.length === 1
-    ? { label: tr('Réglages…'), click: () => openSettings(list[0]) }
-    : { label: tr('Réglages'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => openSettings(p) })) };
-  const photo = list.length === 1
-    ? { label: tr('Prendre une photo 📸'), click: () => sendMenu(list[0], 'photo') }
-    : { label: tr('Prendre une photo 📸'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => sendMenu(p, 'photo') })) };
-  const food = list.length === 1
-    ? { label: tr('Donner un fichier à manger…'), click: () => chooseFood(list[0]) }
-    : { label: tr('Donner un fichier à manger'), submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => chooseFood(p) })) };
-  tray.setContextMenu(Menu.buildFromTemplate([
-    { label: `ThomasGotchi v${app.getVersion()}`, enabled: false },
-    { label: tr('Site internet 🌐'), click: () => shell.openExternal(siteUrl()) },
+  // Une action par animal : directe s'il n'y en a qu'un, sinon un sous-menu avec leurs prénoms
+  const perPet = (label, action, dots = '…') => (list.length === 1
+    ? { label: label + dots, click: () => action(list[0]) }
+    : { label, submenu: list.map((p) => ({ label: p.name || tr('Œuf'), click: () => action(p) })) });
+  const working = focus && focus.phase === 'work';
+  const menu = Menu.buildFromTemplate([
+    // En tête : la version, ou la mise à jour à installer
+    updateMenuItem(),
     { type: 'separator' },
     { label: tr(anyVisible() ? 'Cacher' : 'Afficher'), click: toggleVisible, accelerator: HIDE_SHORTCUT, registerAccelerator: false },
     {
@@ -467,43 +463,74 @@ function buildTrayMenu() {
         buildTrayMenu();
       },
     },
-    settings,
-    food,
-    photo,
+    { type: 'separator' },
+    // S'occuper de lui
+    perPet(tr('⚙️ Réglages'), openSettings),
+    perPet(tr('🍽️ Donner un fichier à manger'), chooseFood),
+    perPet(tr('📸 Prendre une photo'), (p) => sendMenu(p, 'photo'), ''),
     { label: tr('📝 Pense-bête…'), click: () => sendMenu(list.find((p) => !p.away) || list[0], 'notes') },
-    { label: tr('🔴 Pointeur laser'), type: 'checkbox', checked: !!laser, click: () => (laser ? stopLaser() : startLaser()) },
-    {
-      label: tr(focus && focus.phase === 'work' ? '🎯 Concentration jusqu\'à {time}' : '🎯 Mode concentration ({n} min)',
-        { n: FOCUS_MIN, time: focus && focus.until ? new Date(focus.until).toLocaleTimeString(currentLang(), { hour: '2-digit', minute: '2-digit' }) : '' }),
-      type: 'checkbox', checked: !!(focus && focus.phase === 'work'), click: () => (focus && focus.phase === 'work' ? stopFocus() : startFocus()),
-    },
-    { label: tr('Adopter un autre animal'), enabled: list.length < MAX_PETS, click: adoptPet },
-    { label: tr(yarn ? 'Ranger la pelote de laine' : 'Sortir la pelote de laine 🧶'), click: toggleYarn },
-    { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture.bowl, click: () => toggleFurniture('bowl') },
-    { label: tr('Panier pour dormir 🧺'), type: 'checkbox', checked: !!furniture.basket, click: () => toggleFurniture('basket') },
-    { label: tr('Plante à arroser 🪴'), type: 'checkbox', checked: !!furniture.plant, click: () => toggleFurniture('plant') },
     { type: 'separator' },
+    // Jouer, et ses objets sur le bureau
+    {
+      label: tr('🎾 Jouer'),
+      submenu: [
+        { label: tr('🔴 Pointeur laser'), type: 'checkbox', checked: !!laser, click: () => (laser ? stopLaser() : startLaser()) },
+        { label: tr('🧶 Pelote de laine'), type: 'checkbox', checked: !!yarn, click: toggleYarn },
+      ],
+    },
+    {
+      label: tr('🏠 Objets sur le bureau'),
+      submenu: [
+        { label: tr('Gamelle 🥣'), type: 'checkbox', checked: !!furniture.bowl, click: () => toggleFurniture('bowl') },
+        { label: tr('Panier pour dormir 🧺'), type: 'checkbox', checked: !!furniture.basket, click: () => toggleFurniture('basket') },
+        { label: tr('Plante à arroser 🪴'), type: 'checkbox', checked: !!furniture.plant, click: () => toggleFurniture('plant') },
+      ],
+    },
+    { type: 'separator' },
+    // Calme
+    {
+      label: tr(working ? '🎯 Concentration jusqu\'à {time}' : '🎯 Mode concentration ({n} min)',
+        { n: FOCUS_MIN, time: working ? new Date(focus.until).toLocaleTimeString(currentLang(), { hour: '2-digit', minute: '2-digit' }) : '' }),
+      type: 'checkbox', checked: !!working, click: () => (working ? stopFocus() : startFocus()),
+    },
     { label: tr('🔕 Ne pas déranger'), type: 'checkbox', checked: dnd, click: (item) => setDnd(item.checked) },
-    {
-      label: tr('🖥️ Se cacher en plein écran'), type: 'checkbox', checked: autoHideSetting,
-      click: (item) => {
-        autoHideSetting = item.checked;
-        if (!autoHideSetting && autoHidden) { autoHidden = false; if (!hiddenByUser) setAllVisible(true); }
-        saveSettings();
-      },
-    },
     { label: tr('🏖️ Pause vacances (tous)'), type: 'checkbox', checked: allPaused, click: (item) => setAllPaused(item.checked) },
-    { label: tr('Importer un animal…'), enabled: list.length < MAX_PETS, click: importPet },
-    updateMenuItem(),
-    { label: tr('Copier le diagnostic 🩺'), click: copyDiag },
     { type: 'separator' },
     {
-      label: tr('Lancer au démarrage'), type: 'checkbox', checked: login,
-      click: (item) => { app.setLoginItemSettings({ openAtLogin: item.checked }); },
+      label: tr('🐾 Animaux'),
+      submenu: [
+        { label: tr('Adopter un autre animal'), enabled: list.length < MAX_PETS, click: adoptPet },
+        { label: tr('Importer un animal…'), enabled: list.length < MAX_PETS, click: importPet },
+      ],
+    },
+    {
+      label: tr('🔧 Options'),
+      submenu: [
+        {
+          label: tr('🖥️ Se cacher en plein écran'), type: 'checkbox', checked: autoHideSetting,
+          click: (item) => {
+            autoHideSetting = item.checked;
+            if (!autoHideSetting && autoHidden) { autoHidden = false; if (!hiddenByUser) setAllVisible(true); }
+            saveSettings();
+          },
+        },
+        {
+          label: tr('Lancer au démarrage'), type: 'checkbox', checked: login,
+          click: (item) => { app.setLoginItemSettings({ openAtLogin: item.checked }); },
+        },
+        { type: 'separator' },
+        { label: tr('Rechercher une mise à jour'), enabled: app.isPackaged, click: () => checkForUpdates(true) },
+        { label: tr('Site internet 🌐'), click: () => shell.openExternal(siteUrl()) },
+        { label: tr('Copier le diagnostic 🩺'), click: copyDiag },
+      ],
     },
     { type: 'separator' },
     { label: tr('Quitter'), click: () => app.quit() },
-  ]));
+  ]);
+  // À chaque ouverture du menu, une recherche discrète : une nouvelle version se télécharge aussitôt et une
+  // notification prévient quand elle est prête
+  menu.on('menu-will-show', () => { if (!checkingUpdate) checkForUpdates(false); });
+  tray.setContextMenu(menu);
 }
 
 // Icône de la barre : normale, ou avec une pastille rouge quand un animal a besoin de quelque chose
@@ -2034,7 +2061,7 @@ function installUpdate() {
   require('electron-updater').autoUpdater.quitAndInstall();
 }
 
-// Ligne du menu de l'icône selon l'état de la mise à jour
+// En tête du menu de l'icône : la version, ou la mise à jour à installer
 function updateMenuItem() {
   if (updateState && updateState.status === 'ready') {
     return { label: tr('🔄 Redémarrer pour installer la v{v}', { v: updateState.version }), click: installUpdate };
@@ -2043,7 +2070,7 @@ function updateMenuItem() {
     return { label: tr('⬇ Téléchargement de la v{v}…', { v: updateState.version }), enabled: false };
   }
   if (updateUrl) return { label: tr('⬇ Nouvelle version disponible'), click: () => shell.openExternal(updateUrl) };
-  return { label: tr('Rechercher une mise à jour'), enabled: app.isPackaged, click: () => checkForUpdates(true) };
+  return { label: `ThomasGotchi v${app.getVersion()}`, enabled: false };
 }
 
 function setupAutoUpdater() {
@@ -2082,8 +2109,12 @@ function setupAutoUpdater() {
 }
 
 // manual : lancé depuis le menu, on prévient aussi quand il n'y a rien de nouveau
+let checkingUpdate = false; // une recherche est en cours
 async function checkForUpdates(manual = false) {
   if (!app.isPackaged) return;
+  if (updateState) return; // déjà trouvée : en téléchargement ou prête
+  checkingUpdate = true;
+  setTimeout(() => { checkingUpdate = false; }, 15000); // le temps de la réponse de GitHub
   try {
     if (isMac) {
       const res = await net.fetch('https://api.github.com/repos/Didtho/ThomasGotchi/releases/latest');
@@ -2273,7 +2304,7 @@ app.whenReady().then(() => {
   setInterval(fetchWeather, 30 * 60000);
   setupAutoUpdater();
   checkForUpdates();
-  setInterval(checkForUpdates, 6 * 3600 * 1000);
+  setInterval(checkForUpdates, 3600 * 1000);
   // Visites entre ordinateurs : seulement si l'onglet « Amis » a déjà été ouvert une fois (inscription faite)
   const account = readJson('online.json');
   if (account && account.code && account.secret) online = { open: true, ...account };

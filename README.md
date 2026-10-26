@@ -23,7 +23,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   puces 🐜 à faire partir avec un bain. Malade, il se voit (nez rouge, puces…), refuse de jouer et bouge moins.
 - 🔴 **Pastille sur l'icône** quand un animal a faim, soif, est malade ou sale (le détail s'affiche au survol de l'icône).
 - 🎾 **Mini-jeux** : lancer la balle, attraper les friandises, jeu des gobelets, jeu des paires, et le 🔴 **pointeur
-  laser** (menu de l'icône) : 30 secondes à courir après le point rouge qui suit la souris.
+  laser** (menu de l'icône › Jouer) : 30 secondes à courir après le point rouge qui suit la souris.
 - 🎯 **Mode concentration** (menu de l'icône) : 25 minutes pendant lesquelles il s'installe dans son panier sans bouger
   ni parler, puis il félicite et propose 5 minutes de pause.
 - 🎵 **Musique** (Windows) : quand de la musique joue (Spotify, navigateur…), il danse de temps en temps.
@@ -54,7 +54,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   anniversaire ! 🎂 »…), qui arrive même si son ordinateur est éteint. Seuls passent le prénom du maître et
   l'apparence de l'animal : pas de messages libres.
 - 🔍 **Taille** (onglet « Options » des réglages) : normale, grande ou très grande, pour les grands écrans.
-- 🧶 **Pelote de laine** et 🥣 **gamelle** (menu de l'icône) : il court après la pelote, va manger et boire tout seul.
+- 🧶 **Pelote de laine** (menu de l'icône › Jouer) et 🥣 **gamelle** (› Objets sur le bureau) : il court après la pelote, va manger et boire tout seul.
 - 🧺 **Panier** : il va s'y coucher le soir et y faire la sieste quand il est fatigué. 🪴 **Plante** : un clic pour
   l'arroser ; bien arrosée, elle pousse un peu chaque jour jusqu'à fleurir (elle penche si on l'oublie, sans jamais
   mourir), et l'animal vient la renifler.
@@ -106,7 +106,7 @@ L'application n'est pas signée par Apple : au premier lancement sur Mac, macOS 
 `xattr -cr /Applications/ThomasGotchi.app` (à refaire après chaque nouvelle version téléchargée).
 
 Sauvegarde : `%APPDATA%\thomasgotchi\pet.json` (Windows) ou `~/Library/Application Support/thomasgotchi/pet.json` (Mac).
-En cas de souci, « Copier le diagnostic 🩺 » dans le menu de l'icône donne un petit journal à envoyer.
+En cas de souci, « Copier le diagnostic 🩺 » dans le menu de l'icône (› Options) donne un petit journal à envoyer.
 
 ## Développement
 

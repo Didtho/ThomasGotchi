@@ -617,6 +617,14 @@
     "Clic : arroser (eau : {n} %) · Glisser : déplacer": "Clic: annaffia (acqua: {n}%) · Trascina: sposta",
     "Clic : remplir · Glisser : déplacer": "Clic: riempi · Trascina: sposta",
     "Son panier pour dormir · Glisser : déplacer": "Il suo cestino per dormire · Trascina: sposta",
+    "⚙️ Réglages": "⚙️ Impostazioni",
+    "🍽️ Donner un fichier à manger": "🍽️ Dai un file da mangiare",
+    "🎾 Jouer": "🎾 Gioca",
+    "🏠 Objets sur le bureau": "🏠 Oggetti sul desktop",
+    "🐾 Animaux": "🐾 Animali",
+    "📸 Prendre une photo": "📸 Scatta una foto",
+    "🔧 Options": "🔧 Opzioni",
+    "🧶 Pelote de laine": "🧶 Gomitolo",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).it = L;
