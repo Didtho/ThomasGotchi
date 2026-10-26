@@ -541,6 +541,21 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.12.2",
+   "date": "2026-10-26",
+   "items": [
+    "Menu de l'icône : « Rechercher une mise à jour » revient en haut, juste sous la version (au lieu du sous-menu Options) ; remplacé par la mise à jour à installer quand il y en a une",
+    "Publication de la 2.12.1 pour Windows (la fabrication précédente n'avait pas envoyé l'installateur)"
+   ]
+  },
+  {
+   "version": "2.12.1",
+   "date": "2026-10-26",
+   "items": [
+    "Menu de l'icône : « Rechercher une mise à jour » revient en haut, juste sous la version (au lieu du sous-menu Options) ; remplacé par la mise à jour à installer quand il y en a une"
+   ]
+  },
+  {
    "version": "2.12.0",
    "date": "2026-10-26",
    "items": [
@@ -864,25 +879,6 @@
    "items": [
     "Mise à jour plus simple : notification pendant le téléchargement, puis fenêtre « Redémarrer maintenant / Plus tard »",
     "En arrière-plan : un clic sur la notification lance l'installation"
-   ]
-  },
-  {
-   "version": "2.0.0",
-   "date": "2026-10-25",
-   "items": [
-    "Application en français, anglais, espagnol et italien (langue automatique ou choisie dans les réglages)",
-    "Voix dans la langue choisie",
-    "Site en 4 langues (/en/, /es/, /it/), sélecteur de langue, langue du navigateur proposée",
-    "Site signé DidTech",
-    "Scripts de vérification des traductions"
-   ]
-  },
-  {
-   "version": "1.9.2",
-   "date": "2026-10-25",
-   "items": [
-    "La fenêtre des réglages ne dépasse plus de l'écran : elle défile si la place manque",
-    "Animaux sur 7 colonnes pour une fenêtre plus compacte"
    ]
   }
  ]

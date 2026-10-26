@@ -53,6 +53,10 @@ Electron, sinon il démarre comme Node (`Remove-Item Env:ELECTRON_RUN_AS_NODE`).
   version (`github.com/Didtho/ThomasGotchi/releases/expanded_assets/vX.Y.Z`, qui ne compte pas dans cette limite),
   une fois toutes les 2 minutes, jusqu'à ce que `latest.yml` (Windows) et le `.dmg` y figurent ; une seule attente à la
   fois ; l'API (`api.github.com/.../actions/runs`) seulement pour un contrôle ponctuel (échec de la fabrication).
+  `gh` est installé et connecté (`C:\Program Files\GitHub CLI\gh.exe`) : `gh run view <id> --log` pour lire une
+  fabrication, `gh run rerun <id> --failed` pour relancer une plateforme ratée. electron-builder **n'envoie plus rien**
+  dans une Release publiée depuis plus de 2 heures : passé ce délai, envoyer les fichiers à la main
+  (`gh run download <id>` puis `gh release upload vX.Y.Z …`, sans oublier `latest.yml`) ou publier une nouvelle version.
 - **Après chaque version publiée, sans attendre qu'on le demande** : une fois la fabrication réussie, lancer
   `npm run site-assets` **au premier plan** (en vérifiant que la section « Nouveautés » de `site/data/app.json`
   commence bien par la nouvelle version), committer, redéployer WAMP puis le site en ligne (`npm run deploy-site`),
