@@ -67,7 +67,9 @@ const phpString = (v) => "'" + String(v || '').replace(/\\/g, '\\\\').replace(/'
     if (db && db.password) {
       const php = `<?php\n// Créé par scripts/deploy-site.js : accès à la base de données (ne pas mettre sur GitHub)\nreturn [\n`
         + `    'host' => ${phpString(db.host)},\n    'name' => ${phpString(db.name)},\n`
-        + `    'user' => ${phpString(db.user)},\n    'password' => ${phpString(db.password)},\n];\n`;
+        + `    'user' => ${phpString(db.user)},\n    'password' => ${phpString(db.password)},\n`
+        + (cfg.itchKey ? `    'itchKey' => ${phpString(cfg.itchKey)}, // téléchargements de la page itch.io\n` : '')
+        + '];\n';
       await client.put(Buffer.from(php, 'utf8'), `${remote}/inc/config.local.php`);
       console.log('Connexion à la base de données configurée sur le serveur.');
     } else {
