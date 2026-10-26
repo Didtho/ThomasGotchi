@@ -48,8 +48,11 @@ Electron, sinon il démarre comme Node (`Remove-Item Env:ELECTRON_RUN_AS_NODE`).
   (détails dans le corps), ou un titre descriptif pour ce qui n'est pas une version (ex. « Site internet »).
 - **Publier une version** : changer `version` dans `package.json`, committer, puis
   `git tag vX.Y.Z && git push origin main && git push origin vX.Y.Z`. GitHub Actions fabrique le `.exe` et le
-  `.dmg` et les publie (Releases) ; les PC se mettent à jour tout seuls. Suivre la fabrication via l'API publique
-  (`api.github.com/repos/Didtho/ThomasGotchi/actions/runs`).
+  `.dmg` et les publie (Releases) ; les PC se mettent à jour tout seuls. Suivre la fabrication **sans dépasser la
+  limite de 60 demandes par heure de l'API publique de GitHub** : attendre plutôt sur la page des fichiers de la
+  version (`github.com/Didtho/ThomasGotchi/releases/expanded_assets/vX.Y.Z`, qui ne compte pas dans cette limite),
+  une fois toutes les 2 minutes, jusqu'à ce que `latest.yml` (Windows) et le `.dmg` y figurent ; une seule attente à la
+  fois ; l'API (`api.github.com/.../actions/runs`) seulement pour un contrôle ponctuel (échec de la fabrication).
 - **Après chaque version publiée, sans attendre qu'on le demande** : une fois la fabrication réussie, lancer
   `npm run site-assets` **au premier plan** (en vérifiant que la section « Nouveautés » de `site/data/app.json`
   commence bien par la nouvelle version), committer, redéployer WAMP puis le site en ligne (`npm run deploy-site`),
