@@ -86,5 +86,7 @@ contextBridge.exposeInMainWorld('desk', {
   onFalling: (cb) => ipcRenderer.on('falling', () => cb()),
   onLanded: (cb) => ipcRenderer.on('landed', () => cb()),
   climb: () => ipcRenderer.invoke('climb'),
+  fly: (opts) => ipcRenderer.invoke('fly', opts), // oiseau : envol vers un perchoir (voir main.js)
+  setFlyer: (on) => ipcRenderer.send('flyer', on),
   onMeet: (cb) => ipcRenderer.on('meet', (_e, info) => cb(info)),
 });

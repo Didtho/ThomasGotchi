@@ -798,6 +798,7 @@ function land(p, surface) {
 // Gravité : il tombe jusqu'à la première surface sous ses pattes
 function fallToFloor(p) {
   if (!alive(p) || p.expandUp || p.expandDown) return saveWindowPosition(p);
+  if (p.flyTimer) return; // oiseau en plein vol : il se posera de lui-même
   clearInterval(p.fallTimer);
   const b0 = p.win.getBounds();
   const f0 = feetOf(b0);
@@ -816,7 +817,7 @@ function fallToFloor(p) {
     const b = p.win.getBounds();
     const f = feetOf(b);
     const surface = surfaceBelow(f.x, f.y, b);
-    vy = Math.min(vy + 1.4, 28);
+    vy = p.flyer ? Math.min(vy + 0.3, 4 * petScale) : Math.min(vy + 1.4, 28); // l'oiseau descend en planant
     if (f.y + vy >= surface.y) {
       clearInterval(p.fallTimer);
       p.fallTimer = null;
@@ -881,7 +882,7 @@ function checkPoopSupports() {
 function checkSupports() {
   checkPoopSupports();
   for (const p of pets.values()) {
-    if (!alive(p) || !p.platform || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown || p.sliding) continue;
+    if (!alive(p) || !p.platform || p.dragTimer || p.fallTimer || p.climbTimer || p.flyTimer || p.expandUp || p.expandDown || p.sliding) continue;
     const rect = windowRects.get(p.platform);
     const b = p.win.getBounds();
     if (rect && p.platformX !== null && rect.x1 !== p.platformX) {
@@ -899,7 +900,7 @@ function checkSupports() {
 // Saut sur une fenêtre un peu au-dessus de lui (déclenché de temps en temps par l'animal)
 ipcMain.handle('climb', (e) => {
   const p = petOf(e.sender);
-  if (!p || !gravity || p.dragTimer || p.fallTimer || p.climbTimer || p.expandUp || p.expandDown) return false; // sans gravité, il ne grimpe pas
+  if (!p || !gravity || p.dragTimer || p.fallTimer || p.climbTimer || p.flyTimer || p.expandUp || p.expandDown) return false; // sans gravité, il ne grimpe pas
   const b = p.win.getBounds();
   const f = feetOf(b);
   // Fenêtre au-dessus de lui, jusqu'à 350 px sur le côté : il choisit la plus proche
@@ -929,6 +930,62 @@ ipcMain.handle('climb', (e) => {
     placeWindow(p, cb.x + vx, cb.y + vy);
   }, 16);
   return { dir: Math.sign(landX - f.x) };
+});
+
+// ---- Oiseau : il s'envole et se pose sur un bord de fenêtre ou en bas de l'écran ----
+ipcMain.on('flyer', (e, on) => { const p = petOf(e.sender); if (p) p.flyer = !!on; });
+
+// Écran sous un point (ou le plus proche)
+const areaAt = (x, y) => screen.getDisplayNearestPoint({ x: Math.round(x), y: Math.round(y) }).workArea;
+
+// opts : { dx, dy } point visé (en points de la page, depuis ses pattes) : il se pose sur la surface en dessous ;
+// { dx, floor: true } : en bas de l'écran (gamelle, panier, pelote) ; rien : un perchoir au hasard, pas trop loin
+ipcMain.handle('fly', (e, opts = {}) => {
+  const p = petOf(e.sender);
+  if (!p || p.dragTimer || p.fallTimer || p.climbTimer || p.flyTimer || p.expandUp || p.expandDown || p.sliding) return false;
+  const b = p.win.getBounds();
+  const f = feetOf(b);
+  let tx, surface;
+  if (opts.dx !== undefined) {
+    const wa = areaAt(f.x + opts.dx * petScale, f.y);
+    tx = Math.min(Math.max(f.x + opts.dx * petScale, wa.x + W / 2), wa.x + wa.width - W / 2);
+    surface = opts.floor ? { y: floorAt(tx, b), h: null } : surfaceBelow(tx, f.y + (opts.dy || 0) * petScale, b);
+  } else {
+    const wa = areaAt(f.x, f.y);
+    const perches = platforms.filter((pl) => pl.h !== p.platform && pl.x2 - pl.x1 >= 100 &&
+      Math.abs((pl.x1 + pl.x2) / 2 - f.x) < 900 && pl.x1 >= wa.x - 50 && pl.x2 <= wa.x + wa.width + 50);
+    if (perches.length && Math.random() < 0.7) {
+      const pl = perches[Math.floor(Math.random() * perches.length)];
+      tx = pl.x1 + 40 + Math.random() * (pl.x2 - pl.x1 - 80);
+      surface = { y: pl.y, h: pl.h };
+    } else {
+      // En bas de l'écran, un peu plus loin
+      const dist = (150 + Math.random() * 350) * (Math.random() < 0.5 ? -1 : 1);
+      tx = Math.min(Math.max(f.x + dist, wa.x + W), wa.x + wa.width - W);
+      surface = { y: floorAt(tx, b), h: null };
+    }
+  }
+  const x0 = b.x, y0 = b.y, x1 = tx - W / 2, y1 = surface.y - FEET;
+  const dist = Math.hypot(x1 - x0, y1 - y0);
+  if (dist < 20) return false;
+  // Courbe : il monte un peu en partant, ondule légèrement, et ralentit pour se poser
+  const ms = Math.min(3500, Math.max(700, dist / (0.3 * petScale)));
+  const arc = Math.min(120, 30 + dist * 0.2) * petScale;
+  const start = Date.now();
+  p.platform = null;
+  p.flyTimer = setInterval(() => {
+    if (!alive(p) || p.dragTimer) { clearInterval(p.flyTimer); p.flyTimer = null; return; }
+    const k = Math.min(1, (Date.now() - start) / ms);
+    const ease = 0.5 - 0.5 * Math.cos(Math.PI * k);
+    placeWindow(p, x0 + (x1 - x0) * ease, y0 + (y1 - y0) * ease - arc * Math.sin(Math.PI * k) + Math.sin(k * Math.PI * 6) * 3 * (1 - k));
+    if (k < 1) return;
+    clearInterval(p.flyTimer);
+    p.flyTimer = null;
+    // La fenêtre visée a pu disparaître pendant le vol : il se pose sur ce qu'il trouve
+    land(p, surface.h && !platforms.some((pl) => pl.h === surface.h) ? surfaceBelow(tx, surface.y, p.win.getBounds()) : surface);
+    saveWindowPosition(p);
+  }, 16);
+  return { dir: Math.sign(x1 - x0), ms };
 });
 
 ipcMain.handle('expand', async (e, cssExtra) => {

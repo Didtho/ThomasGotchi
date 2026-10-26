@@ -27,7 +27,7 @@ return [
     'Faim, soif, sommeil, propreté, câlins (reste appuyé sur lui : il ronronne)… Bien soigné, il embellit : pelage brillant, collier doré. Sans soins, il tombe malade.' => 'Fame, sete, sonno, pulizia, coccole (tieni premuto: fa le fusa)… Ben curato, diventa più bello: pelo brillante, collare dorato. Senza cure, si ammala.',
         'Fame, sete, sonno, pulizia, coccole… I suoi bisogni si leggono sul suo muso. Senza cure, si ammala.',
     'Il vit sa vie' => 'Vive la sua vita',
-    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.' => 'Passeggia, passa da uno schermo all\'altro e si arrampica sulle tue finestre: se le chiudi, cade! Balla quando ascolti musica (Windows) e fa perfino i bisogni sul desktop.',
+    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! L\'oiseau, lui, vole de fenêtre en fenêtre. Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.' => 'Passeggia, passa da uno schermo all\'altro e si arrampica sulle tue finestre: se le chiudi, cade! L\'uccellino invece vola di finestra in finestra. Balla quando ascolti musica (Windows) e fa perfino i bisogni sul desktop.',
         'Passeggia, passa da uno schermo all\'altro e si arrampica sulle tue finestre: se le chiudi, cade! Fa perfino i suoi bisogni sul desktop.',
     'Jeux et tours' => 'Giochi e trucchi',
     'Fêtes et météo' => 'Feste e meteo',

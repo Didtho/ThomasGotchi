@@ -630,6 +630,14 @@
     "Gravité (il tombe quand on le lâche)": "Gravedad (se cae al soltarlo)",
     "Désactivée : il reste là où tu le poses, même en l'air": "Desactivada: se queda donde lo pongas, incluso en el aire",
     "🔎 Rechercher une mise à jour": "🔎 Buscar actualizaciones",
+    "Oiseau": "Pájaro",
+    "Voltigeur": "Volador",
+    "Voltigeuse": "Voladora",
+    "Vole de fenêtre en fenêtre et chante le matin.": "Vuela de ventana en ventana y canta por la mañana.",
+    "Cui-cui !": "¡Pío pío!",
+    "Cui-cui ! Bonjour ! 🎶": "¡Pío pío! ¡Buenos días! 🎶",
+    "Je m'envole !": "¡Me voy volando!",
+    "Hop, à tire-d'aile !": "¡Hop, a toda ala!",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).es = L;

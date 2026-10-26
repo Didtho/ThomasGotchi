@@ -77,6 +77,7 @@ const SPECIES = [
   { id: 'hibou', name: 'Hibou', icon: '🦉', color: 'marron' },
   { id: 'singe', name: 'Singe', icon: '🐵', color: 'marron' },
   { id: 'raton', name: 'Raton laveur', icon: '🦝', color: 'ardoise' },
+  { id: 'oiseau', name: 'Oiseau', icon: '🐦', color: 'ciel' },
 ];
 
 // Caractère propre à chaque espèce : un petit trait discret, affiché dans le panneau et présenté sur le site.
@@ -104,6 +105,7 @@ const TRAITS = {
   hibou: { icon: '🌙', name: ['Noctambule', 'Noctambule'], desc: 'Se couche tard et se lève tard.', bed: [2, 10] },
   singe: { icon: '🧗', name: ['Grimpeur', 'Grimpeuse'], desc: 'Grimpe très souvent sur les fenêtres.', climb: 2.2 },
   raton: { icon: '🧼', name: ['Maniaque', 'Maniaque'], desc: 'Se lave souvent les pattes : reste propre plus longtemps.', rates: { clean: 0.6 } },
+  oiseau: { icon: '🪶', name: ['Voltigeur', 'Voltigeuse'], desc: 'Vole de fenêtre en fenêtre et chante le matin.', fly: true, hop: true, sing: true },
 };
 
 // Petits ennuis qui arrivent au hasard (environ une fois tous les trois jours d'éveil) : il faut s'en occuper.

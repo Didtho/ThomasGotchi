@@ -55,6 +55,7 @@ let lastNeedAt = 0;
 let lastNotifAt = 0;
 let lastSaveAt = 0;
 let lastFrame = 0;
+let sentFlyer = null;
 let hideTimer = null;
 let press = null;
 let dragging = false;
@@ -184,6 +185,7 @@ function buildView(now) {
     lookX,
     lookY,
     walking: !!walking || visitWalk !== null,
+    flying: !!flight, // oiseau en vol : ailes déployées
     running: !!walking && walking.speed > 3,
     hop: !!Pet.trait(state).hop, // lapin : il sautille en marchant
     ailment: state.ailment || null, // petit ennui en cours : il se voit (nez rouge, puces…)
@@ -232,6 +234,7 @@ function frame(now) {
   }
   if (now > bubbleUntil) bubble.classList.add('hidden');
 
+  if (isBird() !== sentFlyer) { sentFlyer = isBird(); desk.setFlyer(sentFlyer); } // l'oiseau plane au lieu de tomber
   fitCanvas();
   box = Draw.render(ctx, buildView(now));
   sendDropBox();
@@ -243,7 +246,7 @@ function frame(now) {
 // ---------- Promenade sur le bureau ----------
 
 function canWander(allowedAnim) {
-  return state && !state.dead && !state.sleeping && !state.paused && !dnd && focusMode !== 'sit' && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
+  return state && !flight && !state.dead && !state.sleeping && !state.paused && !dnd && focusMode !== 'sit' && !Pet.isEgg(state) && (!anim || anim === allowedAnim) &&
     !dragging && panel.classList.contains('hidden') && !modalIsOpen() && visitWalk === null && !visitAway;
 }
 
@@ -307,6 +310,22 @@ const WANDER_TRICKS = [
   { anim: 'look', dur: 2400, say: ['Hmm ?', 'Qu\'est-ce que c\'est ?'] },
 ];
 
+// ---------- Oiseau : il vole d'un perchoir à l'autre (le vol lui-même est fait par main.js) ----------
+let flight = null; // vol en cours : { until, then } (then : ce qu'il fait une fois posé)
+const isBird = () => !!(state && Pet.trait(state).fly && !Pet.isEgg(state));
+
+// Envol (opts : voir « fly » dans main.js) ; renvoie false s'il ne peut pas partir
+async function fly(opts, then) {
+  const f = flight = { until: Infinity, then }; // en attendant la réponse de main.js, il ne fait rien d'autre
+  walking = null;
+  const r = await desk.fly(opts);
+  if (flight !== f) return !!r;
+  if (!r) { flight = null; return false; }
+  f.until = performance.now() + r.ms;
+  facing = r.dir;
+  return true;
+}
+
 function startWalk(dir, steps, speed = 2) {
   if (state && Pet.isSick(state)) { steps = Math.ceil(steps / 2); speed = 1; } // malade : quelques pas, doucement
   walking = { dir, steps, speed };
@@ -314,6 +333,15 @@ function startWalk(dir, steps, speed = 2) {
 }
 
 function wander(now) {
+  if (flight) {
+    if (now < flight.until) return;
+    const then = flight.then;
+    flight = null;
+    facing = 0;
+    play('land', 350);
+    if (then) then();
+    return;
+  }
   if (walking) {
     // En chassant la pelote : arrivé tout près, il bondit dessus
     // Arrivé à la gamelle, au panier ou à la plante
@@ -360,6 +388,8 @@ function wander(now) {
     if (now < nextLaserAt) return;
     nextLaserAt = now + (Pet.trait(state).calm ? 1500 : 180);
     const dx = cursor.x - 120;
+    const dy = cursor.y - (stageEl.offsetTop + 290);
+    if (isBird() && Math.hypot(dx, dy) > 60) { fly({ dx, dy }); return; } // l'oiseau vole jusqu'au point rouge
     if (Math.abs(dx) > 25) {
       startWalk(dx > 0 ? 1 : -1, Math.min(20, Math.ceil(Math.abs(dx) / 6)), 6);
       walking.target = 'laser';
@@ -404,7 +434,12 @@ function wander(now) {
     startWalk(buddy.x > 0 ? 1 : -1, Math.ceil((Math.abs(buddy.x) - 90) / 3), 3);
     return;
   }
-  if (roll > 1 - Math.min(0.6, 0.3 * (trait.climb || 1))) {
+  if (isBird() && roll > 0.6 && desk.gravity()) {
+    // L'oiseau s'envole vers un autre perchoir (pas sans gravité : on le laisse où on l'a posé)
+    fly({}).then((ok) => { if (ok && Math.random() < 0.25) say(['Cui-cui !', 'Je m\'envole !', 'Hop, à tire-d\'aile !'][Math.floor(Math.random() * 3)], 1800); });
+    return;
+  }
+  if (!isBird() && roll > 1 - Math.min(0.6, 0.3 * (trait.climb || 1))) {
     // Saut sur une fenêtre au-dessus de lui (s'il y en a une à portée) ; sinon, une balade ordinaire
     // (les grimpeurs le tentent plus souvent)
     desk.climb().then((r) => {
@@ -499,6 +534,13 @@ function goToFurniture(kind, what, now) {
   const dx = furn[kind].x - 120;
   nextWalkAt = now + 2000;
   if (Math.abs(dx) < 25) return arriveFurniture(kind, what);
+  if (isBird() && Math.abs(dx) > 80) {
+    // L'oiseau y va en volant (à pied s'il ne peut pas s'envoler)
+    fly({ dx, floor: true }, () => arriveFurniture(kind, what)).then((ok) => {
+      if (!ok && canWander()) { startWalk(dx > 0 ? 1 : -1, Math.min(220, Math.ceil(Math.abs(dx) / 3)), 3); walking.target = kind; walking.what = what; }
+    });
+    return;
+  }
   startWalk(dx > 0 ? 1 : -1, Math.min(220, Math.ceil(Math.abs(dx) / 3)), 3);
   walking.target = kind;
   walking.what = what;
@@ -537,7 +579,7 @@ let basketTries = 0; // nombre d'allers vers le panier sans y arriver (au-delà,
 // Faut-il d'abord aller jusqu'au panier ? (il en prend le chemin si oui)
 function walkToBasket(what) {
   if (!furn || !furn.basket || basketTries >= 4 || Math.abs(furn.basket.x - 120) < 20) return false;
-  if (walking && walking.target === 'basket') return true; // déjà en route
+  if ((walking && walking.target === 'basket') || flight) return true; // déjà en route (ou en vol)
   if (!canWander()) return false;
   basketTries++;
   goToFurniture('basket', what, performance.now());
@@ -586,6 +628,7 @@ function chaseYarn(now) {
   const dx = yarnInfo.x - 120;
   nextWalkAt = now + 700 + Math.random() * 1300;
   if (Math.abs(dx) < 45) return pounceYarn();
+  if (isBird() && Math.abs(dx) > 200) { fly({ dx, floor: true }); return; }
   // Il court quand elle est loin ou qu'elle file, sinon il trottine
   const speed = Math.abs(dx) > 300 || yarnInfo.moving ? 5 : 3;
   startWalk(dx > 0 ? 1 : -1, Math.min(160, Math.ceil(Math.abs(dx) / speed)), speed);
@@ -865,6 +908,19 @@ function logic() {
     }
   }
 
+  // Caractère : l'oiseau chante une fois le matin, entre 7 h et 10 h
+  if (Pet.trait(state).sing && !state.sleeping && !state.dead && !dnd && !Pet.isEgg(state)) {
+    const h = new Date().getHours();
+    const day = new Date().toDateString();
+    if (h >= 7 && h < 10 && state.songDay !== day) {
+      state.songDay = day;
+      Sound.play('voice', state.species);
+      play('dance', 2000);
+      say('Cui-cui ! Bonjour ! 🎶', 3500);
+      save();
+    }
+  }
+
   // Petit ronflement de temps en temps
   if (state.sleeping && ++snoreTick % 4 === 0) Sound.play('snore');
 
@@ -981,6 +1037,7 @@ document.addEventListener('mousemove', (e) => {
   if (press && !dragging && !bigHug && Math.hypot(e.screenX - press.x, e.screenY - press.y) > 4) {
     clearTimeout(hugTimer);
     dragging = true;
+    flight = null; // attrapé en plein vol : il ne finit pas son voyage
     walking = null;
     desk.dragStart();
   }
@@ -1834,10 +1891,12 @@ desk.onFriends((list) => { friends = list || []; });
 // Chute après avoir été lâché en hauteur, puis atterrissage avec un petit rebond
 desk.onFalling(() => {
   walking = null;
+  if (isBird() && !state.dead) { flight = { until: Infinity }; return; } // l'oiseau plane jusqu'en bas
   if (state && !state.dead) play('fall', 10000);
 });
 desk.onLanded(() => {
   if (!state || state.dead) return;
+  if (flight) { flight = null; facing = 0; play('land', 350); return; }
   play('land', 350);
   Sound.play('jump');
   if (Math.random() < 0.3 && !state.sleeping) say(['Ouf !', 'Atterrissage réussi !', 'Boing !'][Math.floor(Math.random() * 3)], 1800);

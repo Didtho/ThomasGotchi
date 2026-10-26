@@ -77,7 +77,7 @@ quand l'application est fermée.
 
 Chaque espèce a son caractère : le chat est roi de la sieste, le lapin avance par petits bonds, le dragon crache une
 petite flamme pendant un câlin, le hibou est noctambule, le loup hurle à la lune le soir, la grenouille adore la pluie,
-le pingouin le froid, le singe grimpe partout… (affiché dans le panneau et au choix de l'animal).
+le pingouin le froid, le singe grimpe partout, l'**oiseau vole** de fenêtre en fenêtre et chante le matin… (affiché dans le panneau et au choix de l'animal).
 
 ## Fêtes
 
@@ -92,8 +92,8 @@ Soirée magique les 25 et 26 décembre 2026 au soir (chapeau, baguette, et un hi
 Les réglages sont rangés en onglets : 🐾 Animal, 🎨 Style, 🙂 Toi, ⚙️ Options.
 
 - Langue : français, anglais, espagnol, italien (automatique selon l'ordinateur, ou au choix)
-- Animal (21) : chat, lapin, ourson, chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, petit dragon,
-  loup, lion, tigre, cochon, mouton, souris, hibou, singe, raton laveur
+- Animal (22) : chat, lapin, ourson, chien, renard, panda, pingouin, hamster, koala, grenouille, licorne, petit dragon,
+  loup, lion, tigre, cochon, mouton, souris, hibou, singe, raton laveur, oiseau (il vole et se perche sur les fenêtres)
 - Dessin : mignon ou pixel rétro ; 19 pelages ; genre il ou elle (les phrases s'accordent)
 - Modèles d'après les chats de la maison : **Simba** (roux), **Snoop** (tigrée grise) et **Grisette** (noire et blanche)
 

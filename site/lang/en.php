@@ -27,7 +27,7 @@ return [
     'Faim, soif, sommeil, propreté, câlins (reste appuyé sur lui : il ronronne)… Bien soigné, il embellit : pelage brillant, collier doré. Sans soins, il tombe malade.' => 'Hunger, thirst, sleep, cleanliness, cuddles (hold the click: it purrs)… Well cared for, it gets prettier: shiny coat, golden collar. Without care, it falls ill.',
         'Hunger, thirst, sleep, cleanliness, cuddles… You can read its needs on its face. Without care, it gets sick.',
     'Il vit sa vie' => 'It lives its life',
-    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.' => 'It wanders around, moves from one screen to another and climbs onto your windows: close them and it falls! It dances when you play music (Windows) and even does its business on the desktop.',
+    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! L\'oiseau, lui, vole de fenêtre en fenêtre. Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.' => 'It wanders around, moves from one screen to another and climbs onto your windows: close them and it falls! The bird flies from window to window. It dances when you play music (Windows) and even does its business on the desktop.',
         'It strolls around, moves from one screen to another and climbs onto your windows: close them and it falls! It even does its business on the desktop.',
     'Jeux et tours' => 'Games and tricks',
     'Fêtes et météo' => 'Holidays and weather',

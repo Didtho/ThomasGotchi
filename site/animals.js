@@ -233,11 +233,11 @@
   });
   new Set(items.map((i) => i.watch)).forEach((el) => io.observe(el));
 
-  // Cri et animation selon le caractère : flamme du dragon, bonds du lapin, danse de la licorne…
+  // Cri et animation selon le caractère : flamme du dragon, envol de l'oiseau, bonds du lapin, danse de la licorne…
   function react(item) {
     const tr = Pet.TRAITS[item.species] || {};
-    item.anim = tr.flame ? 'love' : tr.hop ? 'hop' : tr.showOff ? 'dance' : (item.toggle = !item.toggle) ? 'jump' : 'love';
-    item.dur = { love: 1.4, hop: 1.6, dance: 2, jump: 0.9 }[item.anim];
+    item.anim = tr.flame ? 'love' : tr.fly ? 'fly' : tr.hop ? 'hop' : tr.showOff ? 'dance' : (item.toggle = !item.toggle) ? 'jump' : 'love';
+    item.dur = { love: 1.4, fly: 1.8, hop: 1.6, dance: 2, jump: 0.9 }[item.anim];
     item.start = performance.now();
     try { Sound.play('voice', item.species); } catch { /* pas de son possible */ }
   }
@@ -258,15 +258,16 @@
     }
     const t = now / 1000 + item.phase;
     const hopping = anim === 'hop';
+    const flying = anim === 'fly';
     const coat = Pet.COATS[item.colorKey] || null;
     item.ctx.setTransform(scale, 0, 0, scale, -crop.x * scale, -crop.y * scale);
     Draw.render(item.ctx, {
       stage: 'adult', species, mood: 'happy',
-      eyes: anim && !hopping ? 'joy' : (t % 4.3) < 0.13 ? 'closed' : 'open',
+      eyes: anim && !hopping && !flying ? 'joy' : (t % 4.3) < 0.13 ? 'closed' : 'open',
       mouth: anim ? 'open' : 'smile',
       color: Pet.COLORS[item.colorKey] || item.colorKey, coat, dark: !!(coat && coat.dark), care: 0, style: 'cute',
-      t, anim: hopping ? null : anim, animT, facing: 0, lookX: null, lookY: 0.15,
-      walking: hopping, hop: hopping, flame: !!tr.flame && anim === 'love',
+      t, anim: hopping || flying ? null : anim, animT, facing: 0, lookX: null, lookY: 0.15,
+      walking: hopping, hop: hopping, flying, flame: !!tr.flame && anim === 'love',
       accessory: fete ? FETE_ACCESSORY[fete.id] || null : null, magic: !!(fete && fete.magic),
     });
     if (!live) { item.canvas.style.display = 'block'; item.img.style.display = 'none'; }

@@ -21,7 +21,7 @@ $traits = $app['traits'][TG_CURRENT] ?? $app['traits']['fr'] ?? []; // caractèr
 $features = [
     ['🍽️', 'Il mange tes fichiers', 'Glisse une image, un PDF ou une vidéo sur lui : il se régale. Rassure-toi, tes fichiers ne sont jamais effacés.'],
     ['💖', 'Prends soin de lui', 'Faim, soif, sommeil, propreté, câlins (reste appuyé sur lui : il ronronne)… Bien soigné, il embellit : pelage brillant, collier doré. Sans soins, il tombe malade.'],
-    ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.'],
+    ['🐾', 'Il vit sa vie', 'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! L\'oiseau, lui, vole de fenêtre en fenêtre. Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.'],
     ['🎾', 'Jeux et tours', 'Attrape les friandises, jeu des gobelets, jeu des paires, pelote de laine, pointeur laser… des tours qu\'il apprend petit à petit, et des trophées à gagner.'],
     ['🎃', 'Fêtes et météo', 'Halloween, Noël avec son calendrier de l\'Avent et sa soirée magique, Nouvel An, Chandeleur, Pâques, fêtes des mamans et des papas… et la vraie météo de ta ville, avec parapluie et écharpe.'],
     ['💞', 'Plusieurs compagnons', 'Jusqu\'à 5 animaux qui deviennent amis et jouent ensemble… et qui peuvent même rendre visite aux animaux de tes proches, sur leur ordinateur, ou partir en promenade avec eux !'],

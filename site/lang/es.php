@@ -27,7 +27,7 @@ return [
     'Faim, soif, sommeil, propreté, câlins (reste appuyé sur lui : il ronronne)… Bien soigné, il embellit : pelage brillant, collier doré. Sans soins, il tombe malade.' => 'Hambre, sed, sueño, limpieza, mimos (mantén pulsado: ronronea)… Bien cuidado, se pone más guapo: pelaje brillante, collar dorado. Sin cuidados, enferma.',
         'Hambre, sed, sueño, limpieza, mimos… Sus necesidades se ven en su cara. Sin cuidados, se pone enfermo.',
     'Il vit sa vie' => 'Vive su vida',
-    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.' => 'Pasea, pasa de una pantalla a otra y trepa a tus ventanas: ¡si las cierras, se cae! Baila cuando escuchas música (Windows) e incluso hace sus necesidades en el escritorio.',
+    'Il se promène, passe d\'un écran à l\'autre et grimpe sur tes fenêtres : si tu les fermes, il tombe ! L\'oiseau, lui, vole de fenêtre en fenêtre. Il danse quand tu écoutes de la musique (Windows) et fait même ses besoins sur le bureau.' => 'Pasea, pasa de una pantalla a otra y trepa a tus ventanas: ¡si las cierras, se cae! El pájaro, en cambio, vuela de ventana en ventana. Baila cuando escuchas música (Windows) e incluso hace sus necesidades en el escritorio.',
         'Pasea, pasa de una pantalla a otra y se sube a tus ventanas: ¡si las cierras, se cae! Incluso hace sus necesidades en el escritorio.',
     'Jeux et tours' => 'Juegos y trucos',
     'Fêtes et météo' => 'Fiestas y tiempo',

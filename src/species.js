@@ -8,7 +8,7 @@ const BLACK_FUR = '#2f2b33';
 const TOP_EXTRA = {
   chat: 0.45, lapin: 0.95, ours: 0.22, chien: 0.12, renard: 0.62, panda: 0.22, pingouin: 0.02,
   hamster: 0.14, koala: 0.3, grenouille: 0.3, licorne: 0.78, dragon: 0.5,
-  loup: 0.62, lion: 0.3, tigre: 0.22, cochon: 0.15, mouton: 0.2, souris: 0.32, hibou: 0.25, singe: 0.05, raton: 0.4,
+  loup: 0.62, lion: 0.3, tigre: 0.22, cochon: 0.15, mouton: 0.2, souris: 0.32, hibou: 0.25, singe: 0.05, raton: 0.4, oiseau: 0.3,
 };
 
 const LIGHT_FUR = '#f2eff5';
@@ -21,7 +21,8 @@ function geometry(stage, species, jump = 0, squash = 1) {
   const r = SIZES[stage] || SIZES.baby;
   const bodyRx = r * 0.72 * squash;
   const bodyRy = r * 0.55 / squash;
-  const bodyCy = GROUND - bodyRy * 0.95 - jump;
+  const legs = species === 'oiseau' ? r * 0.22 : 0; // l'oiseau est perché sur de fines pattes
+  const bodyCy = GROUND - bodyRy * 0.95 - jump - legs;
   const headRx = r * 1.0;
   const headRy = r * 0.86;
   const headCy = bodyCy - bodyRy * 0.55 - headRy * 0.75 + (squash - 1) * r * 2;
@@ -153,6 +154,15 @@ function drawEars(ctx, species, cx, g, body, inner, t) {
     } else if (species === 'hibou') {
       // Aigrettes de plumes
       pointyEar(ctx, cx + side * headRx * 0.62, headCy - headRy * 0.62, side, r, 0.65, body, shade(body, -0.12));
+    } else if (species === 'oiseau' && side > 0) {
+      // Petite huppe de trois plumes sur le haut de la tête
+      for (const k of [-1, 0, 1]) {
+        ctx.save();
+        ctx.translate(cx + k * r * 0.12, headCy - headRy * 0.9);
+        ctx.rotate(k * 0.45 + Math.sin(t * 3 + k) * 0.05);
+        ellipse(ctx, 0, -r * 0.2, r * 0.08, r * 0.22, shade(body, -0.12), INK, 2);
+        ctx.restore();
+      }
     } else if (species === 'singe') {
       ellipse(ctx, cx + side * headRx * 0.98, headCy, r * 0.24, r * 0.26, body, INK, 2.5);
       ellipse(ctx, cx + side * headRx * 0.98, headCy, r * 0.13, r * 0.15, '#f3d7b6');
@@ -271,6 +281,15 @@ function drawTail(ctx, species, cx, g, body, side, t, coat) {
       ctx.bezierCurveTo(x + side * r * 0.7, y + r * 0.2, x + side * r * 0.75 + sway, y - r * 0.7, x + side * r * 0.45 + sway, y - r * 0.75);
       ctx.arc(x + side * r * 0.45 + sway, y - r * 0.6, r * 0.15, -Math.PI / 2, side > 0 ? Math.PI : 0, side < 0);
     }, r * 0.1, body);
+  } else if (species === 'oiseau') {
+    // Queue en éventail : trois plumes qui partent vers l'arrière
+    for (const k of [-1, 0, 1]) {
+      ctx.save();
+      ctx.translate(x - side * r * 0.15, y + r * 0.05);
+      ctx.rotate(side * (1.15 + k * 0.28) + Math.sin(t * 3) * 0.04);
+      ellipse(ctx, 0, -r * 0.32, r * 0.12, r * 0.36, shade(body, -0.15), INK, 2.2);
+      ctx.restore();
+    }
   } else if (species === 'lapin' || species === 'ours' || species === 'panda') {
     const s = species === 'lapin' ? 0.24 : 0.15;
     const c = species === 'lapin' ? shade(body, 0.12) : species === 'panda' ? BLACK_FUR : body;
@@ -324,8 +343,29 @@ function speciesLayer(ctx, layer, species, cx, g, body, v) {
     }
   }
 
+  if (layer === 'back' && species === 'oiseau' && v.flying) {
+    // En vol : ailes déployées qui battent
+    const flap = Math.sin(t * 16);
+    for (const side of [-1, 1]) {
+      ctx.save();
+      ctx.translate(cx + side * bodyRx * 0.6, bodyCy - bodyRy * 0.55);
+      ctx.rotate(side * (-0.45 + flap * 0.6));
+      birdWing(ctx, side, r * 1.35, body);
+      ctx.restore();
+    }
+  }
+
   if (layer === 'body') {
-    if (species === 'mouton') {
+    if (species === 'oiseau' && !v.flying) {
+      // Ailes repliées le long du corps
+      for (const side of [-1, 1]) {
+        ctx.save();
+        ctx.translate(cx + side * bodyRx * 0.82, bodyCy - bodyRy * 0.45);
+        ctx.rotate(side * (1.2 + Math.sin(t * 2) * 0.03));
+        birdWing(ctx, side, r * 0.7, body);
+        ctx.restore();
+      }
+    } else if (species === 'mouton') {
       ellipse(ctx, cx, bodyCy, bodyRx * 0.98, bodyRy * 0.95, '#fbf8f4');
       for (let i = 0; i < 6; i++) ellipse(ctx, cx + ((i % 3) - 1) * bodyRx * 0.5, bodyCy + (i < 3 ? -0.3 : 0.25) * bodyRy, r * 0.17, r * 0.15, null, 'rgba(59,42,58,.25)', 1.5);
     } else if (species === 'tigre') {
@@ -528,6 +568,57 @@ function speciesLayer(ctx, layer, species, cx, g, body, v) {
   }
 }
 
+// Aile d'oiseau : une palette arrondie bordée de trois plumes (side : -1 à gauche, 1 à droite)
+function birdWing(ctx, side, len, body) {
+  ctx.beginPath();
+  ctx.moveTo(0, -len * 0.16);
+  ctx.quadraticCurveTo(side * len * 0.55, -len * 0.38, side * len, -len * 0.12);
+  for (let k = 0; k < 3; k++) {
+    // Bord festonné : une bosse par plume, du bout de l'aile vers l'épaule
+    const x0 = side * len * (1 - k * 0.3), x1 = side * len * (0.7 - k * 0.3);
+    ctx.quadraticCurveTo((x0 + x1) / 2 + side * len * 0.04, len * (0.2 - k * 0.02), x1, len * 0.04);
+  }
+  ctx.quadraticCurveTo(side * len * 0.05, len * 0.12, 0, len * 0.14);
+  ctx.closePath();
+  ctx.fillStyle = shade(body, -0.1);
+  ctx.fill();
+  ctx.lineWidth = 2.2;
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = INK;
+  ctx.stroke();
+}
+
+// Pattes d'oiseau : deux tiges fines terminées par trois doigts ; repliées sous le ventre en vol
+function drawBirdLegs(ctx, cx, g, v) {
+  const { r, bodyRx, bodyRy, bodyCy } = g;
+  ctx.strokeStyle = '#e89a3c';
+  ctx.lineCap = 'round';
+  for (const side of [-1, 1]) {
+    const x = cx + side * bodyRx * 0.32;
+    const top = bodyCy + bodyRy * 0.85;
+    ctx.lineWidth = r * 0.07;
+    ctx.beginPath();
+    if (v.flying) {
+      ctx.moveTo(x, top);
+      ctx.lineTo(x - (v.facing || 1) * r * 0.16, top + r * 0.1);
+      ctx.stroke();
+      continue;
+    }
+    const step = v.walking ? Math.max(0, Math.sin(v.t * 12 + (side > 0 ? Math.PI : 0))) * r * 0.06 : 0;
+    const foot = GROUND - 1 - step;
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, foot);
+    ctx.stroke();
+    ctx.lineWidth = r * 0.055;
+    for (const dx of [-0.13, 0, 0.13]) {
+      ctx.beginPath();
+      ctx.moveTo(x, foot);
+      ctx.lineTo(x + dx * r, foot + (dx ? 0 : 0.5));
+      ctx.stroke();
+    }
+  }
+}
+
 // Couleur des pattes selon l'espèce (null = couleur du corps)
 function pawColor(species, coat) {
   if (species === 'panda') return BLACK_FUR;
@@ -576,6 +667,26 @@ function drawFace(ctx, v, cx, g) {
     ctx.fillStyle = '#ffb347';
     ctx.fill();
     ctx.lineWidth = 1.6;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+  } else if (sp === 'oiseau') {
+    // Bec pointu, tourné du côté où il regarde
+    const d = v.facing || 0;
+    ctx.beginPath();
+    if (d) {
+      ctx.moveTo(fx, ny - r * 0.09);
+      ctx.lineTo(fx + d * r * 0.24, ny);
+      ctx.lineTo(fx, ny + r * 0.07);
+    } else {
+      ctx.moveTo(fx - r * 0.1, ny - r * 0.07);
+      ctx.lineTo(fx + r * 0.1, ny - r * 0.07);
+      ctx.lineTo(fx, ny + r * 0.13);
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#f5a742';
+    ctx.fill();
+    ctx.lineWidth = 1.6;
+    ctx.lineJoin = 'round';
     ctx.strokeStyle = INK;
     ctx.stroke();
   } else if (sp === 'cochon') {

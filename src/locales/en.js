@@ -630,6 +630,14 @@
     "Gravité (il tombe quand on le lâche)": "Gravity (it falls when you let go)",
     "Désactivée : il reste là où tu le poses, même en l'air": "Off: it stays where you put it, even in mid-air",
     "🔎 Rechercher une mise à jour": "🔎 Check for updates",
+    "Oiseau": "Bird",
+    "Voltigeur": "High flyer",
+    "Voltigeuse": "High flyer",
+    "Vole de fenêtre en fenêtre et chante le matin.": "Flies from window to window and sings in the morning.",
+    "Cui-cui !": "Tweet tweet!",
+    "Cui-cui ! Bonjour ! 🎶": "Tweet tweet! Good morning! 🎶",
+    "Je m'envole !": "Off I fly!",
+    "Hop, à tire-d'aile !": "Wings out, here I go!",
   };
   if (typeof module !== 'undefined') module.exports = L;
   else (root.LOCALES = root.LOCALES || {}).en = L;

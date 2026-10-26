@@ -123,6 +123,12 @@ const Sound = (() => {
     souris() { for (let i = 0; i < 2; i++) tone('sine', 3000, 3600, 0.05, { at: i * 0.1, vol: 0.3 }); },
     // Hou hou
     hibou() { tone('sine', 420, 380, 0.25, { vol: 0.5 }); tone('sine', 400, 360, 0.35, { at: 0.35, vol: 0.5 }); },
+    // Cui-cui : deux petits sifflements qui montent, puis un trille
+    oiseau() {
+      tone('sine', 2400, 3400, 0.09, { vol: 0.35 });
+      tone('sine', 2600, 3600, 0.09, { at: 0.14, vol: 0.35 });
+      for (let i = 0; i < 4; i++) tone('sine', 3200, 2900, 0.04, { at: 0.32 + i * 0.055, vol: 0.25 });
+    },
     // Ouh ouh ah !
     singe() { [500, 520, 900].forEach((f, i) => tone('triangle', f, f * 1.2, 0.12, { at: i * 0.15, vol: 0.4 })); },
     raton() { for (let i = 0; i < 4; i++) tone('triangle', 1500 + Math.random() * 500, 1300, 0.05, { at: i * 0.07, vol: 0.3 }); },
