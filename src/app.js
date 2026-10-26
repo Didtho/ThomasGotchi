@@ -574,6 +574,8 @@ function arriveFurniture(kind, what) {
 
 // ---------- Panier : il y dort la nuit et y fait la sieste quand il est fatigué ----------
 
+let basketAsked = null; // nuit pour laquelle il a déjà demandé un panier
+let basketWait = 0; // il attend que le panier apparaisse jusqu'à ce moment
 let basketTries = 0; // nombre d'allers vers le panier sans y arriver (au-delà, il dort où il est)
 
 // Faut-il d'abord aller jusqu'au panier ? (il en prend le chemin si oui)
@@ -826,6 +828,15 @@ function dayRhythm() {
       state.nightSleep = true;
       save();
     } else if (!state.sleeping && !anim && !modalIsOpen() && !dragging && state.bedNight !== nightKey()) {
+      // Pas de panier sur le bureau : il en sort un pour la nuit (rangé à son réveil), et attend qu'il apparaisse
+      const hasBasket = !!(furn && furn.basket);
+      if (!hasBasket && !desk.guest && basketAsked !== nightKey()) {
+        basketAsked = nightKey();
+        basketWait = Date.now() + 5000;
+        desk.nightBasket();
+        return;
+      }
+      if (!hasBasket && Date.now() < basketWait) return;
       if (!walkToBasket('night')) lieDown(true); // avec un panier, il va d'abord s'y coucher
     }
   } else if (state.sleeping && state.nightSleep) {
@@ -835,6 +846,7 @@ function dayRhythm() {
     say('Bonjour ! ☀️ Bien dormi !', 4000);
     speak(t('Bonjour{owner} !', { owner: owner() }));
     save();
+    desk.nightBasketDone(); // le panier sorti pour la nuit est rangé
   } else if (!state.sleeping && state.energy < 25 && furn && furn.basket && !Pet.isSick(state)) {
     walkToBasket('nap'); // fatigué en journée : une sieste dans son panier
   }

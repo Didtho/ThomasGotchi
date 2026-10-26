@@ -71,6 +71,8 @@ contextBridge.exposeInMainWorld('desk', {
   yarnToggle: () => ipcRenderer.send('yarn-toggle'),
   onFurniture: (cb) => ipcRenderer.on('furniture', (_e, f) => cb(f)),
   bowlUse: (what) => ipcRenderer.invoke('bowl-use', what),
+  nightBasket: () => ipcRenderer.send('night-basket'), // panier sorti pour la nuit (voir main.js)
+  nightBasketDone: () => ipcRenderer.send('night-basket-done'),
   exportPet: (state) => ipcRenderer.invoke('export-pet', state),
   onDnd: (cb) => ipcRenderer.on('dnd', (_e, on) => cb(on)),
   onMusic: (cb) => ipcRenderer.on('music', (_e, on) => cb(on)), // Windows : de la musique joue (il danse)

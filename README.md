@@ -56,7 +56,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
 - 🔍 **Taille** (onglet « Options » des réglages) : normale, grande ou très grande, pour les grands écrans.
 - 🪶 **Gravité** (onglet « Options ») : décochée, l'animal reste là où on le pose, même en l'air, et ne grimpe plus aux fenêtres.
 - 🧶 **Pelote de laine** (menu de l'icône › Jouer) et 🥣 **gamelle** (› Objets sur le bureau) : il court après la pelote, va manger et boire tout seul.
-- 🧺 **Panier** : il va s'y coucher le soir et y faire la sieste quand il est fatigué. 🪴 **Plante** : un clic pour
+- 🧺 **Panier** : il va s'y coucher le soir et y faire la sieste quand il est fatigué (sans panier posé, un panier apparaît à côté de lui au coucher et disparaît à son réveil). 🪴 **Plante** : un clic pour
   l'arroser ; bien arrosée, elle pousse un peu chaque jour jusqu'à fleurir (elle penche si on l'oublie, sans jamais
   mourir), et l'animal vient la renifler.
 - 🗣️ **Voix** : il dit ton prénom avec la voix de l'ordinateur, et te souhaite ton **anniversaire** (gâteau, chanson

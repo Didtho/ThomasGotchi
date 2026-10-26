@@ -1448,6 +1448,22 @@ function removeFurniture(kind) {
 
 const toggleFurniture = (kind) => (furniture[kind] ? removeFurniture(kind) : spawnFurniture(kind));
 
+// Panier de la nuit : sans panier sur le bureau, un panier apparaît à côté de l'animal à l'heure du coucher
+// (night : true) et disparaît à son réveil, quand plus aucun animal n'y passe la nuit
+ipcMain.on('night-basket', (e) => {
+  const p = petOf(e.sender);
+  if (!p || p.guest || furniture.basket) return;
+  const b = p.win.getBounds();
+  const wa = screen.getDisplayMatching(b).workArea;
+  const side = b.x + W / 2 + 180 * petScale > wa.x + wa.width ? -1 : 1; // de l'autre côté s'il est contre le bord
+  spawnFurniture('basket', { x: b.x + W / 2 + side * 110 * petScale, night: true });
+});
+ipcMain.on('night-basket-done', () => {
+  if (!furniture.basket || !furniture.basket.night) return;
+  if ([...pets.values()].some((p) => alive(p) && p.lastState && p.lastState.sleeping && p.lastState.nightSleep)) return;
+  removeFurniture('basket');
+});
+
 // Plante : l'eau baisse en 3 jours ; bien arrosée, elle pousse d'un cran par jour (graine, pousse, tige, bouton, fleur).
 // Sans eau, elle penche un peu mais ne meurt jamais.
 function plantTick() {
