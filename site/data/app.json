@@ -566,6 +566,13 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.13.1",
+   "date": "2026-10-26",
+   "items": [
+    "Au coucher, s'il n'y a pas de panier sur le bureau, un panier apparaît à côté de lui pour la nuit et disparaît à son réveil"
+   ]
+  },
+  {
    "version": "2.13.0",
    "date": "2026-10-26",
    "items": [
@@ -897,14 +904,6 @@
     "Sous Windows, les animaux marchent sur le haut des fenêtres, tombent au bord ou quand la fenêtre se ferme, et suivent une fenêtre déplacée",
     "Ils sautent parfois tout seuls sur une fenêtre proche",
     "Site mis à jour ; règle de test ajoutée dans CLAUDE.md"
-   ]
-  },
-  {
-   "version": "2.0.2",
-   "date": "2026-10-25",
-   "items": [
-    "Décors de fête au sol (citrouille, sapin, gâteau, œufs) posés sur le bureau, immobiles",
-    "Gravité : un animal lâché en hauteur tombe jusqu'en bas de l'écran, avec un petit rebond"
    ]
   }
  ]
