@@ -51,9 +51,10 @@ jobs:
 
   # Envoie aussi les installateurs sur itch.io (https://didtech.itch.io/thomasgotchi), canaux « windows » et « mac ».
   # Il faut la clé d'accès itch.io dans le secret BUTLER_API_KEY du dépôt ; sans elle, cette étape ne fait rien.
+  # Aussi au lancement manuel (onglet « Actions ») : renvoie la version de package.json sur itch.io.
   itch:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
@@ -66,10 +67,12 @@ jobs:
         run: |
           curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
           unzip -q butler.zip -d butler && chmod +x butler/butler
-          version="${GITHUB_REF_NAME#v}"
-          # Un dossier par canal, avec seulement son installateur
+          # Numéro de version lu dans le nom du .dmg (ThomasGotchi-2.13.2-universal.dmg)
+          dmg=$(ls art/ThomasGotchi-macos-latest/*.dmg)
+          version=$(basename "$dmg" | sed -E 's/^ThomasGotchi-(.+)-universal\.dmg$/\1/')
+          # Un dossier par canal, avec seulement son installateur (« ThomasGotchi Setup X.exe » : sans espaces sur itch.io)
           mkdir -p up/windows up/mac
-          cp art/ThomasGotchi-windows-latest/ThomasGotchi-Setup-*.exe up/windows/
-          cp art/ThomasGotchi-macos-latest/*.dmg up/mac/
+          cp art/ThomasGotchi-windows-latest/*.exe "up/windows/ThomasGotchi-Setup-$version.exe"
+          cp "$dmg" up/mac/
           butler/butler push up/windows didtech/thomasgotchi:windows --userversion "$version"
           butler/butler push up/mac didtech/thomasgotchi:mac --userversion "$version"
