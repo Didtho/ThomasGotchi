@@ -3,6 +3,8 @@
 // Comme dans l'application, le site se met aux couleurs des fêtes : bannière, couleurs et accessoire de saison.
 (() => {
   if (typeof Draw === 'undefined' || typeof Pet === 'undefined') return;
+  // Sur le site, les animaux gardent leur ancienne taille d'adulte : les cartes et images sont cadrées pour elle
+  Object.assign(SIZES, { baby: 30, child: 38, adult: 46 });
   I18N.lang = document.documentElement.lang || 'fr';
   const CARD = { x: 30, y: 100, w: 180, h: 200 }; // cartes de la liste (même cadre que les images, scripts/render.js)
   const HERO = { x: 44, y: 100, w: 152, h: 200 }; // chats du haut de page : même largeur que leur image, plus de place au-dessus

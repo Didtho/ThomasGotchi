@@ -4,6 +4,8 @@
 (() => {
   const canvas = document.getElementById('demo-canvas');
   if (!canvas || typeof Pet === 'undefined' || typeof Draw === 'undefined') return;
+  // Sur le site, les animaux gardent leur ancienne taille d'adulte : les cartes et images sont cadrées pour elle
+  Object.assign(SIZES, { baby: 30, child: 38, adult: 46 });
   const stage = document.getElementById('demo-stage');
   const bubble = document.querySelector('.demo-bubble');
   const ctx = canvas.getContext('2d');

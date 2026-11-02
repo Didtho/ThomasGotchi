@@ -1,5 +1,8 @@
 // Rendu d'images fixes avec le moteur de dessin de l'application (pour le site internet).
 
+// Sur le site, les animaux gardent leur ancienne taille d'adulte : les cartes et images sont cadrées pour elle
+Object.assign(SIZES, { baby: 30, child: 38, adult: 46 });
+
 // Vue « au repos » d'un animal, complétée par les options données
 function view(species, color, extra = {}) {
   return {

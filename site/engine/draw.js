@@ -6,7 +6,7 @@ const GROUND = 292;
 const CENTER = 120;
 const PIXEL = 2; // taille d'un « gros pixel » en mode rétro
 
-const SIZES = { baby: 30, child: 38, adult: 46 };
+const SIZES = { baby: 28, child: 33, adult: 38 }; // rayon de la tête selon l'âge (réduit en 2.13.2 : les adultes prenaient trop de place)
 
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);

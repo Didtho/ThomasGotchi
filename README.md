@@ -53,7 +53,7 @@ Il se promène, grimpe sur les fenêtres, grandit, et il faut s'en occuper pour 
   🎁 **cadeau** ou une 💌 **carte postale** (message choisi dans une liste : « Je pense à toi ! », « Joyeux
   anniversaire ! 🎂 »…), qui arrive même si son ordinateur est éteint. Seuls passent le prénom du maître et
   l'apparence de l'animal : pas de messages libres.
-- 🔍 **Taille** (onglet « Options » des réglages) : normale, grande ou très grande, pour les grands écrans.
+- 🔍 **Taille** (onglet « Options » des réglages) : normale, grande ou très grande, pour les grands écrans (adultes plus compacts depuis la 2.13.2).
 - 🪶 **Gravité** (onglet « Options ») : décochée, l'animal reste là où on le pose, même en l'air, et ne grimpe plus aux fenêtres.
 - 🧶 **Pelote de laine** (menu de l'icône › Jouer) et 🥣 **gamelle** (› Objets sur le bureau) : il court après la pelote, va manger et boire tout seul.
 - 🧺 **Panier** : il va s'y coucher le soir et y faire la sieste quand il est fatigué (sans panier posé, un panier apparaît à côté de lui au coucher et disparaît à son réveil). 🪴 **Plante** : un clic pour
