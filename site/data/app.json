@@ -566,6 +566,13 @@
  "tricks": 5,
  "changelog": [
   {
+   "version": "2.13.2",
+   "date": "2026-11-02",
+   "items": [
+    "Animaux plus petits en grandissant : les adultes prennent environ un tiers de place en moins à l'écran (le réglage « Taille des animaux » permet toujours de les agrandir)"
+   ]
+  },
+  {
    "version": "2.13.1",
    "date": "2026-10-26",
    "items": [
@@ -895,15 +902,6 @@
     "Les animaux sautent plus souvent et plus loin sur les fenêtres (grand bond en arc, jusqu'en haut de l'écran)",
     "Site : compteur de téléchargements (base de données, robots exclus) et script d'envoi SFTP",
     "Accès confidentiels uniquement dans des fichiers locaux exclus de GitHub"
-   ]
-  },
-  {
-   "version": "2.1.0",
-   "date": "2026-10-25",
-   "items": [
-    "Sous Windows, les animaux marchent sur le haut des fenêtres, tombent au bord ou quand la fenêtre se ferme, et suivent une fenêtre déplacée",
-    "Ils sautent parfois tout seuls sur une fenêtre proche",
-    "Site mis à jour ; règle de test ajoutée dans CLAUDE.md"
    ]
   }
  ]
